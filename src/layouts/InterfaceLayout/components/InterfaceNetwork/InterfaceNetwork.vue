@@ -25,14 +25,14 @@
           </p>
         </div>
         <div class="icon-container">
-          <!-- <button
+          <button
             v-if="account.identifier !== identifier"
             id="networkModal"
             class="change-button"
             @click="networkModalOpen"
           >
             Change
-          </button> -->
+          </button>
           <b-popover
             content="Open Networks"
             target="networkModal"
@@ -48,7 +48,7 @@
 
 <script>
 import InterfaceNetworkModal from '../InterfaceNetworkModal';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import { WEB3_WALLET } from '@/wallets/bip44/walletTypes';
 
 export default {
@@ -68,11 +68,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      network: 'network',
-      account: 'account',
-      web3: 'web3'
-    })
+    ...mapState(['network', 'account', 'web3'])
   },
   watch: {
     blockNumber(newVal) {

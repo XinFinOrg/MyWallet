@@ -1,7 +1,7 @@
 import Web3WSProvider from './ws-web3-provider';
 import { Manager as Web3RequestManager } from 'web3-core-requestmanager';
 import MiddleWare from '../middleware';
-import * as workerTimers from 'worker-timers';
+import workerTimer from '@/helpers/webWorkerTimer';
 import {
   ethSendTransaction,
   ethSignTransaction,
@@ -15,6 +15,7 @@ class WSProvider {
   constructor(host, options, store, eventHub) {
     this.wsProvider = new Web3WSProvider(host, options);
     this.oWSProvider = new Web3WSProvider(host, options);
+    this.lastMessage = new Date().getTime();
     const keepAlive = () => {
       if (
         this.oWSProvider.connection.readyState ===
@@ -31,17 +32,19 @@ class WSProvider {
           '{"jsonrpc":"2.0","method":"net_version","params":[],"id":1}'
         );
       if (
-        this.wsProvider.connection.readyState ===
-          this.wsProvider.connection.CLOSED &&
-        this.oWSProvider.connection.readyState ===
-          this.oWSProvider.connection.CLOSED
-      )
-        workerTimers.clearInterval(this.keepAliveTimer);
+        !Object.is(this.wsProvider, store.state.web3.currentProvider) &&
+        this.lastMessage + 10 * 60 * 1000 < new Date().getTime() //wait extra 10 minutes
+      ) {
+        this.wsProvider.disconnect();
+        this.oWSProvider.disconnect();
+        workerTimer.clearInterval(this.keepAliveTimer);
+      }
     };
-    this.keepAliveTimer = workerTimers.setInterval(keepAlive, 5000);
+    this.keepAliveTimer = workerTimer.setInterval(keepAlive, 5000);
     const _this = this.wsProvider;
     delete this.wsProvider['send'];
     this.wsProvider.send = (payload, callback) => {
+      this.lastMessage = new Date().getTime();
       if (_this.connection.readyState === _this.connection.CONNECTING) {
         setTimeout(() => {
           this.wsProvider.send(payload, callback);

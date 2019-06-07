@@ -14,8 +14,8 @@
           <div>
             Simply send your transaction through this page and our fraud
             detection algorithms get to work. If we find that your destination
-            address is likely to result in your money being stolen, your XinFin
-            will be sent back to you.
+            address is likely to result in your money being stolen, your
+            Ethereum will be sent back to you.
           </div>
         </div>
       </div>
@@ -186,7 +186,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import InterfaceContainerTitle from '@/layouts/InterfaceLayout/components/InterfaceContainerTitle';
 import { CoralConfig } from './config';
 import InterfaceBottomText from '@/components/InterfaceBottomText';
@@ -214,8 +214,8 @@ export default {
       default: function() {}
     },
     highestGas: {
-      type: Number,
-      default: 0
+      type: String,
+      default: '0'
     }
   },
   data() {
@@ -236,13 +236,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      account: 'account',
-      gasPrice: 'gasPrice',
-      web3: 'web3',
-      network: 'network',
-      ens: 'ens'
-    }),
+    ...mapState(['account', 'gasPrice', 'web3', 'network', 'ens']),
     validAmount() {
       return (
         new BigNumber(this.amount).gte(this.minimumAmount) &&
@@ -301,7 +295,7 @@ export default {
       const coinbase = this.account.address;
       const nonce = await this.web3.eth.getTransactionCount(coinbase);
       const value = this.amount === '' ? 0 : unit.toWei(this.amount, 'ether');
-      const to = this.hexAddress;
+      const to = this.hexAddress.toLowerCase().trim();
       const protectionLevel = 20;
       const query = this.coralContract.methods.deposit(to, protectionLevel);
       const encodedABI = query.encodeABI();
@@ -343,7 +337,7 @@ export default {
           .call();
       } catch (e) {
         this.safeSendPriceEstimate = new BigNumber(0).toFixed();
-        Toast.responseHandler(e, true);
+        Toast.responseHandler(e, Toast.ERROR);
       }
     }
   }

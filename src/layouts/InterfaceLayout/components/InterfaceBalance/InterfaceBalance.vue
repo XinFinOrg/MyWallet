@@ -12,8 +12,12 @@
           <h2>{{ $t('common.balance') }}</h2>
           <div class="balance-text-container">
             <div v-show="balance !== undefined" class="balance-text">
-              <p>{{ balance }}</p>
-              <p>{{ network.type.name }}</p>
+              <p>
+                {{ balance }}
+                <span>
+                  {{ network.type.currencyName }}
+                </span>
+              </p>
             </div>
             <i v-show="balance === undefined" class="fa fa-spin fa-spinner" />
           </div>
@@ -52,14 +56,16 @@
             title
           />
         </div>
+        <!-- .icon-container -->
       </div>
+      <!-- .block-content -->
     </div>
   </div>
 </template>
 
 <script>
 import InterfaceBalanceModal from '../InterfaceBalanceModal';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 export default {
   components: {
     'interface-balance-modal': InterfaceBalanceModal
@@ -80,9 +86,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      network: 'network'
-    })
+    ...mapState(['network'])
   },
   watch: {
     balance() {

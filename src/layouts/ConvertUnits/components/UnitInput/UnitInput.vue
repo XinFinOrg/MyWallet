@@ -11,7 +11,12 @@
           />
         </div>
         <div>
-          <input v-model="valueLeft" type="number" placeholder="Amount" />
+          <input
+            v-model="valueLeft"
+            type="number"
+            step="any"
+            placeholder="Amount"
+          />
         </div>
       </div>
 
@@ -31,7 +36,12 @@
           />
         </div>
         <div>
-          <input v-model="valueRight" type="number" placeholder="Amount" />
+          <input
+            v-model="valueRight"
+            type="number"
+            placeholder="Amount"
+            step="any"
+          />
         </div>
       </div>
     </div>
@@ -40,7 +50,7 @@
 
 <script>
 import { BigNumber } from 'bignumber.js';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import DropDownUnitSelector from '../DropDownUnitSelector';
 import utils from 'web3-utils';
 
@@ -65,9 +75,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      web3: 'web3'
-    })
+    ...mapState(['web3'])
   },
   watch: {
     valueLeft(newVal) {

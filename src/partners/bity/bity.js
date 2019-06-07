@@ -156,10 +156,10 @@ export default class BitySwap {
       rate: rate,
       minValue: this.fiatCurrencies.includes(toCurrency)
         ? this.getChfEquivalentMaxMin(fromCurrency, false)
-        : this.minValue,
+        : this.getBtcEquivalentMaxMin(fromCurrency, false),
       maxValue: this.fiatCurrencies.includes(toCurrency)
         ? this.getChfEquivalentMaxMin(fromCurrency, true)
-        : this.getBtcEquivalentMax(fromCurrency)
+        : this.getBtcEquivalentMaxMin(fromCurrency, true)
     };
   }
 
@@ -184,14 +184,18 @@ export default class BitySwap {
     );
   }
 
-  getBtcEquivalentMax(currency) {
+  getBtcEquivalentMaxMin(currency, max) {
     if (currency === BASE_EQUIVALENT_CURRENCY) {
-      return this.maxValue;
+      return max ? this.maxValue : this.minValue;
     }
     const btcRate = this._getRate(currency, BASE_EQUIVALENT_CURRENCY);
-    return new BigNumber(this.maxValue)
-      .div(new BigNumber(btcRate))
-      .toFixed(6, BigNumber.ROUND_UP);
+    return max
+      ? new BigNumber(this.maxValue)
+          .div(new BigNumber(btcRate))
+          .toFixed(6, BigNumber.ROUND_UP)
+      : new BigNumber(this.minValue)
+          .div(new BigNumber(btcRate))
+          .toFixed(6, BigNumber.ROUND_UP);
   }
 
   getChfEquivalentMaxMin(cryptoCurrency, max) {
@@ -310,7 +314,6 @@ export default class BitySwap {
       swapDetails.dataForInitialization = false;
       swapDetails.isExitToFiat = true;
       return swapDetails;
-      // throw Error('Exit to Fiat not yet implemented');
     } else if (this.checkIfExit(swapDetails) && swapDetails.bypass) {
       const preOrder = await this.buildExitOrder(swapDetails);
       if (preOrder.created) {
@@ -327,9 +330,15 @@ export default class BitySwap {
           swapDetails.parsed = BitySwap.parseExitOrder(
             swapDetails.dataForInitialization
           );
+          swapDetails.timestamp = swapDetails.parsed.timestamp.replace(
+            'ZZ',
+            'Z'
+          );
+          swapDetails.providerSends = swapDetails.parsed.recValue;
           swapDetails.providerAddress =
             swapDetails.dataForInitialization.payment_address;
           swapDetails.isDex = BitySwap.isDex();
+          swapDetails.validFor = swapDetails.parsed.validFor;
         } else {
           throw Error('abort');
         }
@@ -344,9 +353,11 @@ export default class BitySwap {
       swapDetails.parsed = BitySwap.parseOrder(
         swapDetails.dataForInitialization
       );
+      swapDetails.providerSends = swapDetails.parsed.recValue;
       swapDetails.providerAddress =
         swapDetails.dataForInitialization.payment_address;
       swapDetails.isDex = BitySwap.isDex();
+      swapDetails.validFor = swapDetails.parsed.validFor;
     }
 
     return swapDetails;
@@ -450,8 +461,8 @@ export default class BitySwap {
 
   static parseOrder(order) {
     return {
-      orderId: order.id,
-      statusId: order.reference,
+      orderId: order.reference,
+      statusId: order.id,
       sendToAddress: order.payment_address,
       recValue: order.output.amount,
       sendValue: order.payment_amount,
@@ -463,8 +474,8 @@ export default class BitySwap {
 
   static parseExitOrder(order) {
     return {
-      orderId: order.id,
-      statusId: order.reference,
+      orderId: order.reference,
+      statusId: order.id,
       sendToAddress: order.payment_address,
       recValue: order.amount,
       sendValue: order.payment_amount,
@@ -483,7 +494,7 @@ export default class BitySwap {
 
   static async getOrderStatusCrypto(noticeDetails) {
     try {
-      const data = await getStatus(noticeDetails.orderId);
+      const data = await getStatus(noticeDetails.statusId);
       if (data.status === bityStatuses.EXEC) {
         return swapNotificationStatuses.COMPLETE;
       }
@@ -516,7 +527,7 @@ export default class BitySwap {
   static async getOrderStatusFiat(noticeDetails) {
     try {
       const data = await getStatusFiat(
-        noticeDetails.orderId,
+        noticeDetails.statusId,
         noticeDetails.special
       );
       if (!utils.isJson(data)) return swapNotificationStatuses.PENDING;
@@ -534,9 +545,6 @@ export default class BitySwap {
         return swapNotificationStatuses.COMPLETE;
       }
       switch (data.status) {
-        // The endPoint does not seem to be updating the order.
-        //case bityStatuses.OPEN:
-        // return 'new';
         case bityStatuses.OPEN:
         case bityStatuses.RCVE:
         case bityStatuses.CONF:

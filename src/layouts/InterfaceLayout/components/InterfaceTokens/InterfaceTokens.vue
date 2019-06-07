@@ -19,6 +19,9 @@
             <i class="fa fa-search" aria-hidden="true" />
           </div>
         </div>
+        <div v-show="!online" class="cant-load">
+          Can't load balances on offline mode
+        </div>
         <div ref="tokenTableContainer" class="token-table-container">
           <table v-show="customTokens.length > 0 && receivedTokens">
             <tr
@@ -40,9 +43,9 @@
             <tr v-for="(token, index) in localTokens" :key="token.name + index">
               <td>{{ token.name }}</td>
               <td
-                v-if="token.balance === 'Load'"
+                v-if="token.balance === 'Load' && online"
                 class="load-token"
-                @click="getSpecificTokenBalance(token, index)"
+                @click="online ? getSpecificTokenBalance(token) : () => {}"
               >
                 {{ token.balance }}
               </td>
@@ -82,19 +85,24 @@
           </p>
         </div>
       </div>
-      <!-- <div class="bottom-image-container">
-        <a href="https://mewconnect.myetherwallet.com/#/" target="_blank">
+      <div class="bottom-image-container">
+        <a
+          rel="noopener noreferrer"
+          href="https://mewconnect.myetherwallet.com/#/"
+          target="_blank"
+        >
           <img class="icon" src="~@/assets/images/etc/mewconnect.jpeg" />
         </a>
-      </div> -->
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import store from 'store';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import { Toast } from '@/helpers';
+import { toChecksumAddress } from '@/helpers/addressUtils';
 import InterfaceTokensModal from '../InterfaceTokensModal';
 import sortByBalance from '@/helpers/sortByBalance.js';
 import utils from 'web3-utils';
@@ -122,6 +130,10 @@ export default {
     fetchTokens: {
       type: Function,
       default: function() {}
+    },
+    resetTokenSelection: {
+      type: Function,
+      default: function() {}
     }
   },
   data() {
@@ -134,10 +146,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      network: 'network',
-      web3: 'web3'
-    })
+    ...mapState(['network', 'web3', 'online'])
   },
   watch: {
     receivedTokens() {
@@ -168,10 +177,11 @@ export default {
         };
         Object.keys(networkTypes).forEach(network => {
           if (
-            networkTypes[network].name.toLowerCase() ===
+            token.network &&
+            (networkTypes[network].name.toLowerCase() ===
               token.network.toLowerCase() ||
-            networkTypes[network].name_long.toLowerCase() ===
-              token.network.toLowerCase()
+              networkTypes[network].name_long.toLowerCase() ===
+                token.network.toLowerCase())
           ) {
             if (this.tokenError(newObj.address, newObj.symbol, '')) {
               v5CustomTokens[networkTypes[network].name].push(newObj);
@@ -190,9 +200,17 @@ export default {
         store.get('customTokens')[this.network.type.name] || [];
       this.customTokens = storedTokens;
     },
-    async getSpecificTokenBalance(token, idx) {
-      this.tokens[idx].balance = await this.getTokenBalance(token);
+    async getSpecificTokenBalance(token) {
+      for (let i = 0; i < this.tokens.length; i++) {
+        if (
+          toChecksumAddress(this.tokens[i].address) ===
+          toChecksumAddress(token.address)
+        ) {
+          this.tokens[i].balance = await this.getTokenBalance(token);
+        }
+      }
       this.tokens.sort(sortByBalance);
+      this.resetTokenSelection();
     },
     addTokenModal() {
       this.$refs.tokenModal.$refs.token.show();
@@ -272,19 +290,19 @@ export default {
         const currentCustomToken = store.get('customTokens');
         this.customTokens =
           this.customTokens.length > 0 ? this.customTokens : [];
-        token['balance'] = await this.getTokenBalance(token);
-        if (token['balance'] === undefined) {
-          Toast.responseHandler(
-            new Error('Token Balance Returned Undefined'),
-            Toast.ERROR
-          );
-        }
+        // token['balance'] = await this.getTokenBalance(token);
+        // if (token['balance'] === undefined) {
+        //   Toast.responseHandler(
+        //     new Error('Token Balance Returned Undefined'),
+        //     Toast.ERROR
+        //   );
+        // }
         this.customTokens.push(token);
         currentCustomToken[this.network.type.name] = this.customTokens;
         store.set('customTokens', currentCustomToken);
         this.$refs.tokenModal.$refs.token.hide();
+        await this.fetchTokens();
         Toast.responseHandler('Successfully added token!', Toast.SUCCESS);
-        this.fetchTokens();
       }
     },
     tokenListExpend() {

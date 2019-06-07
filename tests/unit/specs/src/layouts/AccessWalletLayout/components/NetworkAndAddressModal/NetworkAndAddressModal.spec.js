@@ -1,10 +1,8 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
 import { shallowMount } from '@vue/test-utils';
 import NetworkAndAddressModal from '@/layouts/AccessWalletLayout/components/NetworkAndAddressModal/NetworkAndAddressModal.vue';
 import sinon from 'sinon';
 import { Tooling } from '@@/helpers';
-import { state, getters } from '@@/helpers/mockStore';
 
 const showModal = sinon.stub();
 const hideModal = sinon.stub();
@@ -32,17 +30,6 @@ describe('NetworkAndAddressModal.vue', () => {
     i18n = baseSetup.i18n;
     store = baseSetup.store;
 
-    const actions = {
-      decryptWallet: jest.fn()
-    };
-
-    store = new Vuex.Store({
-      actions,
-      getters,
-      state
-    });
-
-    Vue.config.errorHandler = () => {};
     Vue.config.warnHandler = () => {};
   });
 
@@ -69,7 +56,7 @@ describe('NetworkAndAddressModal.vue', () => {
       expect(wrapper.vm.$data.accessMyWalletBtnDisabled).toBe(false);
     });
 
-    xit('should render correct unlockWallet method', () => {
+    it('should render correct unlockWallet method', () => {
       wrapper.vm.unlockWallet();
       expect(spy.calledWith({ path: 'interface' })).toBe(true);
     });

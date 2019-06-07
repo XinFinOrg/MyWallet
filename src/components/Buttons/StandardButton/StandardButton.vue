@@ -19,7 +19,19 @@
     </div>
     <div :class="buttonClass">
       <button
-        :disabled="buttonDisabled"
+        v-show="spinner"
+        :disabled="diableButton"
+        :class="[
+          options.isThisMobileBottomButton ? 'mobile-bottom-button' : '',
+          options.noMinWidth ? 'no-min-width' : ''
+        ]"
+        class="the-button-box"
+      >
+        <i class="fa fa-spin fa-spinner fa-lg" />
+      </button>
+      <button
+        v-show="!spinner"
+        :disabled="diableButton"
         :class="[
           options.isThisMobileBottomButton ? 'mobile-bottom-button' : '',
           options.noMinWidth ? 'no-min-width' : ''
@@ -27,6 +39,7 @@
         class="the-button-box"
       >
         {{ options.title }}
+        <i v-show="spinner" class="fa fa-spin fa-spinner fa-lg" />
         <img
           v-if="options.loadingIcon"
           class="loading-left"
@@ -64,7 +77,12 @@
     <div v-if="options.helpCenter" class="help-center-block">
       <p>
         Having issues?
-        <a href="https://xinfin.network/" target="_blank">Help Center</a>
+        <a
+          href="https://kb.myetherwallet.com/"
+          rel="noopener noreferrer"
+          target="_blank"
+          >Help Center</a
+        >
       </p>
     </div>
   </div>
@@ -85,15 +103,29 @@ export default {
       default: function() {
         return {};
       }
+    },
+    buttonDisabled: {
+      type: Boolean,
+      default: false
+    },
+    spinner: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
     return {
       onBottomOfPage: false,
-      buttonDisabled: this.options.acceptTermsCheckBox
+      termsAccepted: this.options.acceptTermsCheckBox
     };
   },
   computed: {
+    diableButton() {
+      if (this.options.terms !== undefined && this.options.terms) {
+        return this.termsAccepted;
+      }
+      return this.buttonDisabled;
+    },
     buttonClass() {
       switch (this.options.buttonStyle) {
         case 'white':
@@ -130,7 +162,7 @@ export default {
   },
   methods: {
     updateCheckbox(event) {
-      this.buttonDisabled = !event;
+      this.termsAccepted = !event;
     },
     onPageScroll() {
       if (

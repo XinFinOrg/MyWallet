@@ -16,7 +16,7 @@
             <a
               rel="noopener noreferrer"
               target="_blank"
-              href="https://xinfin.network"
+              href="https://kb.myetherwallet.com"
             >
               {{ $t('gettingStarted.congratulationsLink') }}
             </a>

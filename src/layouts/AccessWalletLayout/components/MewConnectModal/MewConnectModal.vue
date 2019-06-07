@@ -7,6 +7,7 @@
     centered
   >
     <div class="modal-container">
+      <ipad-modal ref="ipadModal" />
       <div class="modal-icon">
         <qrcode :value="QrCode" :options="{ size: 200 }" />
       </div>
@@ -16,20 +17,26 @@
         </h3>
       </div>
       <div class="appstore-button-container">
-        <a
-          href="https://itunes.apple.com/us/app/mewconnect/id1391097156?mt=8"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="~@/assets/images/icons/appstore.svg" height="35" />
-        </a>
-        <a
-          href="http://play.google.com/store/apps/details?id=com.myetherwallet.mewconnect"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="~@/assets/images/icons/google-play.svg" height="35" />
-        </a>
+        <div class="links-container">
+          <a
+            v-if="canDownloadApple"
+            href="https://itunes.apple.com/us/app/mewconnect/id1391097156?mt=8"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img src="~@/assets/images/icons/appstore.svg" height="35" />
+          </a>
+          <div v-else @click="openIpadModal">
+            <img src="~@/assets/images/icons/appstore.svg" height="35" />
+          </div>
+          <a
+            href="http://play.google.com/store/apps/details?id=com.myetherwallet.mewconnect"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img src="~@/assets/images/icons/google-play.svg" height="35" />
+          </a>
+        </div>
         <p class="download-now">{{ $t('accessWallet.mewConnectDesc2') }}</p>
       </div>
       <customer-support />
@@ -41,25 +48,30 @@
 <script>
 import CustomerSupport from '@/components/CustomerSupport';
 import { MewConnectWallet } from '@/wallets';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import { Toast } from '@/helpers';
+import platform from 'platform';
+import IpadModal from '@/components/IpadModal';
 
 export default {
   components: {
-    'customer-support': CustomerSupport
+    'customer-support': CustomerSupport,
+    'ipad-modal': IpadModal
   },
   data() {
     return {
-      QrCode: ''
+      QrCode: '',
+      canDownloadApple: true
     };
   },
   computed: {
-    ...mapGetters({
-      path: 'path',
-      web3: 'web3'
-    })
+    ...mapState(['path', 'web3'])
   },
   mounted() {
+    this.canDownloadApple =
+      platform.product !== null
+        ? platform.product.toLowerCase() !== 'ipad'
+        : true;
     this.$refs.mewConnect.$on('show', () => {
       new MewConnectWallet(this.codeDisplay)
         .then(wallet => {
@@ -81,6 +93,9 @@ export default {
   methods: {
     codeDisplay(qrCode) {
       this.QrCode = qrCode;
+    },
+    openIpadModal() {
+      this.$refs.ipadModal.$refs.ipadModal.show();
     }
   }
 };

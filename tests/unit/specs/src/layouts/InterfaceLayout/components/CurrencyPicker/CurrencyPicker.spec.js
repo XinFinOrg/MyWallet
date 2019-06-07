@@ -1,8 +1,6 @@
-import Vuex from 'vuex';
 import { shallowMount } from '@vue/test-utils';
 import CurrencyPicker from '@/layouts/InterfaceLayout/components/CurrencyPicker/CurrencyPicker.vue';
 import { Tooling } from '@@/helpers';
-import { state, getters } from '@@/helpers/mockStore';
 
 const currency = [
   { symbol: 'BTC', name: 'Bitcoin' },
@@ -17,11 +15,6 @@ describe('CurrencyPicker.vue', () => {
     localVue = baseSetup.localVue;
     i18n = baseSetup.i18n;
     store = baseSetup.store;
-
-    store = new Vuex.Store({
-      getters,
-      state
-    });
   });
 
   beforeEach(() => {
@@ -33,13 +26,14 @@ describe('CurrencyPicker.vue', () => {
     });
   });
 
-  xit('should render correct localCurrency data', () => {
+  it('should render correct localCurrency data', () => {
     const currencyElements = wrapper.vm.$el.querySelectorAll(
       '.item-container div'
     );
+
     for (let i = 0; i < currencyElements.length; i++) {
       const currencyElement = currencyElements[i];
-      const localCurrency = wrapper.vm.$data.localCurrency[i];
+      const localCurrency = wrapper.vm.localCurrency[i];
       expect(
         currencyElement.querySelectorAll('p')[0].textContent.trim()
       ).toEqual(localCurrency.symbol + ' - ' + localCurrency.name);
@@ -49,7 +43,7 @@ describe('CurrencyPicker.vue', () => {
     }
   });
 
-  xit('should render correct selectedCurrency data', () => {
+  it('should render correct selectedCurrency data', () => {
     expect(
       wrapper.vm.$el
         .querySelectorAll('.dropdown-container p')[0]
@@ -105,14 +99,14 @@ describe('CurrencyPicker.vue', () => {
     ).toEqual(search);
   });
 
-  xit('should render correct currency props', () => {
+  it('should render correct currency props', () => {
     wrapper.setProps({ currency });
     const currencyElements = wrapper.vm.$el.querySelectorAll(
       '.item-container div'
     );
     for (let i = 0; i < currencyElements.length; i++) {
       const currencyElement = currencyElements[i];
-      const localCurrency = wrapper.vm.$data.localCurrency[i];
+      const localCurrency = wrapper.vm.localCurrency[i];
       expect(
         currencyElement.querySelectorAll('p')[0].textContent.trim()
       ).toEqual(localCurrency.symbol + ' - ' + localCurrency.name);
@@ -122,32 +116,30 @@ describe('CurrencyPicker.vue', () => {
     }
   });
 
-  xit('should render correct search method', () => {
+  it('should render correct search method', () => {
     const search = 'Bit';
     wrapper.setProps({ currency });
     const inputElement = wrapper.find('.dropdown-search-container input');
     inputElement.setValue(search);
     inputElement.trigger('change');
 
-    expect(wrapper.vm.$data.localCurrency[0].name).toEqual(currency[0].name);
-    expect(wrapper.vm.$data.localCurrency[0].symbol).toEqual(
-      currency[0].symbol
-    );
+    expect(wrapper.vm.localCurrency[0].name).toEqual(currency[0].name);
+    expect(wrapper.vm.localCurrency[0].symbol).toEqual(currency[0].symbol);
   });
 
   describe('CurrencyPicker.vue Methods', () => {
     it('should change open data when open dropdown method is called', () => {
       wrapper.find('.dropdown-container').trigger('click');
-      expect(wrapper.vm.$data.open).toBe(true);
+      expect(wrapper.vm.$data['open']).toBe(true);
       wrapper.find('.dropdown-container').trigger('click');
-      expect(wrapper.vm.$data.open).toBe(false);
+      expect(wrapper.vm.$data['open']).toBe(false);
     });
 
-    xit('should render correct localCurrency data', () => {
+    it('should render correct localCurrency data', () => {
       const currencyElements = wrapper.findAll('.item-container div');
       for (let i = 0; i < currencyElements.length; i++) {
         const currencyElement = currencyElements.at(i);
-        const localCurrency = wrapper.vm.$data.localCurrency[i];
+        const localCurrency = wrapper.vm.localCurrency[i];
         currencyElement.trigger('click');
         expect(localCurrency.name).toEqual(
           wrapper.vm.$data.selectedCurrency.name

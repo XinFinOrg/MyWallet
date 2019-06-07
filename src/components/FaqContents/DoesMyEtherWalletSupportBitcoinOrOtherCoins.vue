@@ -1,12 +1,12 @@
 <template>
   <div>
     <h5>
-      "Can I send Bitcoin or other coins (LTC STEEM ZEC) toXinFin Wallet.?"*
+      "Can I send Bitcoin or other coins (LTC STEEM ZEC) to MyEtherWallet?"*
     </h5>
     <p>
       We support <abbr>ETH</abbr>, <abbr>ETC</abbr>, <abbr>Testnet ETH</abbr>,
       <abbr>UBQ</abbr>, <abbr>EXP</abbr>, <abbr>RSK</abbr>,
-      <abbr>MUSICOIN</abbr>, and any XinFin Standard Tokens - aka "ERC-20"
+      <abbr>MUSICOIN</abbr>, and any Ethereum Standard Tokens - aka "ERC-20"
       Tokens.
     </p>
 
@@ -20,8 +20,8 @@
         >Shapeshift.io</a
       >
       or another exchange to swap / convert / exchange your other coins into ETH
-      or XinFin Tokens. However, you do not send those other coins directly to
-      your XinFin address.
+      or Ethereum Tokens. However, you do not send those other coins directly to
+      your Ethereum address.
     </p>
 
     <p>
@@ -36,7 +36,7 @@
       Here is a list of default ERC-20 tokens that MEW supports (as of May 28,
       2017). However,
       <a
-        href="https://xinfin.network/send/sending-and-adding-tokens.html"
+        href="https://kb.myetherwallet.com/send/sending-and-adding-tokens.html"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -49,7 +49,7 @@
     <ul>
       <li>
         <a
-          href="https://xinfin.network/send/adding-new-token-and-sending-custom-tokens.html"
+          href="https://kb.myetherwallet.com/send/adding-new-token-and-sending-custom-tokens.html"
           target="_blank"
           rel="noopener noreferrer"
           >How can I add a non-default token to MEW?</a
@@ -57,7 +57,7 @@
       </li>
       <li>
         <a
-          href="https://xinfin.network/tokens/token-creators-add-your-token-to-myetherwallet.html"
+          href="https://kb.myetherwallet.com/tokens/token-creators-add-your-token-to-myetherwallet.html"
           target="_blank"
           rel="noopener noreferrer"
         >

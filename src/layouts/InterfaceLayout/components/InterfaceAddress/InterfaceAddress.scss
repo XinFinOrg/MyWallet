@@ -8,6 +8,7 @@
   opacity: 0;
   position: absolute;
   z-index: 1;
+  pointer-events: none;
 }
 
 .blockie-image {
@@ -17,4 +18,11 @@
   height: $blockie-size;
   width: $blockie-size;
   margin-right: 10px;
+}
+
+.info-block .button-address {
+  margin-left: 4px;
+  img {
+    height: 22px;
+  }
 }

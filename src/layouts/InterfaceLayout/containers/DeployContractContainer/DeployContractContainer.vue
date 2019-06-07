@@ -128,11 +128,16 @@
       >
         <div class="title-container">
           <div class="title">
-            <h4>Value in XDC:</h4>
+            <h4>Value in ETH:</h4>
           </div>
         </div>
         <div class="the-form contract-name">
-          <input ref="value" v-model="value" placeholder="Value in XDC" />
+          <input
+            ref="value"
+            v-model="value"
+            step="any"
+            placeholder="Value in ETH"
+          />
         </div>
       </div>
       <div class="send-form">
@@ -165,7 +170,7 @@
         <interface-bottom-text
           :link-text="$t('interface.helpCenter')"
           :question="$t('interface.haveIssues')"
-          link="https://xinfin.network"
+          link="https://kb.myetherwallet.com"
         />
       </div>
     </div>
@@ -176,13 +181,12 @@
 import InterfaceBottomText from '@/components/InterfaceBottomText';
 import InterfaceContainerTitle from '../../components/InterfaceContainerTitle';
 import { Misc, Toast } from '@/helpers';
-import { isAddress } from '@/helpers/addressUtils';
 import ethUnit from 'ethjs-unit';
 import EthTx from 'ethereumjs-tx';
 import BigNumber from 'bignumber.js';
 import store from 'store';
 import { generateAddress, bufferToHex } from 'ethereumjs-util';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 
 export default {
   name: 'DeployContract',
@@ -202,11 +206,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      gasPrice: 'gasPrice',
-      web3: 'web3',
-      network: 'network'
-    }),
+    ...mapState(['gasPrice', 'web3', 'network']),
     isValidAbi() {
       return Misc.isJson(this.abi);
     },
@@ -245,7 +245,15 @@ export default {
       const _deployArgs = [];
       if (this.abiConstructor) {
         this.abiConstructor.inputs.forEach(item => {
-          _deployArgs.push(this.inputs[item.name]);
+          if (item.type.includes('[') && item.type.includes(']')) {
+            const inputs = this.inputs.hasOwnProperty(item.name)
+              ? this.inputs[item.name].replace(/\s/g, '')
+              : '';
+            const arr = inputs.split(',');
+            _deployArgs.push(arr);
+          } else {
+            _deployArgs.push(this.inputs[item.name]);
+          }
         });
       }
       return _deployArgs;
@@ -258,10 +266,10 @@ export default {
     allValid() {
       let _allvalid = true;
       if (this.abiConstructor) {
-        this.abiConstructor.inputs.forEach(item => {
+        this.abiConstructor.inputs.forEach((item, idx) => {
           if (
             !this.isValidInput(
-              this.inputs[item.name],
+              this.deployArgs[idx],
               this.getType(item.type).solidityType
             )
           )
@@ -272,20 +280,11 @@ export default {
     }
   },
   methods: {
-    isValidInput(value, solidityType) {
-      if (!value) value = '';
-      if (solidityType === 'uint') return value != '' && !isNaN(value);
-      if (solidityType === 'address') return isAddress(value);
-      if (solidityType === 'string') return true;
-      if (solidityType === 'bytes')
-        return value.substr(0, 2) == '0x' && Misc.validateHexString(value);
-      if (solidityType === 'bool')
-        return typeof value == typeof true || value === '';
-      return false;
-    },
+    isValidInput: Misc.isContractArgValid,
     getType: Misc.solidityType,
     async sendTransaction() {
       try {
+        await this.estimateGas();
         const web3 = this.web3;
         const coinbase = await web3.eth.getCoinbase();
         const nonce = await web3.eth.getTransactionCount(coinbase);
@@ -294,16 +293,16 @@ export default {
           gasPrice: Misc.sanitizeHex(
             ethUnit.toWei(this.gasPrice, 'gwei').toString(16)
           ),
-          gasLimit: Misc.sanitizeHex(new BigNumber(4700000).toString(16)),
+          gasLimit: Misc.sanitizeHex(new BigNumber(this.gasLimit).toString(16)),
           data: this.txData
         });
         const json = _tx.toJSON(true);
         delete json.to;
         json.from = coinbase;
-        // console.log(coinbase,"JSON is", json);
-        this.web3.eth.sendTransaction(json);
+        this.web3.eth.sendTransaction(json).catch(err => {
+          Toast.responseHandler(err, Toast.WARN);
+        });
         const contractAddr = bufferToHex(generateAddress(coinbase, nonce));
-        // console.log("Contract address", contractAddr);
         this.pushContractToStore(contractAddr);
       } catch (e) {
         Toast.responseHandler(e, false);

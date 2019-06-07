@@ -9,7 +9,7 @@
             <p>{{ $t('home.subheading') }}</p>
           </div>
           <div class="banner-image">
-            <img src="~@/assets/images/home/XinFin_network.gif" />
+            <img src="~@/assets/images/home/big-spaceman.png" />
           </div>
         </div>
         <div class="grid-col-2 promo-cards">
@@ -63,15 +63,13 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 export default {
   data() {
     return {};
   },
   computed: {
-    ...mapGetters({
-      wallet: 'wallet'
-    })
+    ...mapState(['wallet'])
   }
 };
 </script>

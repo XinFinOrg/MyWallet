@@ -49,27 +49,27 @@ export default {
         */
         {
           img: facebook,
-          to: 'https://www.facebook.com/XinFinHybridBlockchain/',
+          to: 'https://www.facebook.com/MyEtherWallet',
           name: 'Facebook'
         },
         {
           img: twitter,
-          to: 'https://twitter.com/XinFin_Official',
+          to: 'https://twitter.com/myetherwallet',
           name: 'Twitter'
         },
         {
           img: medium,
-          to: 'https://medium.com/xinfin',
+          to: 'https://medium.com/@myetherwallet',
           name: 'Medium'
         },
         {
           img: reddit,
-          to: 'https://www.reddit.com/r/xinfin/',
+          to: 'https://www.reddit.com/r/myetherwallet',
           name: 'reddit'
         },
         {
           img: github,
-          to: 'https://github.com/XinFinorg',
+          to: 'https://www.github.com/myetherwallet',
           name: 'github'
         }
       ]

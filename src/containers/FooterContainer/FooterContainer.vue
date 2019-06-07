@@ -5,13 +5,89 @@
     <div class="wrap">
       <div class="page-container">
         <div class="grid-col-1-1-1-2 footer-contents">
-          <!-- <div 
+          <div
             v-for="(item, index) in footerContent"
             :ref="item.class"
             :class="item.class"
             :key="item.title + index"
           >
-          </div> -->
+            <div class="content-title" @click="toggler(item.class)">
+              <h3 class="lite">{{ item.title }}</h3>
+              <p class="open" @click="openContent(item.class)">
+                <i class="fa fa-plus" aria-hidden="true" />
+              </p>
+              <p class="close" @click="closeContent(item.class)">
+                <i class="fa fa-minus" aria-hidden="true" />
+              </p>
+            </div>
+            <div class="content-links">
+              <div class="content-links-animation-block">
+                <div
+                  v-for="(content, index) in item.contents"
+                  :key="content.text + index"
+                  class="content"
+                >
+                  <div v-if="content.text === $t('common.customerSupport')">
+                    <customer-support :no-icon="true" />
+                  </div>
+                  <router-link
+                    v-else-if="content.to !== undefined"
+                    :to="content.to"
+                  >
+                    <p>{{ content.text }}</p>
+                  </router-link>
+                  <a
+                    v-else-if="content.to === undefined"
+                    :href="content.href"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <p v-if="item.class === 'e2'">
+                      {{ $t(`${content.text}`) }}
+                    </p>
+                    <p v-else>{{ content.text }}</p>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="donate-us">
+            <div class="content-title">
+              <h3 class="lite">
+                {{ $t('footer.love') }}
+                <img src="~@/assets/images/icons/heart.svg" />
+                {{ $t('footer.donate') }}
+              </h3>
+            </div>
+            <div class="links">
+              <p>{{ $t('footer.welcomeDes') }}</p>
+
+              <a
+                :href="'https://etherscan.io/address/' + ethDonationAddress"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <p :data-eth="ethDonationAddress" class="crypto-link">
+                  <img src="~@/assets/images/icons/eth.svg" /> &nbsp;Ethereum
+                  Donation
+                </p>
+              </a>
+
+              <a
+                href="https://blockchain.info/address/1DECAF2uSpFTP4L1fAHR8GCLrPqdwdLse9"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <p
+                  class="crypto-link no-padding"
+                  data-btc="1DECAF2uSpFTP4L1fAHR8GCLrPqdwdLse9"
+                >
+                  <img src="~@/assets/images/icons/btc.svg" /> &nbsp;Bitcoin
+                  Donation
+                </p>
+              </a>
+            </div>
+          </div>
         </div>
         <div class="flex-space-between foot-note">
           <div class="links">
@@ -60,13 +136,16 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import FeedbackModal from '@/components/FeedbackModal';
+import CustomerSupport from '@/components/CustomerSupport';
+import affiliates from './affiliates.js';
 const version = VERSION;
 
 export default {
   components: {
-    'feedback-modal': FeedbackModal
+    'feedback-modal': FeedbackModal,
+    'customer-support': CustomerSupport
   },
   data() {
     return {
@@ -74,7 +153,7 @@ export default {
       lowerLinks: [
         {
           title: this.$t('footer.feedback'),
-          href: 'mailto:support@xinfin.network'
+          href: 'mailto:support@myetherwallet.com'
         },
         {
           title: this.$t('footer.privacy'),
@@ -86,7 +165,7 @@ export default {
         },
         {
           title: `v${version}`,
-          href: `https://github.com/xinfinorg/Wallet/releases/tag/v${version}`
+          href: `https://github.com/MyEtherWallet/MyEtherWallet/releases/tag/v${version}`
         }
       ],
       footerContent: [
@@ -108,42 +187,23 @@ export default {
                 'https://chrome.google.com/webstore/detail/myetherwallet/nlbmnnijcnlegkjjpcfjclmcfggfefdm?hl=en'
             },
             {
+              text: 'Buy a Hardware wallet',
+              to: '/hardware-wallet-affiliates'
+            },
+            {
               text: this.$t('footer.sendOffline'),
               to: '/send-offline-helper'
+            },
+            {
+              text: this.$t('footer.verifyMessage'),
+              to: '/verify-message'
             }
           ]
         },
         {
           class: 'e2',
           title: this.$t('footer.affiliates'),
-          contents: [
-            {
-              text: this.$t('footer.ledger'),
-              href:
-                'https://www.ledgerwallet.com/products/?utm_source=&utm_medium=affiliate&utm_campaign=fa4b&utm_content='
-            },
-            {
-              text: this.$t('footer.digital'),
-              href: 'https://digitalbitbox.com/?ref=mew'
-            },
-            {
-              text: this.$t('footer.ethCard'),
-              href:
-                'https://ether.cards/?utm_source=mew&utm_medium=cpm&utm_campaign=site'
-            },
-            {
-              text: 'KeepKey',
-              href: 'http://keepkey.go2cloud.org/aff_c?offer_id=1&aff_id=5561'
-            },
-            {
-              text: this.$t('footer.trezor'),
-              href: 'https://trezor.io/?a=myetherwallet.com'
-            },
-            {
-              text: this.$t('footer.bity'),
-              href: 'https://bity.com/af/jshkb37v'
-            }
-          ]
+          contents: affiliates
         },
         {
           class: 'e3',
@@ -167,51 +227,49 @@ export default {
             },
             {
               text: this.$t('common.customerSupport'),
-              href: 'mailto:support@xinfin.network'
+              href: 'mailto:support@myetherwallet.com'
             },
             {
               text: 'Help Center',
-              href: 'https://xinfin.network'
+              href: 'https://kb.myetherwallet.com'
             }
           ]
         }
       ],
       links: [
         {
-          to: 'https://www.facebook.com/XinFinHybridBlockchain/',
+          to: 'https://www.facebook.com/myetherwallet',
           class: 'fa-facebook'
         },
         {
-          to: 'https://twitter.com/XinFin_Official',
+          to: 'https://www.twitter.com/@myetherwallet',
           class: 'fa-twitter'
         },
         {
-          to: 'https://www.instagram.com/xinfin_hybridblockchain',
+          to: 'https://www.instagram.com/myetherwallet',
           class: 'fa-instagram'
         },
         {
-          to: 'https://www.linkedin.com/company/xinfin/',
+          to: 'https://www.linkedin.com/company/myetherwallet',
           class: 'fa-linkedin'
         },
         {
-          to: 'https://www.github.com/XinFinOrg',
+          to: 'https://www.github.com/myetherwallet',
           class: 'fa-github'
         },
         {
-          to: 'https://www.reddit.com/r/xinfin/',
+          to: 'https://www.reddit.com/r/myetherwallet',
           class: 'fa-reddit-alien'
         },
         {
-          to: 'https://medium.com/xinfin',
+          to: 'https://www.medium.com/@myetherwallet',
           class: 'fa-medium'
         }
       ]
     };
   },
   computed: {
-    ...mapGetters({
-      ethDonationAddress: 'ethDonationAddress'
-    })
+    ...mapState(['ethDonationAddress'])
   },
   methods: {
     openFeedbackModal() {

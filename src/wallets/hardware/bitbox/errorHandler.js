@@ -1,16 +1,39 @@
 import { Toast } from '@/helpers';
+import Vue from 'vue';
 const ERRORS = {
-  SIGN_FAILED: 'Sign failed'
+  'Sign failed': 'bitboxError.signFailed',
+  'The BitBox received unexpected data.': 'bitboxError.invalidPassword',
+  'Aborted by user.': 'bitboxError.userAbortedAction'
 };
 const WARNING = {};
 
 export default err => {
-  const errorValues = Object.values(ERRORS);
-  const warningValues = Object.values(WARNING);
-  if (errorValues.includes(err.message)) {
-    Toast.responseHandler(err, Toast.ERROR);
-  } else if (warningValues.includes(err.message)) {
-    Toast.responseHandler(err, Toast.WARN);
+  const parsedErr = err.message
+    ? err.message.replace(/\D/g, '')
+    : err.replace(/\D/g, '');
+  const attempts = parsedErr.length > 0 ? parsedErr : '';
+  const errorValues = Object.keys(ERRORS);
+  const warningValues = Object.keys(WARNING);
+  const foundError = errorValues.find(item => {
+    if (err) return item;
+    return item.includes(err.message) || item.includes(err);
+  });
+
+  const foundWarning = warningValues.find(item => {
+    if (err) return item;
+    return item.includes(err.message) || item.includes(err);
+  });
+
+  if (foundError) {
+    Toast.responseHandler(
+      `${Vue.$i18n.t(ERRORS[foundError])}${attempts}`,
+      Toast.ERROR
+    );
+  } else if (foundWarning) {
+    Toast.responseHandler(
+      `${Vue.$i18n.t(WARNING[foundWarning])}${attempts}`,
+      Toast.WARN
+    );
   } else {
     Toast.responseHandler(err, false);
   }

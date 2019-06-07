@@ -3,8 +3,13 @@
     <!-- Modals ******************************************************** -->
     <!-- Modals ******************************************************** -->
     <!-- Modals ******************************************************** -->
-    <wallet-password-modal/>
-    <enter-pin-number-modal/>
+    <wallet-password-modal />
+    <enter-pin-number-modal />
+    <ledger-app-modal
+      ref="ledgerAppModal"
+      :networks="Networks"
+      @hardwareWalletOpen="toggleNetworkAddrModal"
+    />
     <mnemonic-modal
       ref="mnemonicPhraseModal"
       :mnemonic-phrase-password-modal-open="mnemonicphrasePasswordModalOpen"
@@ -15,23 +20,31 @@
       :hardware-wallet-open="toggleNetworkAddrModal"
       :phrase="phrase"
     />
-    <network-and-address-modal ref="networkAddress" :hardware-wallet="hwInstance"/>
+    <network-and-address-modal
+      ref="networkAddress"
+      :hardware-wallet="hwInstance"
+    />
     <hardware-password-modal
       ref="hardwareModal"
       :wallet-constructor="walletConstructor"
       :hardware-brand="hardwareBrand"
       @hardwareWalletOpen="toggleNetworkAddrModal"
     />
-    <print-modal ref="printModal" :priv-key="!wallet.isPubOnly" :address="account.address"/>
-    <address-qrcode-modal
-      ref="addressQrcodeModal"
-      :address="  'xdc' + account.address.substring(2)"
+    <print-modal
+      ref="printModal"
+      :priv-key="!wallet.isPubOnly"
+      :address="account.address"
     />
+    <address-qrcode-modal ref="addressQrcodeModal" :address="account.address" />
     <!-- Modals ******************************************************** -->
     <!-- Modals ******************************************************** -->
     <!-- Modals ******************************************************** -->
     <div class="mobile-interface-address-block">
-      <mobile-interface-address :address="address" :print="print" :switch-addr="switchAddress"/>
+      <mobile-interface-address
+        :address="address"
+        :print="print"
+        :switch-addr="switchAddress"
+      />
     </div>
 
     <div class="wrap">
@@ -42,7 +55,7 @@
           @click="toggleSideMenu;"
         />
         <div :class="isSidemenuOpen && 'side-nav-open'" class="side-nav">
-          <interface-side-menu/>
+          <interface-side-menu />
         </div>
       </div>
       <div class="contents">
@@ -52,27 +65,30 @@
               :address="address"
               :print="print"
               :switch-addr="switchAddress"
+              :display-addr="wallet.displayAddress"
               :qrcode="openAddressQrcode"
             />
           </div>
           <div class="content-container mobile-hide">
-            <interface-balance :balance="balance" :get-balance="getBalance"/>
+            <interface-balance :balance="balance" :get-balance="getBalance" />
           </div>
           <div class="content-container mobile-hide">
-            <interface-network :block-number="blockNumber"/>
+            <interface-network :block-number="blockNumber" />
           </div>
           <router-view
             :tokens-with-balance="tokensWithBalance"
             :get-balance="getBalance"
             :tokens="tokens"
             :highest-gas="highestGas"
+            :nonce="nonce"
           />
-          <div v-if="online" class="tokens">
+          <div class="tokens">
             <interface-tokens
               :fetch-tokens="setTokens"
               :get-token-balance="getTokenBalance"
               :tokens="tokens"
               :received-tokens="receivedTokens"
+              :reset-token-selection="setTokensWithBalance"
             />
           </div>
         </div>
@@ -82,7 +98,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import ENS from 'ethereum-ens';
 import WalletPasswordModal from '@/components/WalletPasswordModal';
 import EnterPinNumberModal from '@/components/EnterPinNumberModal';
@@ -90,6 +106,7 @@ import NetworkAndAddressModal from '@/layouts/AccessWalletLayout/components/Netw
 import HardwarePasswordModal from '@/layouts/AccessWalletLayout/components/HardwarePasswordModal';
 import MnemonicPasswordModal from '@/layouts/AccessWalletLayout/components/MnemonicPasswordModal';
 import MnemonicModal from '@/layouts/AccessWalletLayout/components/MnemonicModal';
+import LedgerAppModal from '@/layouts/AccessWalletLayout/components/LedgerAppModal';
 import InterfaceAddress from './components/InterfaceAddress';
 import InterfaceBalance from './components/InterfaceBalance';
 import InterfaceNetwork from './components/InterfaceNetwork';
@@ -124,6 +141,7 @@ import {
   MNEMONIC as MNEMONIC_TYPE
 } from '@/wallets/bip44/walletTypes';
 export default {
+  name: 'Interface',
   components: {
     'interface-side-menu': InterfaceSideMenu,
     'interface-address': InterfaceAddress,
@@ -138,7 +156,8 @@ export default {
     'mnemonic-password-modal': MnemonicPasswordModal,
     'enter-pin-number-modal': EnterPinNumberModal,
     'mobile-interface-address': MobileInterfaceAddress,
-    'address-qrcode-modal': AddressQrcodeModal
+    'address-qrcode-modal': AddressQrcodeModal,
+    'ledger-app-modal': LedgerAppModal
   },
   data() {
     return {
@@ -147,10 +166,10 @@ export default {
       tokens: [],
       receivedTokens: false,
       tokensWithBalance: [],
-      pollNetwork: () => {},
       pollBlock: () => {},
-      pollAddress: () => {},
-      highestGas: 0,
+      pollNetwork: () => {},
+      pollddress: () => {},
+      highestGas: '0',
       alert: {
         show: false,
         msg: ''
@@ -164,7 +183,8 @@ export default {
       hwInstance: {},
       walletConstructor: () => {},
       hardwareBrand: '',
-      phrase: ''
+      phrase: '',
+      nonce: '0'
     };
   },
   computed: {
@@ -176,22 +196,22 @@ export default {
         return toChecksumAddress(this.account.address);
       }
     },
-    ...mapGetters({
-      network: 'network',
-      account: 'account',
-      online: 'online',
-      web3: 'web3',
-      Networks: 'Networks',
-      sidemenuOpen: 'sidemenuOpen',
-      wallet: 'wallet'
-    })
+    ...mapState([
+      'network',
+      'account',
+      'online',
+      'web3',
+      'Networks',
+      'sidemenuOpen',
+      'wallet'
+    ])
   },
   watch: {
     web3() {
       this.setupOnlineEnvironment();
     },
-    address() {
-      this.setupOnlineEnvironment();
+    address(val) {
+      if (val) this.setupOnlineEnvironment();
     }
   },
   mounted() {
@@ -220,15 +240,13 @@ export default {
       this.hardwareBrand = brand;
       this.$refs.hardwareModal.$refs.password.show();
     },
-
+    ledgerAppModalOpen() {
+      this.$refs.ledgerAppModal.$refs.ledgerApp.show();
+    },
     switchAddress() {
       switch (this.account.identifier) {
         case LEDGER_TYPE:
-          LedgerWallet()
-            .then(_newWallet => {
-              this.toggleNetworkAddrModal(_newWallet);
-            })
-            .catch(LedgerWallet.errorHandler);
+          this.ledgerAppModalOpen();
           break;
         case TREZOR_TYPE:
           TrezorWallet()
@@ -299,45 +317,52 @@ export default {
         nonce: '0x00',
         timestamp: 0
       });
-      await this.web3.eth.getTransactionCount(this.account.address);
+      const fetchedNonce = await this.web3.eth
+        .getTransactionCount(this.account.address)
+        .catch(e => {
+          Toast.responseHandler(e, Toast.ERROR);
+        });
+      this.nonce = new BigNumber(fetchedNonce).toString();
     },
     async getTokenBalance(token) {
-      const web3 = this.web3;
-      const contractAbi = [
-        {
-          name: 'balanceOf',
-          type: 'function',
-          constant: true,
-          inputs: [{ name: 'address', type: 'address' }],
-          outputs: [{ name: 'out', type: 'uint256' }]
-        }
-      ];
-      const contract = new web3.eth.Contract(contractAbi);
-      const data = contract.methods.balanceOf(this.account.address).encodeABI();
-      const balance = await web3.eth
-        .call({
-          to: token.address,
-          data: data
-        })
-        .then(res => {
-          let tokenBalance;
-          if (Number(res) === 0 || res === '0x') {
-            tokenBalance = 0;
-          } else {
-            const denominator = web3.utils
-              .toBN(10)
-              .pow(web3.utils.toBN(token.decimals));
-            tokenBalance = web3.utils
-              .toBN(res)
-              .div(denominator)
-              .toString(10);
+      try {
+        const web3 = this.web3;
+        const contractAbi = [
+          {
+            name: 'balanceOf',
+            type: 'function',
+            constant: true,
+            inputs: [{ name: 'address', type: 'address' }],
+            outputs: [{ name: 'out', type: 'uint256' }]
           }
-          return tokenBalance;
-        })
-        .catch(e => {
-          Toast.responseHandler(e, false);
-        });
-      return balance;
+        ];
+        const contract = new web3.eth.Contract(contractAbi);
+        const data = contract.methods
+          .balanceOf(this.account.address)
+          .encodeABI();
+        const balance = await web3.eth
+          .call({
+            to: token.address,
+            data: data
+          })
+          .then(res => {
+            let tokenBalance;
+            if (Number(res) === 0 || res === '0x') {
+              tokenBalance = 0;
+            } else {
+              const denominator = new BigNumber(10).pow(token.decimals);
+              tokenBalance = new BigNumber(res).div(denominator).toString();
+            }
+            return tokenBalance;
+          })
+          .catch(e => {
+            Toast.responseHandler(e, false);
+          });
+
+        return balance;
+      } catch (e) {
+        Toast.responseHandler(e, Toast.ERROR);
+      }
     },
     setCustomTokenStore() {
       const customTokenStore = store.get('customTokens');
@@ -349,7 +374,6 @@ export default {
       store.set('customTokens', customTokenStore);
     },
     async setTokens() {
-      const customStore = store.get('customTokens');
       this.tokens = [];
       let tokens = await this.fetchTokens();
       tokens = tokens
@@ -379,7 +403,10 @@ export default {
         });
 
       this.tokens = tokens.sort(sortByBalance);
-
+      this.setTokensWithBalance();
+    },
+    setTokensWithBalance() {
+      const customStore = store.get('customTokens');
       if (
         customStore !== undefined &&
         customStore[this.network.type.name] !== undefined &&
@@ -397,13 +424,17 @@ export default {
             store.set('customTokens', customStore);
             resolve(res);
           });
-        }).then(res => {
-          const allTokens = this.tokens
-            .filter(token => token.balance > 0)
-            .concat(res.filter(token => token.balance > 0));
-          this.tokensWithBalance = allTokens;
-          this.receivedTokens = true;
-        });
+        })
+          .then(res => {
+            const allTokens = this.tokens
+              .filter(token => token.balance > 0)
+              .concat(res.filter(token => token.balance > 0));
+            this.tokensWithBalance = allTokens;
+            this.receivedTokens = true;
+          })
+          .catch(e => {
+            Toast.responseHandler(e, Toast.ERROR);
+          });
       } else {
         this.receivedTokens = true;
         this.tokensWithBalance = this.tokens.filter(token => token.balance > 0);
@@ -429,22 +460,155 @@ export default {
           this.$store.dispatch('setAccountBalance', res);
         })
         .catch(e => {
-          Toast.responseHandler(e, false);
+          Toast.responseHandler(e, Toast.ERROR);
         });
     },
-    checkWeb3WalletAddrChange() {
+    checkMetamaskAddrChange() {
+      const web3 = this.web3;
+      window.ethereum.on('accountsChanged', account => {
+        if (account.length > 1) {
+          const wallet = new Web3Wallet(account[0]);
+          this.$store.dispatch('decryptWallet', [wallet, web3]);
+        }
+      });
+    },
+    matchMetamaskNetwork() {
+      window.ethereum.on('networkChanged', netId => {
+        if (this.network.type.chainID.toString() !== netId) {
+          Object.keys(networkTypes).some(net => {
+            if (
+              networkTypes[net].chainID.toString() === netId &&
+              this.Networks[net]
+            ) {
+              this.$store.dispatch('switchNetwork', this.Networks[net][0]);
+              return true;
+            }
+          });
+        }
+      });
+    },
+    setupOnlineEnvironment: web3Utils._.debounce(function() {
+      this.clearIntervals();
+      if (store.get('customTokens') === undefined) {
+        store.set('customTokens', {});
+        this.setCustomTokenStore();
+      } else {
+        this.setCustomTokenStore();
+      }
+      if (this.online) {
+        if (this.account.address !== null) {
+          if (this.account.identifier === WEB3_TYPE) {
+            if (window.web3.currentProvider.isMetamask) {
+              this.checkMetamaskAddrChange();
+              this.matchMetamaskNetwork();
+            } else {
+              this.web3WalletPollNetwork();
+              this.web3WalletPollAddress();
+            }
+          }
+          this.setENS();
+          this.getBlock();
+          this.getBalance();
+          this.setTokens();
+          this.setNonce();
+          this.getHighestGas();
+          this.getBlockUpdater().then(_sub => {
+            this.pollBlock = _sub;
+          });
+        }
+      }
+    }),
+    async getBlockUpdater() {
+      return new Promise(resolve => {
+        let subscription = this.web3.eth
+          .subscribe('newBlockHeaders', err => {
+            if (err) {
+              subscription = setInterval(this.getBlock, 14000);
+            }
+            resolve(subscription);
+          })
+          .on('data', headers => {
+            this.blockNumber = headers.number;
+          });
+      });
+    },
+    getHighestGas() {
+      this.web3.eth
+        .getGasPrice()
+        .then(res => {
+          this.highestGas = new BigNumber(
+            this.web3.utils.fromWei(res, 'gwei')
+          ).toString();
+        })
+        .catch(e => {
+          Toast.responseHandler(e, Toast.ERROR);
+        });
+    },
+    setENS() {
+      if (this.network.type.ens) {
+        this.$store.dispatch(
+          'setENS',
+          new ENS(this.web3.currentProvider, this.network.type.ens.registry)
+        );
+      } else {
+        this.$store.dispatch('setENS', null);
+      }
+    },
+    clearIntervals() {
+      if (this.pollBlock.unsubscribe) this.pollBlock.unsubscribe();
+      else clearInterval(this.pollBlock);
+      clearInterval(this.pollNetwork);
+      clearInterval(this.pollAddress);
+    },
+    web3WalletPollNetwork() {
+      if (
+        !window.web3.eth.net ||
+        typeof window.web3.eth.net.getId !== 'function'
+      )
+        return;
+      this.pollNetwork = setInterval(() => {
+        window.web3.eth.net
+          .getId()
+          .then(id => {
+            if (this.network.type.chainID.toString() !== id) {
+              Object.keys(networkTypes).some(net => {
+                if (networkTypes[net].chainID === id && this.Networks[net]) {
+                  this.$store.dispatch('switchNetwork', this.Networks[net]);
+                  clearInterval(this.pollNetwork);
+                  return true;
+                }
+              });
+            }
+          })
+          .catch(e => {
+            Toast.responseHandler(e, false);
+          });
+      }, 500);
+    },
+    web3WalletPollAddress() {
       this.pollAddress = setInterval(() => {
+        if (!window.web3.eth) {
+          Toast.responseHandler(
+            new Error('Web3 Instance not found!'),
+            Toast.ERROR
+          );
+          clearInterval(this.pollAddress);
+        }
+
         window.web3.eth.getAccounts((err, accounts) => {
           if (err) {
-            return Toast.responseHandler(err, false);
+            Toast.responseHandler(err, false);
+            clearInterval(this.pollAddress);
           }
           if (!accounts.length) {
-            return Toast.responseHandler(
-              new Error('Please unlock metamask'),
+            Toast.responseHandler(
+              new Error('Please make sure that your Web3 Wallet is unlocked'),
               Toast.ERROR
             );
+            clearInterval(this.pollAddress);
           }
           const address = accounts[0];
+
           if (
             this.account.address !== null &&
             address.toLowerCase() !== this.account.address.toLowerCase()
@@ -458,78 +622,6 @@ export default {
           }
         });
       }, 500);
-    },
-    matchWeb3WalletNetwork() {
-      this.pollNetwork = setInterval(() => {
-        if (!window.web3.eth.net) return;
-        window.web3.eth.net
-          .getId()
-          .then(netId => {
-            if (this.network.type.chainID.toString() !== netId) {
-              Object.keys(networkTypes).some(net => {
-                if (networkTypes[net].chainID === netId && this.Networks[net]) {
-                  this.$store.dispatch('switchNetwork', this.Networks[net][0]);
-                  clearInterval(this.pollNetwork);
-                  return true;
-                }
-              });
-            }
-          })
-          .catch(e => {
-            Toast.responseHandler(e, false);
-          });
-      }, 500);
-    },
-    clearIntervals() {
-      clearInterval(this.pollNetwork);
-      clearInterval(this.pollBlock);
-      clearInterval(this.pollAddress);
-    },
-    setupOnlineEnvironment: web3Utils._.debounce(function() {
-      this.clearIntervals();
-      if (store.get('customTokens') === undefined) {
-        store.set('customTokens', {});
-        this.setCustomTokenStore();
-      } else {
-        this.setCustomTokenStore();
-      }
-      if (this.online === true) {
-        if (this.account.address !== null) {
-          if (this.account.identifier === WEB3_TYPE) {
-            this.checkWeb3WalletAddrChange();
-            this.matchWeb3WalletNetwork();
-          }
-          this.setENS();
-          this.getBlock();
-          this.getBalance();
-          this.pollBlock = setInterval(this.getBlock, 14000);
-          this.setTokens();
-          this.setNonce();
-          this.getHighestGas();
-        }
-      }
-    }),
-    getHighestGas() {
-      this.web3.eth
-        .getGasPrice()
-        .then(res => {
-          this.highestGas = new BigNumber(
-            this.web3.utils.fromWei(res, 'gwei')
-          ).toNumber();
-        })
-        .catch(e => {
-          Toast.responseHandler(e, true);
-        });
-    },
-    setENS() {
-      if (this.network.type.ens) {
-        this.$store.dispatch(
-          'setENS',
-          new ENS(this.web3.currentProvider, this.network.type.ens.registry)
-        );
-      } else {
-        this.$store.dispatch('setENS', null);
-      }
     }
   }
 };

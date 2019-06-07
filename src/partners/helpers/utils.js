@@ -37,8 +37,8 @@ const getTimeRemaining = (timestamp, validFor = 600) => {
   );
 };
 
-const getTimeRemainingString = timestamp => {
-  const timeRemaining = getTimeRemaining(timestamp);
+const getTimeRemainingString = (timestamp, validFor = 600) => {
+  const timeRemaining = getTimeRemaining(timestamp, validFor);
   if (timeRemaining < 0) {
     return 'expired';
   }
@@ -76,7 +76,6 @@ const isJson = str => {
     } catch (e) {
       return false;
     }
-    // return false;
   }
 };
 

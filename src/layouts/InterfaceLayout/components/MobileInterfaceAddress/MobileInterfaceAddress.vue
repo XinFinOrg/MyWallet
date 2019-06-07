@@ -1,30 +1,38 @@
 <template>
   <div class="mobile-interface-address">
-    <address-qrcode-modal ref="qrcode" :address="newAddress"/>
+    <address-qrcode-modal ref="qrcode" :address="account.address" />
     <div class="wrap">
       <div class="top-block">
         <div class="blockie-container">
-          <blockie :address="newAddress" :size="8" :scale="16" class="blockie-image"/>
+          <blockie
+            :address="address"
+            :size="8"
+            :scale="16"
+            class="blockie-image"
+          />
         </div>
-        <div class="address">{{ newAddress }}</div>
-        <input ref="copyAddress" :value="newAddress" class="hidden-input" autocomplete="off">
+        <div class="address">{{ address }}</div>
+        <input
+          ref="copyAddress"
+          :value="address"
+          class="hidden-input"
+          autocomplete="off"
+        />
         <div class="address-end">
-          {{
-         newAddress.substring(
-          newAddress.length - 4,
-          newAddress.length
-          )
-          }}
+          {{ address.substring(address.length - 4, address.length) }}
         </div>
         <div class="buttons-container">
           <button @click="openQrcode">
-            <img src="~@/assets/images/icons/qr-code-white.svg">
+            <img src="~@/assets/images/icons/qr-code-white.svg" />
             <div class="floating-barcode">
               <div class="barcode-image"></div>
             </div>
           </button>
+          <button @click="print">
+            <img src="~@/assets/images/icons/printer-white.svg" />
+          </button>
           <button @click="copy">
-            <img src="~@/assets/images/icons/copy.svg">
+            <img src="~@/assets/images/icons/copy.svg" />
           </button>
         </div>
       </div>
@@ -39,7 +47,7 @@
 <script>
 import AddressQrcodeModal from '@/components/AddressQrcodeModal';
 import Blockie from '@/components/Blockie';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import { Toast } from '@/helpers';
 import {
   KEYSTORE,
@@ -69,14 +77,11 @@ export default {
   },
   data() {
     return {
-      hasMultipleAddr: false,
-      newAddress: 'xdc' + this.$props.address.substring(2)
+      hasMultipleAddr: false
     };
   },
   computed: {
-    ...mapGetters({
-      account: 'account'
-    })
+    ...mapState(['account'])
   },
   mounted() {
     if (this.account.address !== null) {

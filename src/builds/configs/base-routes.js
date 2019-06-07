@@ -1,5 +1,5 @@
 const ConvertUnits = () => import('@/layouts/ConvertUnits');
-// const TeamLayout = () => import('@/layouts/TeamLayout');
+const TeamLayout = () => import('@/layouts/TeamLayout');
 const PrivacyPolicyLayout = () => import('@/layouts/PrivacyPolicyLayout');
 const TermsAndConditionsLayout = () =>
   import('@/layouts/TermsAndConditionsLayout');
@@ -9,6 +9,7 @@ const HelpCenterLayout = () => import('@/layouts/HelpCenterLayout');
 const NotFoundLayout = () => import('@/layouts/NotFoundLayout');
 const GettingStarted = () => import('@/layouts/GettingStarted');
 const SendOfflineHelper = () => import('@/layouts/SendOfflineHelper');
+const VerifyMessageLayout = () => import('@/layouts/VerifyMessageLayout');
 
 const DappsContainer = () =>
   import('@/layouts/InterfaceLayout/containers/DappsContainer');
@@ -20,22 +21,23 @@ const SendCurrencyContainer = () =>
   import('@/layouts/InterfaceLayout/containers/SendCurrencyContainer');
 const SendOfflineContainer = () =>
   import('@/layouts/InterfaceLayout/containers/SendOfflineContainer');
-// const SwapContainer = () =>
-//   import('@/layouts/InterfaceLayout/containers/SwapContainer');
+const SwapContainer = () =>
+  import('@/layouts/InterfaceLayout/containers/SwapContainer');
 const SignMessageContainer = () =>
   import('@/layouts/InterfaceLayout/containers/SignMessageContainer');
 const VerifyMessageContainer = () =>
   import('@/layouts/InterfaceLayout/containers/VerifyMessageContainer');
+const HardwaresLayout = () => import('@/layouts/HardwaresLayout');
 
 import dapps from '@/dapps/routes';
 
 const router = [
-  // {
-  //   path: '/team',
-  //   name: 'TeamLayout',
-  //   component: TeamLayout,
-  //   meta: { requiresAuth: false }
-  // },
+  {
+    path: '/team',
+    name: 'TeamLayout',
+    component: TeamLayout,
+    meta: { requiresAuth: false }
+  },
   {
     path: '/privacy-policy',
     name: 'PrivacyPolicyLayout',
@@ -73,9 +75,21 @@ const router = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/hardware-wallet-affiliates',
+    name: 'HardwaresLayout',
+    component: HardwaresLayout,
+    meta: { requiresAuth: false }
+  },
+  {
     path: '/send-offline-helper',
     name: 'SendOfflineHelper',
     component: SendOfflineHelper,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/verify-message',
+    name: 'VerifyMessageLayout',
+    component: VerifyMessageLayout,
     meta: { requiresAuth: false }
   },
   {
@@ -118,11 +132,11 @@ const router = [
         name: 'Send Offline Container',
         component: SendOfflineContainer
       },
-      // {
-      //   path: 'swap',
-      //   name: 'Swap',
-      //   component: SwapContainer
-      // },
+      {
+        path: 'swap',
+        name: 'Swap',
+        component: SwapContainer
+      },
       {
         path: 'sign-message',
         name: 'Sign Message',

@@ -2,6 +2,7 @@ export default {
   tabs: [
     {
       name: 'send-transaction',
+      onlineOnly: false,
       routes: [
         '/interface/send-transaction',
         '/interface',
@@ -41,28 +42,39 @@ export default {
         }
       ]
     },
-    // {
-    //   name: 'swap',
-    //   routes: ['/interface/swap'],
-    //   icons: {
-    //     active: require('@/assets/images/sidemenu/swap-active.svg'),
-    //     inactive: require('@/assets/images/sidemenu/swap.svg')
-    //   },
-    //   titleKey: 'common.swap',
-    //   children: []
-    // },
+    {
+      name: 'swap',
+      onlineOnly: true,
+      routes: ['/interface/swap'],
+      icons: {
+        active: require('@/assets/images/sidemenu/swap-active.svg'),
+        inactive: require('@/assets/images/sidemenu/swap.svg')
+      },
+      titleKey: 'common.swap',
+      children: []
+    },
     {
       name: 'dapps',
+      onlineOnly: true,
       routes: [
         '/interface/dapps',
-        '/interface/dapps/register-domain',
-        '/interface/dapps/register-domain/bid',
-        '/interface/dapps/register-domain/reveal',
-        '/interface/dapps/register-domain/owned',
-        '/interface/dapps/register-domain/forbidden',
-        '/interface/dapps/register-domain/auction',
-        '/interface/dapps/register-domain/confirm',
-        '/interface/dapps/domain-sale'
+        '/interface/dapps/manage-ens',
+        '/interface/dapps/manage-ens/auction',
+        '/interface/dapps/manage-ens/bid',
+        '/interface/dapps/manage-ens/owned',
+        '/interface/dapps/manage-ens/reveal',
+        '/interface/dapps/manage-ens/forbidden',
+        '/interface/dapps/manage-ens/finalize',
+        '/interface/dapps/manage-ens/manage',
+        '/interface/dapps/manage-ens/fifs',
+        '/interface/dapps/manage-ens/claim',
+        '/interface/dapps/manage-ens/dns-error',
+        '/interface/dapps/manage-ens/no-txt-setup',
+        '/interface/dapps/manage-ens/transfer-registrar',
+        '/interface/dapps/manage-ens/create-commitment',
+        '/interface/dapps/manage-ens/permanent-registration',
+        '/interface/dapps/domain-sale',
+        '/interface/dapps/schedule-transaction'
       ],
       icons: {
         active: require('@/assets/images/sidemenu/dapps-active.svg'),
@@ -73,6 +85,7 @@ export default {
     },
     {
       name: 'contracts',
+      onlineOnly: true,
       routes: [
         '/interface/interact-with-contract',
         '/interface/deploy-contract'
@@ -100,6 +113,36 @@ export default {
             inactive: ''
           },
           titleKey: 'common.depContract'
+        }
+      ]
+    },
+    {
+      name: 'messages',
+      onlineOnly: false,
+      routes: ['/interface/sign-message', '/interface/verify-message'],
+      icons: {
+        active: require('@/assets/images/sidemenu/message-active.svg'),
+        inactive: require('@/assets/images/sidemenu/message.svg')
+      },
+      titleKey: 'interface.txSideMenuMessage',
+      children: [
+        {
+          name: 'sign-message',
+          routes: ['/interface/sign-message'],
+          icons: {
+            active: '',
+            inactive: ''
+          },
+          titleKey: 'common.signMessage'
+        },
+        {
+          name: 'verify-message',
+          routes: ['/interface/verify-message'],
+          icons: {
+            active: '',
+            inactive: ''
+          },
+          titleKey: 'common.verifyMessage'
         }
       ]
     }

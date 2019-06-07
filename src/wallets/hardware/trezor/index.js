@@ -10,12 +10,18 @@ import {
   getBufferFromHex,
   calculateChainIdFromV
 } from '../../utils';
+import { toBuffer } from 'ethereumjs-util';
 import errorHandler from './errorHandler';
 
 const NEED_PASSWORD = false;
 
 class TrezorWallet {
   constructor() {
+    Trezor.manifest({
+      email: 'dev@myetherwallet.com',
+      appUrl: 'https://www.myetherwallet.com'
+    });
+
     this.identifier = trezorType;
     this.isHardware = true;
     this.needPassword = NEED_PASSWORD;
@@ -56,10 +62,17 @@ class TrezorWallet {
     const msgSigner = async msg => {
       const result = await Trezor.ethereumSignMessage({
         path: this.basePath + '/' + idx,
-        message: msg
+        message: toBuffer(msg).toString('hex'),
+        hex: true
       });
       if (!result.success) throw new Error(result.payload.error);
       return getBufferFromHex(result.payload.signature);
+    };
+    const displayAddress = async () => {
+      await Trezor.ethereumGetAddress({
+        path: this.basePath + '/' + idx,
+        showOnTrezor: true
+      });
     };
     return new HDWalletInterface(
       this.basePath + '/' + idx,
@@ -68,7 +81,8 @@ class TrezorWallet {
       this.identifier,
       errorHandler,
       txSigner,
-      msgSigner
+      msgSigner,
+      displayAddress
     );
   }
   getCurrentPath() {
@@ -85,7 +99,7 @@ const createWallet = async basePath => {
 };
 createWallet.errorHandler = errorHandler;
 const getRootPubKey = async _path => {
-  const result = await Trezor.getPublicKey({ path: _path });
+  const result = await Trezor.ethereumGetPublicKey({ path: _path });
   if (!result.success) throw new Error(result.payload.error);
   return {
     publicKey: result.payload.publicKey,

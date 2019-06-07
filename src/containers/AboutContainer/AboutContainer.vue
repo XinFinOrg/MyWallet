@@ -6,20 +6,22 @@
         <div id="about-mew" class="star-background">
           <div class="page-container">
             <div class="flex-col-1-1-vertical-center content">
-              <!-- <div class="text-content">
+              <div class="text-content">
                 <h2>{{ $t('home.aboutTitle') }}</h2>
                 <p class="color-white">{{ $t('home.aboutSubheading') }}</p>
-              </div> -->
-              <!-- <div class="image-content">
-                <img
-                  class="spaceman"
-                  src="~@/assets/images/home/spaceman.png"
-                />
+              </div>
+              <div class="image-content">
                 <img
                   class="mew-icon"
                   src="~@/assets/images/home/mew-icon.png"
                 />
-              </div> -->
+              </div>
+              <div class="animation-content">
+                <img
+                  class="spaceman"
+                  src="~@/assets/images/home/spaceman.png"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -43,6 +45,24 @@
               <div class="text">
                 <h3>{{ $t('home.aboutHardwareWallet') }}</h3>
                 <p>{{ $t('home.aboutHardwareWalletDesc') }}</p>
+              </div>
+            </dir>
+            <dir class="content">
+              <div class="image">
+                <img src="~@/assets/images/home/icon-swap.svg" />
+              </div>
+              <div class="text">
+                <h3>{{ $t('common.swap') }}</h3>
+                <p>{{ $t('home.aboutSwapDesc') }}</p>
+              </div>
+            </dir>
+            <dir class="content">
+              <div class="image">
+                <img src="~@/assets/images/home/icon-mew-connect.svg" />
+              </div>
+              <div class="text">
+                <h3>{{ $t('common.mewConnect') }}</h3>
+                <p>{{ $t('home.aboutMewConnectDesc') }}</p>
               </div>
             </dir>
           </div>

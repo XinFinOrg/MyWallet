@@ -1,5 +1,6 @@
 **/.DS_Store
 node_modules/
+/dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -8,7 +9,6 @@ selenium-debug.log
 
 # Editor directories and files
 .idea
-.vscode
 *.suo
 *.ntvs*
 *.njsproj
@@ -19,4 +19,6 @@ selenium-debug.log
 release
 
 # Generated files
-/src/darklist/
+src/contracts/
+src/tokens/
+src/darklist/

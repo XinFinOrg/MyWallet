@@ -12,7 +12,7 @@
       Initial Coin Offerings offer “Tokens” in return for users who support them
       by sending them Ether. When you give these ICO teams your ETH/BTC or other
       currencies, it means that you believe that these technologies they are
-      creating will bring value to the XinFin Community.
+      creating will bring value to the Ethereum Community.
     </p>
     <p>
       In the beginning of an ICO, the leading team will explain their vision and
@@ -70,7 +70,7 @@
     <p>
       For more information please refer to :
       <a
-        href="https://xinfin.network/best-of/how-not-to-miss-out-on-ico.html"
+        href="https://kb.myetherwallet.com/best-of/how-not-to-miss-out-on-ico.html"
         target="_blank"
         rel="noopener noreferrer"
         >Best Ways to Avoid Missing Out On That ICO</a

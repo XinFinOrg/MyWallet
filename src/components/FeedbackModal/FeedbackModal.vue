@@ -10,10 +10,10 @@
       <div class="modal-content">
         If you want to send us your feedback, please use
         <a
-          href="mailto:support@xinfin.network"
+          href="mailto:support@myetherwallet.com"
           target="_blank"
           rel="noopener noreferrer"
-          >support@xinfin.network</a
+          >support@myetherwallet.com</a
         >. Thank you.
       </div>
     </b-modal>

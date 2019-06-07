@@ -3,56 +3,61 @@
     ref="password"
     :title="$t('accessWallet.password')"
     hide-footer
-    class="bootstrap-modal modal-software"
+    class="bootstrap-modal modal-software nopadding"
     centered
     @shown="focusInput"
   >
-    <form class="password-form">
-      <div class="input-container">
-        <input
-          ref="passwordInput"
-          :type="show ? 'text' : 'password'"
-          v-model="password"
-          name="Password"
-          autocomplete="off"
-          placeholder="Enter password"
-        />
-        <img
-          v-if="show"
-          src="@/assets/images/icons/show-password.svg"
-          @click.prevent="switchViewPassword"
-        />
-        <img
-          v-if="!show"
-          src="@/assets/images/icons/hide-password.svg"
-          @click.prevent="switchViewPassword"
-        />
+    <div>
+      <div class="warning">
+        <warning-message />
       </div>
-      <!-- <div class="not-recommended">
-        {{ $t('accessWallet.notARecommendedWay') }}
-      </div> -->
-      <button
-        :disabled="
-          password === '' && password.length === 0 && password.length < 9
-        "
-        class="submit-button large-round-button-green-filled"
-        type="submit"
-        @click.prevent="unlockWallet"
-      >
-        <span v-show="!spinner">{{ $t('common.accessWallet') }}</span>
-        <i v-show="spinner" class="fa fa-spin fa-spinner fa-lg" />
-      </button>
-    </form>
+      <form class="password-form">
+        <div class="input-container">
+          <input
+            ref="passwordInput"
+            :type="show ? 'text' : 'password'"
+            v-model="password"
+            name="Password"
+            autocomplete="off"
+            placeholder="Enter password"
+          />
+          <img
+            v-if="show"
+            src="@/assets/images/icons/show-password.svg"
+            @click.prevent="switchViewPassword"
+          />
+          <img
+            v-if="!show"
+            src="@/assets/images/icons/hide-password.svg"
+            @click.prevent="switchViewPassword"
+          />
+        </div>
+        <button
+          :disabled="inputValid"
+          class="submit-button large-round-button-green-filled"
+          type="submit"
+          @click.prevent="unlockWallet"
+        >
+          <span v-show="!spinner">{{ $t('common.accessWallet') }}</span>
+          <i v-show="spinner" class="fa fa-spin fa-spinner fa-lg" />
+        </button>
+      </form>
+    </div>
   </b-modal>
 </template>
 
 <script>
 import { WalletInterface } from '@/wallets';
 import { KEYSTORE as keyStoreType } from '@/wallets/bip44/walletTypes';
-import _worker from 'worker-loader!@/workers/wallet.worker.js';
-import { mapGetters } from 'vuex';
-import { Toast } from '@/helpers';
+import walletWorker from 'worker-loader!@/workers/wallet.worker.js';
+import { mapState } from 'vuex';
+import { Toast, Wallet } from '@/helpers';
+import WarningMessage from '@/components/WarningMessage';
+
 export default {
+  components: {
+    'warning-message': WarningMessage
+  },
   props: {
     file: {
       type: Object,
@@ -69,9 +74,13 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      path: 'path'
-    })
+    ...mapState(['path', 'online']),
+    inputValid() {
+      return (
+        this.walletRequirePass(this.file) &&
+        (this.password === '' || this.password.length === 0)
+      );
+    }
   },
   watch: {
     password() {
@@ -79,30 +88,61 @@ export default {
     }
   },
   methods: {
+    walletRequirePass(ethjson) {
+      if (ethjson.encseed != null) return true;
+      else if (ethjson.Crypto != null || ethjson.crypto != null) return true;
+      else if (ethjson.hash != null && ethjson.locked) return true;
+      else if (ethjson.hash != null && !ethjson.locked) return false;
+      else if (ethjson.publisher == 'MyEtherWallet' && !ethjson.encrypted)
+        return false;
+      return true;
+    },
     unlockWallet() {
       this.spinner = true;
-      const worker = new _worker();
-      const self = this;
-      worker.postMessage({
-        type: 'unlockWallet',
-        data: [this.file, this.password]
-      });
-      worker.onmessage = function(e) {
-        // Regenerate the wallet since the worker only return an object instance. Not the whole wallet instance
-        self.$store.dispatch('decryptWallet', [
-          new WalletInterface(Buffer.from(e.data._privKey), false, keyStoreType)
-        ]);
-        self.spinner = false;
-        this.password = '';
-        self.$router.push({
-          path: 'interface'
+
+      if (this.online && window.Worker) {
+        const worker = new walletWorker();
+        const self = this;
+        worker.postMessage({
+          type: 'unlockWallet',
+          data: [this.file, this.password]
         });
-      };
-      worker.onerror = function(e) {
-        e.preventDefault();
-        self.spinner = false;
-        Toast.responseHandler(e, Toast.ERROR);
-      };
+        worker.onmessage = function(e) {
+          self.setUnlockedWallet(
+            new WalletInterface(
+              Buffer.from(e.data._privKey),
+              false,
+              keyStoreType
+            )
+          );
+        };
+        worker.onerror = function(e) {
+          e.preventDefault();
+          self.spinner = false;
+          Toast.responseHandler(e, Toast.ERROR);
+        };
+      } else {
+        const newFile = {};
+        Object.keys(this.file).forEach(key => {
+          newFile[key.toLowerCase()] = this.file[key];
+        });
+        const _wallet = Wallet.fromV3(newFile, this.password, true);
+        this.setUnlockedWallet(
+          new WalletInterface(
+            Buffer.from(_wallet._privKey),
+            false,
+            keyStoreType
+          )
+        );
+      }
+    },
+    setUnlockedWallet(wallet) {
+      this.$store.dispatch('decryptWallet', [wallet]);
+      this.spinner = false;
+      this.password = '';
+      this.$router.push({
+        path: 'interface'
+      });
     },
     switchViewPassword() {
       this.show = !this.show;
