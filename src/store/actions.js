@@ -206,9 +206,9 @@ const updateNotification = function({ commit, state }, val) {
   commit('UPDATE_NOTIFICATION', newNotif);
 };
 
-const updateBlockNumber = function({ commit }, val) {
-  commit('UPDATE_BLOCK_NUMBER', val);
-};
+// const updateBlockNumber = function({ commit }, val) {
+//   commit('UPDATE_BLOCK_NUMBER', val);
+// };
 
 const updateTransaction = function({ commit, state }, val) {
   // address, index, object
