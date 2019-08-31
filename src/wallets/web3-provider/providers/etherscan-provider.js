@@ -8,7 +8,9 @@ import {
   ethAccounts,
   ethCoinbase,
   netVersion,
-  ethGetTransactionReceipt
+  ethGetBlockByNumber,
+  ethGetTransactionReceipt,
+  ethGetBlockNumber
 } from '../methods';
 import EtherscanProxy from '../etherscan-proxy';
 class EtherscanProvider {
@@ -30,6 +32,7 @@ class EtherscanProvider {
           for (let i = 0; i < this.requestThrottler.remaining; i++) {
             if (this.requestThrottler.requests.length) {
               const req = this.requestThrottler.requests.shift();
+              this.requestThrottler.remaining--;
               this.send_(req.payload, req.callback);
             }
           }
@@ -58,6 +61,8 @@ class EtherscanProvider {
     middleware.use(ethAccounts);
     middleware.use(ethGetTransactionCount);
     middleware.use(ethCoinbase);
+    middleware.use(ethGetBlockByNumber);
+    middleware.use(ethGetBlockNumber);
     middleware.use(netVersion);
     middleware.use(async ({ payload }, res) => {
       this.proxy

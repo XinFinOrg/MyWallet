@@ -11,6 +11,7 @@ import {
   addUpdateNotification,
   addUpdateSwapNotification
 } from '@/helpers/notificationFormatters';
+import BigNumber from 'bignumber.js';
 
 const addNotification = function({ commit, state }, val) {
   let address;
@@ -55,18 +56,19 @@ const addSwapNotification = async function({ commit, state }, val) {
 
 const addCustomPath = function({ commit, state }, val) {
   const newPaths = { ...state.customPaths };
-  newPaths[val.path] = { label: val.label, path: val.path };
+  newPaths[val.label] = { label: val.label, path: val.path };
   commit('ADD_CUSTOM_PATH', newPaths);
 };
 
 const removeCustomPath = function({ commit, state }, val) {
   const newPaths = { ...state.customPaths };
-  delete newPaths[val.path];
+  delete newPaths[val.label];
   commit('ADD_CUSTOM_PATH', newPaths);
 };
 
-const checkIfOnline = function({ commit }) {
-  commit('CHECK_IF_ONLINE');
+const checkIfOnline = function({ commit, dispatch }, val) {
+  if (val) dispatch('setWeb3Instance');
+  commit('CHECK_IF_ONLINE', val);
 };
 
 const gettingStartedDone = function({ commit }) {
@@ -74,10 +76,11 @@ const gettingStartedDone = function({ commit }) {
 };
 
 const clearWallet = function({ commit, state }) {
-  if (state.wallet.identifier === MEW_CONNECT) {
+  const linkTo = state.path !== '' ? state.path : '/';
+  if (state.wallet && state.wallet.identifier === MEW_CONNECT) {
     state.wallet.mewConnect().disconnectRTC();
   }
-  Vue.router.push('/');
+  Vue.router.push(linkTo);
   commit('CLEAR_WALLET');
 };
 
@@ -86,15 +89,17 @@ const createAndSignTx = function({ commit }, val) {
 };
 
 const decryptWallet = function({ commit, dispatch }, params) {
-  // params[0] = wallet, params[1] = provider
-  if (params[0].identifier === MEW_CONNECT) {
-    params[0].mewConnect().on('RtcClosedEvent', () => {
-      if (params[0].mewConnect().getConnectonState()) {
-        this._vm.$eventHub.$emit('mewConnectDisconnected');
-        dispatch('clearWallet');
-      }
-    });
+  if (params[0]) {
+    if (params[0].identifier === MEW_CONNECT) {
+      params[0].mewConnect().on('RtcClosedEvent', () => {
+        if (params[0].mewConnect().getConnectonState()) {
+          this._vm.$eventHub.$emit('mewConnectDisconnected');
+          dispatch('clearWallet');
+        }
+      });
+    }
   }
+
   commit('DECRYPT_WALLET', params[0]);
   dispatch('setWeb3Instance', params[1]);
 };
@@ -112,7 +117,9 @@ const setState = function({ commit }, stateObj) {
 };
 
 const setWeb3Instance = function({ dispatch, commit, state }, provider) {
-  const hostUrl = url.parse(state.network.url);
+  const hostUrl = state.network.url
+    ? url.parse(state.network.url)
+    : state.Network['ETH'][0];
   const options = {};
   // eslint-disable-next-line
   const parsedUrl = `${hostUrl.protocol}//${hostUrl.host}${
@@ -136,6 +143,7 @@ const setWeb3Instance = function({ dispatch, commit, state }, provider) {
       this._vm.$eventHub
     )
   );
+  web3Instance.currentProvider.sendAsync = web3Instance.currentProvider.send;
   web3Instance['mew'] = {};
   web3Instance['mew'].sendBatchTransactions = arr => {
     return new Promise(async resolve => {
@@ -147,15 +155,14 @@ const setWeb3Instance = function({ dispatch, commit, state }, provider) {
           value: arr[i].value,
           gasPrice: arr[i].gasPrice
         };
-        arr[i].nonce = await (arr[i].nonce === undefined
-          ? web3Instance.eth.getTransactionCount(
-              state.wallet.getChecksumAddressString()
-            )
-          : arr[i].nonce);
-        arr[i].nonce = +arr[i].nonce + i;
-        arr[i].gas = await (arr[i].gas === undefined
+        const gas = await (arr[i].gas === undefined
           ? web3Instance.eth.estimateGas(localTx)
           : arr[i].gas);
+        const nonce = await (arr[i].nonce === undefined
+          ? web3Instance.eth.getTransactionCount(state.account.address)
+          : arr[i].nonce);
+        arr[i].nonce = new BigNumber(nonce + i).toFixed();
+        arr[i].gas = gas;
         arr[i].chainId = !arr[i].chainId
           ? state.network.type.chainID
           : arr[i].chainId;
@@ -181,7 +188,6 @@ const setWeb3Instance = function({ dispatch, commit, state }, provider) {
 };
 
 const switchNetwork = function({ commit }, networkObj) {
-  // check if wallet is hardware.  if true, check if it supports this network. if not, do nothing
   commit('SWITCH_NETWORK', networkObj);
 };
 const setENS = function({ commit }, ens) {
@@ -206,7 +212,6 @@ const updateBlockNumber = function({ commit }, val) {
 
 const updateTransaction = function({ commit, state }, val) {
   // address, index, object
-
   const address = val[0].toLowerCase();
   const newNotif = {};
   Object.keys(state.transactions).forEach(item => {
@@ -223,6 +228,14 @@ const updateTransaction = function({ commit, state }, val) {
 
 const setLastPath = function({ commit }, val) {
   commit('SET_LAST_PATH', val);
+};
+
+const updateBlockNumber = function({ commit }, val) {
+  commit('UPDATE_BLOCK_NUMBER', val);
+};
+
+const saveQueryVal = function({ commit }, val) {
+  commit('SAVE_QUERY_VAL', val);
 };
 
 export default {
@@ -244,5 +257,6 @@ export default {
   updateNotification,
   updateTransaction,
   gettingStartedDone,
-  updateBlockNumber
+  updateBlockNumber,
+  saveQueryVal
 };

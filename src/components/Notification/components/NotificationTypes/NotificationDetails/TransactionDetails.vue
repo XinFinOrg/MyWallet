@@ -14,14 +14,34 @@
           <p>{{ $t('header.status') }}:</p>
           <p :class="['status', txStatus.class]">({{ txStatus.text }})</p>
         </li>
-        <li>
+        <li v-if="isTokenTransfer">
+          <p>{{ $t('header.amount') }}:</p>
+          <p>{{ details.tokenTransferVal }} {{ details.tokenSymbol }}</p>
+        </li>
+        <li v-if="!isTokenTransfer">
           <p>{{ $t('header.amount') }}:</p>
           <p>{{ convertToEth(details.amount) }} XDC</p>
         </li>
         <li>
           <p>{{ $t('common.toAddress') }}:</p>
           <p>
-            <a :href="addressLink(details.to)" target="_blank">
+            <a
+              :href="addressLink(details.tokenTransferTo || details.to)"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              {{ details.tokenTransferTo || details.to }}
+            </a>
+          </p>
+        </li>
+        <li v-if="isTokenTransfer">
+          <p>Via contract:</p>
+          <p>
+            <a
+              :href="addressLink(details.to)"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
               {{ details.to }}
             </a>
           </p>
@@ -59,7 +79,11 @@
         </li>
         <li v-if="notice.hash">
           <p>
-            <a :href="hashLink(notice.hash)" target="_blank">
+            <a
+              :href="hashLink(notice.hash)"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
               {{ notice.hash }}
             </a>
           </p>
@@ -74,7 +98,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 
 export default {
   props: {
@@ -127,17 +151,18 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      web3: 'web3',
-      network: 'network',
-      notifications: 'notifications',
-      wallet: 'wallet'
-    }),
+    ...mapState(['web3', 'network', 'notifications', 'wallet']),
     errorMessage() {
       return this.errorMessageString(this.notice);
     },
     isError() {
       return this.notice.body.error;
+    },
+    isTokenTransfer() {
+      return (
+        this.notice.body.tokenTransferTo !== undefined &&
+        this.notice.body.tokenTransferTo !== null
+      );
     },
     details() {
       return this.notice.body;

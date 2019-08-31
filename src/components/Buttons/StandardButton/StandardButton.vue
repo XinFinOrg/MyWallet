@@ -19,14 +19,30 @@
     </div>
     <div :class="buttonClass">
       <button
-        :disabled="buttonDisabled"
+        v-show="spinner"
+        :disabled="diableButton"
         :class="[
           options.isThisMobileBottomButton ? 'mobile-bottom-button' : '',
-          options.noMinWidth ? 'no-min-width' : ''
+          options.noMinWidth ? 'no-min-width' : '',
+          options.paddingSmall ? 'padding-small' : ''
         ]"
         class="the-button-box"
       >
+        <i class="fa fa-spin fa-spinner fa-lg" />
+      </button>
+      <button
+        v-show="!spinner"
+        :disabled="diableButton"
+        :class="[
+          options.isThisMobileBottomButton ? 'mobile-bottom-button' : '',
+          options.noMinWidth ? 'no-min-width' : '',
+          options.paddingSmall ? 'padding-small' : ''
+        ]"
+        class="the-button-box"
+        @click="clickFunction"
+      >
         {{ options.title }}
+        <i v-show="spinner" class="fa fa-spin fa-spinner fa-lg" />
         <img
           v-if="options.loadingIcon"
           class="loading-left"
@@ -85,15 +101,35 @@ export default {
       default: function() {
         return {};
       }
+    },
+    buttonDisabled: {
+      type: Boolean,
+      default: false
+    },
+    spinner: {
+      type: Boolean,
+      default: false
+    },
+    clickFunction: {
+      type: Function,
+      default: function() {
+        return;
+      }
     }
   },
   data() {
     return {
       onBottomOfPage: false,
-      buttonDisabled: this.options.acceptTermsCheckBox
+      termsAccepted: this.options.acceptTermsCheckBox
     };
   },
   computed: {
+    diableButton() {
+      if (this.options.terms !== undefined && this.options.terms) {
+        return this.termsAccepted;
+      }
+      return this.buttonDisabled;
+    },
     buttonClass() {
       switch (this.options.buttonStyle) {
         case 'white':
@@ -130,7 +166,7 @@ export default {
   },
   methods: {
     updateCheckbox(event) {
-      this.buttonDisabled = !event;
+      this.termsAccepted = !event;
     },
     onPageScroll() {
       if (

@@ -1,9 +1,9 @@
 <template lang="html">
   <div class="address-container">
     <div class="currency-container">
-      <img
-        :src="require(`@/assets/images/currency/${lowerCaseCurrency}.svg`)"
-      />
+      <div class="icon-matcher">
+        <img :src="iconFetcher" />
+      </div>
       <p>
         <span class="currency-amt">
           {{ direction === 'from' ? '-' : '+' }}
@@ -18,6 +18,10 @@
       <p>{{ direction | capitalize }} Address</p>
     </div>
     <div class="address">{{ checksumAddress.replace('0x', 'XDC') }}</div>
+    <div v-if="tokenSymbol !== '' && direction === 'to'">
+      <p>Via contract</p>
+      <div class="address">{{ tokenChecksumAddress }}</div>
+    </div>
   </div>
 </template>
 
@@ -53,15 +57,33 @@ export default {
     tokenSymbol: {
       type: String,
       default: ''
+    },
+    icon: {
+      type: String,
+      default: ''
     }
   },
   computed: {
+    iconFetcher() {
+      let icon;
+      try {
+        // eslint-disable-next-line
+        icon = require(`@/assets/images/currency/${lowerCaseCurrency}.svg`);
+      } catch (e) {
+        icon = this.icon;
+      }
+      return icon;
+    },
     lowerCaseCurrency() {
-      return this.currency.toLowerCase();
+      return this.tokenSymbol.toLowerCase();
     },
     checksumAddress() {
-      if (isAddress(this.tokenTransferTo))
-        return toChecksumAddress(this.tokenTransferTo);
+      if (isAddress(this.tokenTransferTo.toLowerCase()))
+        return toChecksumAddress(this.tokenTransferTo.toLowerCase());
+      if (isAddress(this.address)) return toChecksumAddress(this.address);
+      return '';
+    },
+    tokenChecksumAddress() {
       if (isAddress(this.address)) return toChecksumAddress(this.address);
       return '';
     }

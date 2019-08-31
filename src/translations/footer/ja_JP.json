@@ -7,7 +7,7 @@
   "others": "その他",
   "affiliates": "アフィリエイト",
   "ledger": "Ledger Wallet",
-  "digital": "Digital Bitbox",
+  "digital": "BitBox",
   "ethCard": "Ether Card",
   "trezor": "Trezor",
   "bity": "Bity",
@@ -21,5 +21,12 @@
   "love": "Love",
   "donate": "MEWですか？寄付してください！",
   "pricingP": "Pricing taken from",
-  "advanced": "Advanced"
+  "advanced": "Advanced",
+  "sendOffline": "Send Offline Helper",
+  "finney": "Finney",
+  "billfodl": "Billfodl",
+  "verifyMessage": "Verify Message",
+  "keepkey": "KeepKey",
+  "secalot": "Secalot",
+  "bitbox": "Bitbox"
 }

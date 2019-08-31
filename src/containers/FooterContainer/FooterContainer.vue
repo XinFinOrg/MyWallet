@@ -60,13 +60,16 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import FeedbackModal from '@/components/FeedbackModal';
+import CustomerSupport from '@/components/CustomerSupport';
+import affiliates from './affiliates.js';
 const version = VERSION;
 
 export default {
   components: {
-    'feedback-modal': FeedbackModal
+    'feedback-modal': FeedbackModal,
+    'customer-support': CustomerSupport
   },
   data() {
     return {
@@ -108,42 +111,23 @@ export default {
                 'https://chrome.google.com/webstore/detail/myetherwallet/nlbmnnijcnlegkjjpcfjclmcfggfefdm?hl=en'
             },
             {
+              text: 'Buy a Hardware wallet',
+              to: '/hardware-wallet-affiliates'
+            },
+            {
               text: this.$t('footer.sendOffline'),
               to: '/send-offline-helper'
+            },
+            {
+              text: this.$t('footer.verifyMessage'),
+              to: '/verify-message'
             }
           ]
         },
         {
           class: 'e2',
           title: this.$t('footer.affiliates'),
-          contents: [
-            {
-              text: this.$t('footer.ledger'),
-              href:
-                'https://www.ledgerwallet.com/products/?utm_source=&utm_medium=affiliate&utm_campaign=fa4b&utm_content='
-            },
-            {
-              text: this.$t('footer.digital'),
-              href: 'https://digitalbitbox.com/?ref=mew'
-            },
-            {
-              text: this.$t('footer.ethCard'),
-              href:
-                'https://ether.cards/?utm_source=mew&utm_medium=cpm&utm_campaign=site'
-            },
-            {
-              text: 'KeepKey',
-              href: 'http://keepkey.go2cloud.org/aff_c?offer_id=1&aff_id=5561'
-            },
-            {
-              text: this.$t('footer.trezor'),
-              href: 'https://trezor.io/?a=myetherwallet.com'
-            },
-            {
-              text: this.$t('footer.bity'),
-              href: 'https://bity.com/af/jshkb37v'
-            }
-          ]
+          contents: affiliates
         },
         {
           class: 'e3',
@@ -160,6 +144,10 @@ export default {
             {
               text: this.$t('common.faqs'),
               to: '/#faqs'
+            },
+            {
+              text: 'MEWtopia',
+              href: 'https://www.mewtopia.com'
             },
             {
               text: this.$t('common.vintage'),
@@ -209,9 +197,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      ethDonationAddress: 'ethDonationAddress'
-    })
+    ...mapState(['ethDonationAddress'])
   },
   methods: {
     openFeedbackModal() {

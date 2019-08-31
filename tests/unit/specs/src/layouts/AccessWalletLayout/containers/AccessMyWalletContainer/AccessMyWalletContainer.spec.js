@@ -1,5 +1,4 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
 import { shallowMount } from '@vue/test-utils';
 import sinon from 'sinon';
 import AccessMyWalletContainer from '@/layouts/AccessWalletLayout/containers/AccessMyWalletContainer/AccessMyWalletContainer.vue';
@@ -10,11 +9,9 @@ import MetamaskModal from '@/layouts/AccessWalletLayout/components/MetamaskModal
 import MewConnectModal from '@/layouts/AccessWalletLayout/components/MewConnectModal/MewConnectModal.vue';
 import SoftwareModal from '@/layouts/AccessWalletLayout/components/SoftwareModal/SoftwareModal.vue';
 import MnemonicModal from '@/layouts/AccessWalletLayout/components/MnemonicModal';
-import NetworkAndAddressModal from '@/layouts/AccessWalletLayout/components/NetworkAndAddressModal/NetworkAndAddressModal.vue';
 import PasswordModal from '@/layouts/AccessWalletLayout/components/PasswordModal/PasswordModal.vue';
 import PrivateKeyModal from '@/layouts/AccessWalletLayout/components/PrivateKeyModal/PrivateKeyModal.vue';
 import { Tooling } from '@@/helpers';
-import { state, getters } from '@@/helpers/mockStore';
 
 const BBtnStub = {
   name: 'b-btn',
@@ -22,7 +19,6 @@ const BBtnStub = {
   props: ['title']
 };
 
-//xdescribe
 describe('AccessMyWalletContainer.vue', () => {
   let localVue, i18n, wrapper, store, showModal, hideModal;
 
@@ -31,13 +27,8 @@ describe('AccessMyWalletContainer.vue', () => {
     localVue = baseSetup.localVue;
     i18n = baseSetup.i18n;
     store = baseSetup.store;
-    Vue.config.errorHandler = () => {};
-    Vue.config.warnHandler = () => {};
 
-    store = new Vuex.Store({
-      getters,
-      state
-    });
+    Vue.config.warnHandler = () => {};
   });
 
   function resetWrapper() {
@@ -50,7 +41,8 @@ describe('AccessMyWalletContainer.vue', () => {
       props: ['to', 'ref'],
       methods: {
         show: showModal,
-        hide: hideModal
+        hide: hideModal,
+        $on: sinon.stub()
       }
     };
     wrapper = shallowMount(AccessMyWalletContainer, {
@@ -58,7 +50,10 @@ describe('AccessMyWalletContainer.vue', () => {
       i18n,
       store,
       attachToDocument: true,
+
       stubs: {
+        'b-btn': BBtnStub,
+        'b-modal': BModalStub,
         'hardware-password-modal': HardwarePasswordModal,
         'access-wallet-button': AccessWalletButton,
         'hardware-modal': HardwareModal,
@@ -66,20 +61,21 @@ describe('AccessMyWalletContainer.vue', () => {
         'mew-connect-modal': MewConnectModal,
         'software-modal': SoftwareModal,
         'mnemonic-modal': MnemonicModal,
-        'network-and-address-modal': NetworkAndAddressModal,
         'password-modal': PasswordModal,
         'private-key-modal': PrivateKeyModal,
-        'b-btn': BBtnStub,
-        'b-modal': BModalStub
+        'another-component': true
       }
     });
+    // wrapper.$options.mounted = [
+    //   () => console.log('this is the successful mock of mounted')
+    // ];
   }
 
   beforeEach(() => {
     resetWrapper();
   });
 
-  xit('[Failing] should render correct hardwareBrand props', () => {
+  it('should render correct hardwareBrand props', () => {
     const hardwareBrand = 'hardwareBrand';
     wrapper.setData({ hardwareBrand });
     expect(
@@ -90,7 +86,13 @@ describe('AccessMyWalletContainer.vue', () => {
     ).toBeGreaterThan(-1);
   });
 
-  xit('[Failing] should render correct buttons data', () => {
+  it('should render correct softwareModalOpen method', () => {
+    expect(showModal.called).toBe(false);
+    wrapper.vm.softwareModalOpen();
+    expect(showModal.called).toBe(true);
+  });
+
+  it('should render correct buttons data', () => {
     const accessWalletButtons = wrapper.vm.$el.querySelectorAll(
       '.wrap .page-container .buttons-container div.button-block'
     );
@@ -111,37 +113,31 @@ describe('AccessMyWalletContainer.vue', () => {
     }
   });
   describe('AccessMyWalletContainer.vue Methods', () => {
-    xit('[Failing] should render correct mewConnectModalOpen method', () => {
+    it('should render correct mewConnectModalOpen method', () => {
       expect(showModal.called).toBe(false);
       wrapper.vm.mewConnectModalOpen();
       expect(showModal.called).toBe(true);
     });
 
-    xit('[Failing] should render correct networkAndAddressOpen method', () => {
-      expect(showModal.called).toBe(false);
-      wrapper.vm.networkAndAddressOpen();
-      expect(showModal.called).toBe(true);
-    });
-
-    xit('[Failing] should render correct hardwareModalOpen method', () => {
+    it('should render correct hardwareModalOpen method', () => {
       expect(showModal.called).toBe(false);
       wrapper.vm.hardwareModalOpen();
       expect(showModal.called).toBe(true);
     });
 
-    xit('[Failing] should render correct softwareModalOpen method', () => {
+    it('should render correct softwareModalOpen  method', () => {
       expect(showModal.called).toBe(false);
       wrapper.vm.softwareModalOpen();
       expect(showModal.called).toBe(true);
     });
 
-    xit('[Failing] should render correct passwordOpen method', () => {
+    it('should render correct passwordOpen method', () => {
       expect(showModal.called).toBe(false);
       wrapper.vm.passwordOpen();
       expect(showModal.called).toBe(true);
     });
 
-    xit('[Failing] should render correct privateKeyOpen method', () => {
+    it('should render correct privateKeyOpen method', () => {
       expect(showModal.called).toBe(false);
       wrapper.vm.privateKeyOpen();
       expect(showModal.called).toBe(true);

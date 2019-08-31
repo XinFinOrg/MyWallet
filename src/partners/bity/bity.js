@@ -1,6 +1,4 @@
-import store from 'store';
 import BigNumber from 'bignumber.js';
-import web3Utils from 'web3-utils';
 import {
   networkSymbols,
   BASE_CURRENCY,
@@ -11,13 +9,12 @@ import { Toast } from '@/helpers';
 import {
   getRates,
   openOrder,
+  orderDetails,
   getStatus,
   getExitRates,
-  loginWithPhone,
-  sendReceivedSmsCode,
-  buildCyptoToFiatOrderData,
   getCyptoToFiatOrderDetails,
-  getStatusFiat
+  getEstimate,
+  createOrder
 } from './bity-calls';
 import {
   bityStatuses,
@@ -28,7 +25,6 @@ import {
   BITY_MAX,
   BITY_MIN,
   BITY_DECIMALS,
-  LOCAL_STORAGE_KEY,
   BASE_EQUIVALENT_CURRENCY,
   FIAT_EQUIVALENT_CURRENCY,
   FIAT_MIN,
@@ -66,8 +62,6 @@ export default class BitySwap {
     this.fiatCurrencies = Object.keys(bityFiatCurrencies);
     this.rates = new Map();
 
-    this.phoneSha = undefined;
-    this.userDetails = this.loadStoredCredentials();
     this.retrieveRates();
   }
 
@@ -77,10 +71,6 @@ export default class BitySwap {
 
   static isDex() {
     return false;
-  }
-
-  get phoneToken() {
-    return this.userDetails[this.phoneSha].phone_token;
   }
 
   get isValidNetwork() {
@@ -94,6 +84,10 @@ export default class BitySwap {
     return {};
   }
 
+  get ratesRetrieved() {
+    return this.hasRates > 0 && this.rates.size > 0;
+  }
+
   async retrieveRates() {
     try {
       if (!this.isValidNetwork) return;
@@ -101,6 +95,7 @@ export default class BitySwap {
       const exitData = exitRates.pairs;
       const rates = await getRates();
       const data = rates.objects;
+
       exitData.forEach(entry => {
         if (entry.enabled) {
           data.forEach(rateEntry => {
@@ -116,7 +111,6 @@ export default class BitySwap {
           });
         }
       });
-
       data.forEach(pair => {
         if (~this.mainPairs.indexOf(pair.pair.substring(3))) {
           if (pair.is_enabled && !this.fiatCurrencies.includes(pair.source)) {
@@ -147,19 +141,71 @@ export default class BitySwap {
     return -1;
   }
 
-  async getRate(fromCurrency, toCurrency) {
-    const rate = this._getRate(fromCurrency, toCurrency);
+  async _getRateEstimate(fromCurrency, toCurrency, fromValue) {
+    const reqInfo = {
+      pair: fromCurrency + toCurrency,
+      fromValue: fromValue.toString(),
+      toCurrency: toCurrency,
+      fromCurrency: fromCurrency
+    };
+    return await getEstimate(reqInfo);
+  }
+
+  calculateRate(inVal, outVal) {
+    return new BigNumber(outVal).div(inVal);
+  }
+
+  async getRate(fromCurrency, toCurrency, fromValue) {
+    const expRate = await this._getRateEstimate(
+      fromCurrency,
+      toCurrency,
+      fromValue
+    );
+
+    const rate = this.calculateRate(
+      expRate.input.amount,
+      expRate.output.amount
+    );
+    this.rates.set(`${fromCurrency}/${toCurrency}`, rate);
     return {
       fromCurrency,
       toCurrency,
       provider: this.name,
       rate: rate,
-      minValue: this.fiatCurrencies.includes(toCurrency)
-        ? this.getChfEquivalentMaxMin(fromCurrency, false)
-        : this.minValue,
+      toValue: expRate.output.amount,
+      minValue: new BigNumber(expRate.input.minimum_amount).plus(
+        new BigNumber(expRate.input.minimum_amount).times(0.000001)
+      ), // because we truncate the number at 6 decimal places
       maxValue: this.fiatCurrencies.includes(toCurrency)
         ? this.getChfEquivalentMaxMin(fromCurrency, true)
-        : this.getBtcEquivalentMax(fromCurrency)
+        : this.getBtcEquivalentMaxMin(fromCurrency, true)
+    };
+  }
+
+  async getRateUpdate(fromCurrency, toCurrency, fromValue) {
+    const expRate = await this._getRateEstimate(
+      fromCurrency,
+      toCurrency,
+      fromValue
+    );
+
+    const rate = this.calculateRate(
+      expRate.input.amount,
+      expRate.output.amount
+    );
+    this.rates.set(`${fromCurrency}/${toCurrency}`, rate);
+
+    return {
+      fromCurrency,
+      toCurrency,
+      provider: this.name,
+      rate: rate,
+      minValue: new BigNumber(expRate.input.minimum_amount).plus(
+        new BigNumber(expRate.input.minimum_amount).times(0.000001)
+      ), // because we truncate the number at 6 decimal places
+      maxValue: this.fiatCurrencies.includes(toCurrency)
+        ? this.getChfEquivalentMaxMin(fromCurrency, true)
+        : this.getBtcEquivalentMaxMin(fromCurrency, true)
     };
   }
 
@@ -184,14 +230,18 @@ export default class BitySwap {
     );
   }
 
-  getBtcEquivalentMax(currency) {
+  getBtcEquivalentMaxMin(currency, max) {
     if (currency === BASE_EQUIVALENT_CURRENCY) {
-      return this.maxValue;
+      return max ? this.maxValue : this.minValue;
     }
     const btcRate = this._getRate(currency, BASE_EQUIVALENT_CURRENCY);
-    return new BigNumber(this.maxValue)
-      .div(new BigNumber(btcRate))
-      .toFixed(6, BigNumber.ROUND_UP);
+    return max
+      ? new BigNumber(this.maxValue)
+          .div(new BigNumber(btcRate))
+          .toFixed(6, BigNumber.ROUND_UP)
+      : new BigNumber(this.minValue)
+          .div(new BigNumber(btcRate))
+          .toFixed(6, BigNumber.ROUND_UP);
   }
 
   getChfEquivalentMaxMin(cryptoCurrency, max) {
@@ -310,29 +360,24 @@ export default class BitySwap {
       swapDetails.dataForInitialization = false;
       swapDetails.isExitToFiat = true;
       return swapDetails;
-      // throw Error('Exit to Fiat not yet implemented');
-    } else if (this.checkIfExit(swapDetails) && swapDetails.bypass) {
-      const preOrder = await this.buildExitOrder(swapDetails);
-      if (preOrder.created) {
-        swapDetails.dataForInitialization = await getCyptoToFiatOrderDetails({
-          pair: swapDetails.fromCurrency + swapDetails.toCurrency,
-          detailsUrl: preOrder.status_address,
-          phoneToken: this.phoneToken
-        });
-        if (swapDetails.dataForInitialization) {
-          swapDetails.providerReceives =
-            swapDetails.dataForInitialization.input.amount;
-          swapDetails.providerSends =
-            swapDetails.dataForInitialization.output.amount;
-          swapDetails.parsed = BitySwap.parseExitOrder(
-            swapDetails.dataForInitialization
-          );
-          swapDetails.providerAddress =
-            swapDetails.dataForInitialization.payment_address;
-          swapDetails.isDex = BitySwap.isDex();
-        } else {
-          throw Error('abort');
-        }
+    } else if (this.checkIfExit(swapDetails)) {
+      swapDetails.dataForInitialization = await createOrder(swapDetails);
+      if (swapDetails.dataForInitialization) {
+        swapDetails.providerReceives =
+          swapDetails.dataForInitialization.input.amount;
+        swapDetails.providerSends =
+          swapDetails.dataForInitialization.output.amount;
+        swapDetails.parsed = BitySwap.parseExitOrder(
+          swapDetails.dataForInitialization
+        );
+        swapDetails.timestamp = swapDetails.parsed.timestamp.replace('ZZ', 'Z');
+        swapDetails.providerSends = swapDetails.parsed.recValue;
+        swapDetails.providerAddress =
+          swapDetails.dataForInitialization.payment_address;
+        swapDetails.isDex = BitySwap.isDex();
+        swapDetails.validFor = swapDetails.parsed.validFor;
+      } else {
+        throw Error('abort');
       }
     } else if (!this.checkIfExit(swapDetails)) {
       swapDetails.dataForInitialization = await this.buildOrder(swapDetails);
@@ -344,9 +389,11 @@ export default class BitySwap {
       swapDetails.parsed = BitySwap.parseOrder(
         swapDetails.dataForInitialization
       );
+      swapDetails.providerSends = swapDetails.parsed.recValue;
       swapDetails.providerAddress =
         swapDetails.dataForInitialization.payment_address;
       swapDetails.isDex = BitySwap.isDex();
+      swapDetails.validFor = swapDetails.parsed.validFor;
     }
 
     return swapDetails;
@@ -359,10 +406,7 @@ export default class BitySwap {
     toValue,
     toAddress
   }) {
-    if (
-      this.minCheck(fromCurrency, fromValue, toCurrency, toValue) &&
-      this.maxCheck(fromCurrency, fromValue, toCurrency, toValue)
-    ) {
+    if (this.maxCheck(fromCurrency, fromValue, toCurrency, toValue)) {
       const order = {
         amount: fromValue,
         mode: 0,
@@ -374,74 +418,6 @@ export default class BitySwap {
     }
   }
 
-  loadStoredCredentials() {
-    const userDetails = store.get(LOCAL_STORAGE_KEY);
-    if (userDetails !== null && userDetails !== undefined) {
-      return userDetails;
-    }
-    return {};
-  }
-
-  setStoredCredentials(phoneSha, phoneToken, verified = false) {
-    let userDetails = store.get(LOCAL_STORAGE_KEY);
-    if (userDetails === null || userDetails === undefined) {
-      userDetails = {};
-    }
-    userDetails[phoneSha] = {
-      phone_token: phoneToken,
-      verified: verified
-    };
-    store.set(LOCAL_STORAGE_KEY, userDetails);
-    this.userDetails = userDetails;
-    return userDetails;
-  }
-
-  async registerUser(initData) {
-    this.phoneSha = web3Utils.sha3(initData.phoneNumber);
-    if (this.userDetails[this.phoneSha] === undefined) {
-      await this.getPhoneToken(initData);
-      return false;
-    } else if (!this.userDetails[this.phoneSha].verified) {
-      await this.getPhoneToken(initData);
-      return false;
-    }
-    return true;
-  }
-
-  async getPhoneToken(initData) {
-    const initializeData = {
-      pair: initData.fromCurrency + initData.toCurrency,
-      phoneNumber: initData.phoneNumber
-    };
-    const result = await loginWithPhone(initializeData);
-    this.setStoredCredentials(this.phoneSha, result.phone_token);
-  }
-
-  async verifyUser(verifyData) {
-    const verificationData = {
-      pair: verifyData.fromCurrency + verifyData.toCurrency,
-      phoneToken: this.phoneToken,
-      tan: verifyData.tan
-    };
-    // returns {success: true} if successful
-    const result = await sendReceivedSmsCode(verificationData);
-    this.setStoredCredentials(this.phoneSha, this.phoneToken, result.success);
-    return result;
-  }
-
-  async buildExitOrder({ fromCurrency, toCurrency, orderDetails }) {
-    try {
-      const orderData = {
-        pair: fromCurrency + toCurrency,
-        phoneToken: this.phoneToken,
-        orderDetails: { ...orderDetails }
-      };
-      return buildCyptoToFiatOrderData(orderData);
-    } catch (e) {
-      Toast.responseHandler(e, false);
-    }
-  }
-
   async getExitOrderDetails(detailsUrl) {
     return getCyptoToFiatOrderDetails(detailsUrl);
   }
@@ -450,8 +426,8 @@ export default class BitySwap {
 
   static parseOrder(order) {
     return {
-      orderId: order.id,
-      statusId: order.reference,
+      orderId: order.reference,
+      statusId: order.id,
       sendToAddress: order.payment_address,
       recValue: order.output.amount,
       sendValue: order.payment_amount,
@@ -463,8 +439,8 @@ export default class BitySwap {
 
   static parseExitOrder(order) {
     return {
-      orderId: order.id,
-      statusId: order.reference,
+      orderId: order.reference,
+      statusId: order.id,
       sendToAddress: order.payment_address,
       recValue: order.amount,
       sendValue: order.payment_amount,
@@ -483,7 +459,7 @@ export default class BitySwap {
 
   static async getOrderStatusCrypto(noticeDetails) {
     try {
-      const data = await getStatus(noticeDetails.orderId);
+      const data = await getStatus(noticeDetails.statusId);
       if (data.status === bityStatuses.EXEC) {
         return swapNotificationStatuses.COMPLETE;
       }
@@ -515,10 +491,7 @@ export default class BitySwap {
 
   static async getOrderStatusFiat(noticeDetails) {
     try {
-      const data = await getStatusFiat(
-        noticeDetails.orderId,
-        noticeDetails.special
-      );
+      const data = await orderDetails({ detailsUrl: noticeDetails.statusId });
       if (!utils.isJson(data)) return swapNotificationStatuses.PENDING;
 
       // Since the status cannot be relied upon, we are going to assume the order went through after 10 min, if their was no error with the eth transaction.
@@ -534,9 +507,6 @@ export default class BitySwap {
         return swapNotificationStatuses.COMPLETE;
       }
       switch (data.status) {
-        // The endPoint does not seem to be updating the order.
-        //case bityStatuses.OPEN:
-        // return 'new';
         case bityStatuses.OPEN:
         case bityStatuses.RCVE:
         case bityStatuses.CONF:

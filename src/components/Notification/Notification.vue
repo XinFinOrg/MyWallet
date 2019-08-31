@@ -2,7 +2,11 @@
   <div class="notification-container">
     <div class="notification-logo" @click="showNotifications">
       <img class="logo-large" src="~@/assets/images/icons/notification.svg" />
-      <div v-show="unreadCount > 0" class="notification-dot" />
+      <div v-show="unreadCount > 0" class="notification-dot">
+        <div class="parent">
+          <div class="heart"></div>
+        </div>
+      </div>
     </div>
     <b-modal
       ref="notification"
@@ -11,6 +15,7 @@
       no-padding
       class="bootstrap-modal-wide nopadding"
       @show="countUnread"
+      @hide="hiddenModal"
     >
       <template slot="modal-title">
         <div>
@@ -98,7 +103,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import store from 'store';
 import unit from 'ethjs-unit';
 import BigNumber from 'bignumber.js';
@@ -120,6 +125,8 @@ import {
   notificationType
 } from '@/helpers/notificationFormatters';
 
+import { SwapProviders } from '@/partners';
+
 export default {
   components: {
     'swap-notification': SwapNotification,
@@ -129,6 +136,7 @@ export default {
   },
   data() {
     return {
+      cancelHide: false,
       shown: false,
       unreadCount: 0,
       ethPrice: new BigNumber(0),
@@ -138,14 +146,8 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      web3: 'web3',
-      network: 'network',
-      notifications: 'notifications',
-      account: 'account'
-    }),
+    ...mapState(['web3', 'network', 'notifications', 'account', 'online']),
     sortedNotifications() {
-      this.countUnread();
       if (!this.notifications[this.account.address]) return [];
       const notifications = this.notifications[this.account.address];
       return notifications
@@ -169,14 +171,16 @@ export default {
       store.set('notifications', this.notifications);
     }
     this.countUnread();
-    this.fetchBalanceData();
-    this.$refs.notification.$on('hide', () => {
-      this.shown = false;
-      this.hideDetails();
-    });
-    this.checkForUnResolvedTxNotifications();
+    if (this.online) {
+      this.fetchBalanceData();
+      this.checkForUnResolvedTxNotifications();
+    }
   },
   methods: {
+    hiddenModal() {
+      this.shown = false;
+      this.hideDetails();
+    },
     checkForUnResolvedTxNotifications() {
       if (!this.notifications[this.account.address]) return [];
       const check = this.notifications[this.account.address]
@@ -231,6 +235,7 @@ export default {
       this.$refs.notification.show();
     },
     showDetails(details) {
+      this.cancelHide = true;
       this.detailsShown = true;
       this.detailType = details[0];
       this.notificationDetails = details[1];
@@ -256,16 +261,10 @@ export default {
       return 'transaction-details';
     },
     countUnread() {
-      const self = this;
-      self.unreadCount = 0;
-      if (
-        self.notifications[this.account.address] !== undefined &&
-        self.notifications[this.account.address].length > 0
-      ) {
-        self.notifications[this.account.address].map(item => {
-          if (item.read === false) {
-            self.unreadCount++;
-          }
+      this.unreadCount = 0;
+      if (this.sortedNotifications.length) {
+        this.sortedNotifications.forEach(notif => {
+          if (notif.read === false) this.unreadCount++;
         });
       }
     },
@@ -333,12 +332,18 @@ export default {
       }
       return notice.body.errorMessage;
     },
-    hashLink(hash) {
+    hashLink(hash, currency) {
+      if (currency && SwapProviders.isNotToken(currency)) {
+        return SwapProviders.getBlockChainExplorerUrl(currency, hash);
+      }
       if (this.network.type.blockExplorerTX) {
         return this.network.type.blockExplorerTX.replace('[[txHash]]', hash);
       }
     },
-    addressLink(addr) {
+    addressLink(addr, currency) {
+      if (currency && SwapProviders.isNotToken(currency)) {
+        return SwapProviders.getAddressLookupUrl(currency, addr);
+      }
       if (this.network.type.blockExplorerAddr) {
         return this.network.type.blockExplorerAddr.replace('[[address]]', addr);
       }
@@ -363,16 +368,17 @@ export default {
       const url = 'https://cryptorates.mewapi.io/ticker';
       const fetchValues = await fetch(url);
       const values = await fetchValues.json();
-      if (!values['ETH']) return 0;
-      this.ethPrice = new BigNumber(values['ETH'].quotes.USD.price);
+      if (!values) return 0;
+      if (!values && !values.data && !values.data['ETH']) return 0;
+      this.ethPrice = new BigNumber(values.data['ETH'].quotes.USD.price);
     },
     convertToGwei(value) {
       if (this.notValidNumber(value)) return '';
-      return unit.fromWei(value, 'Gwei');
+      return unit.fromWei(new BigNumber(value).toFixed(), 'Gwei');
     },
     convertToEth(value) {
       if (this.notValidNumber(value)) return '';
-      return unit.fromWei(value, 'ether');
+      return unit.fromWei(new BigNumber(value).toFixed(), 'ether');
     },
     getFiatValue(value) {
       if (this.notValidNumber(value)) return '';

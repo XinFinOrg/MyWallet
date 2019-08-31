@@ -7,7 +7,7 @@
   "others": "Другие",
   "affiliates": "Партнеры",
   "ledger": "Кошелек Ledger",
-  "digital": "Digital Bitbox",
+  "digital": "BitBox",
   "ethCard": "Карта Ether",
   "trezor": "Trezor",
   "bity": "Bity",
@@ -21,5 +21,12 @@
   "love": "Нравится",
   "donate": "XinFin Wallet? Сделайте пожертвование!",
   "pricingP": "Pricing taken from",
-  "advanced": "Advanced"
+  "advanced": "Advanced",
+  "sendOffline": "Send Offline Helper",
+  "finney": "Finney",
+  "billfodl": "Billfodl",
+  "verifyMessage": "Verify Message",
+  "keepkey": "KeepKey",
+  "secalot": "Secalot",
+  "bitbox": "Bitbox"
 }

@@ -19,7 +19,7 @@
           <p>
             <span>{{ $t('confirmation.txTotal') }}:</span>
             {{ txTotal }}
-            {{ network.type.name }}
+            {{ network.type.currencyName }}
           </p>
         </div>
         <div class="modal-content-body">
@@ -34,7 +34,9 @@
                 <div>
                   <p>
                     - {{ web3.utils.hexToNumberString(item.value) }}
-                    <span>{{ network.type.name }}</span>
+                    <span>
+                      {{ network.type.currencyName }}
+                    </span>
                   </p>
                   <div>
                     <span>{{ $t('common.from') }}</span>
@@ -53,7 +55,9 @@
                 <div>
                   <p>
                     + {{ web3.utils.hexToNumberString(item.value) }}
-                    <span>{{ network.type.name }}</span>
+                    <span>
+                      {{ network.type.currencyName }}
+                    </span>
                   </p>
                   <div>
                     <span>{{ $t('common.to') }}</span>
@@ -74,11 +78,7 @@
               <div class="body-item">
                 <span class="item-title">{{ $t('common.gasPrice') }}</span>
                 <span>
-                  {{
-                    web3.utils.hexToNumberString(
-                      web3.utils.fromWei(item.gasPrice, 'gwei')
-                    )
-                  }}
+                  {{ web3.utils.fromWei(item.gasPrice, 'gwei') }}
                   Gwei
                 </span>
               </div>
@@ -143,7 +143,7 @@
 </template>
 <script>
 import AddressBlock from '../AddressBlock';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 
 export default {
   components: {
@@ -172,11 +172,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters({
-      web3: 'web3',
-      network: 'network',
-      account: 'account'
-    }),
+    ...mapState(['web3', 'network', 'account']),
     buttonText() {
       if (!this.allSigned && this.isHardwareWallet) {
         return this.$t('confirmation.approveOnDevice');

@@ -1,11 +1,9 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
 import { shallowMount } from '@vue/test-utils';
 import ConfirmModal from '@/containers/ConfirmationContainer/components/ConfirmModal/ConfirmModal.vue';
 import VueQrcode from '@xkeshi/vue-qrcode';
 import { Tooling } from '@@/helpers';
-import { state, getters } from '@@/helpers/mockStore';
-
+import StandardButton from '@/components/Buttons/StandardButton';
 const AddressBlockStub = {
   name: 'address-block',
   template: '<p class="address-block"><slot></slot></p>'
@@ -29,11 +27,8 @@ describe('ConfirmModal.vue', () => {
     localVue = baseSetup.localVue;
     i18n = baseSetup.i18n;
     store = baseSetup.store;
-    Vue.config.errorHandler = () => {};
-    store = new Vuex.Store({
-      getters,
-      state
-    });
+
+    Vue.config.warnHandler = () => {};
   });
 
   beforeEach(() => {
@@ -44,7 +39,8 @@ describe('ConfirmModal.vue', () => {
       attachToDocument: true,
       stubs: {
         qrcode: VueQrcode,
-        'address-block': AddressBlockStub
+        'address-block': AddressBlockStub,
+        'standard-button': StandardButton
       },
       propsData: {
         confirmSendTx,
@@ -89,7 +85,8 @@ describe('ConfirmModal.vue', () => {
         .querySelectorAll('.grid-block')[3]
         .querySelectorAll('p')[1]
         .textContent.trim()
-    ).toEqual(wrapper.props().fee + ' ETH');
+        .indexOf(wrapper.props().fee)
+    ).toBeGreaterThan(-1);
   });
 
   it('should render correct nonce props', () => {
@@ -110,22 +107,6 @@ describe('ConfirmModal.vue', () => {
         .querySelectorAll('p')[1]
         .textContent.trim()
     ).toEqual(wrapper.props().data);
-  });
-
-  it('should render correct sendTx props', () => {
-    expect(
-      wrapper
-        .find('.submit-button')
-        .classes()
-        .indexOf('disabled')
-    ).toBe(-1);
-    wrapper.setProps({ signedTx: '' });
-    expect(
-      wrapper
-        .find('.submit-button')
-        .classes()
-        .indexOf('disabled')
-    ).toBeGreaterThan(-1);
   });
 
   it('should render correct from props', () => {
@@ -165,8 +146,7 @@ describe('ConfirmModal.vue', () => {
 
   describe('ConfirmModal.vue Methods', () => {
     it('should confirm sendtx when click submit button', () => {
-      const submitButton = wrapper.find('div.submit-button');
-      submitButton.trigger('click');
+      wrapper.vm.sendTx();
       expect(confirmSendTx).toHaveBeenCalled();
     });
 

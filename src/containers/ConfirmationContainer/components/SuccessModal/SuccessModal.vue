@@ -12,24 +12,32 @@
         <h2 class="title">{{ $t('confirmation.success') }}</h2>
         <p>{{ message }}</p>
       </div>
-      <div class="button-container">
-        <div
-          class="mid-round-button-green-filled close-button"
-          @click="hideModal"
+
+      <div class="buttons">
+        <a
+          v-if="etherscanLink"
+          :href="etherscanLink"
+          target="_blank"
+          rel="noopener noreferrer"
         >
-          {{ linkMessage === '' ? 'Ok' : linkMessage }}
-        </div>
+          <standard-button :options="buttonCheckEtherscan" />
+        </a>
+        <standard-button :options="buttonOk" @click.native="hideModal" />
       </div>
     </div>
     <!-- .modal-content-block -->
   </b-modal>
 </template>
 
-<style lang="scss" scoped>
-@import 'SuccessModal';
-</style>
 <script>
+import StandardButton from '@/components/Buttons/StandardButton';
+import { mapState } from 'vuex';
+import { Misc } from '@/helpers';
+
 export default {
+  components: {
+    'standard-button': StandardButton
+  },
   props: {
     message: {
       type: String,
@@ -42,6 +50,31 @@ export default {
     linkTo: {
       type: String,
       default: '/'
+    },
+    etherscanLink: {
+      type: String,
+      default: null
+    }
+  },
+  computed: {
+    ...mapState(['network']),
+    buttonCheckEtherscan() {
+      return {
+        // eslint-disable-next-line
+        title: `Check Status on ${this.explorrerName}`,
+        buttonStyle: 'green-border',
+        fullWidth: true
+      };
+    },
+    buttonOk() {
+      return {
+        title: this.linkMessage === '' ? 'Ok' : this.linkMessage,
+        buttonStyle: 'green',
+        fullWidth: true
+      };
+    },
+    explorrerName() {
+      return Misc.getService(this.network.type.blockExplorerTX);
     }
   },
   methods: {
@@ -54,3 +87,7 @@ export default {
   }
 };
 </script>
+
+<style lang="scss" scoped>
+@import 'SuccessModal';
+</style>

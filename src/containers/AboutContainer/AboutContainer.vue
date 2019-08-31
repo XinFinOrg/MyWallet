@@ -12,10 +12,6 @@
               </div> -->
               <!-- <div class="image-content">
                 <img
-                  class="spaceman"
-                  src="~@/assets/images/home/spaceman.png"
-                />
-                <img
                   class="mew-icon"
                   src="~@/assets/images/home/mew-icon.png"
                 />

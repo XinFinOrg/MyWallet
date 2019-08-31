@@ -40,7 +40,11 @@
   "registerEnsWarn1": "Domain name is less than 7 characters.",
   "registerEnsWarn2": "Invalid symbols on domain",
   "registerEnsContractNotReady": "Contract is not ready yet, transaction might fail.",
-  "updateResolver": "Update Resolver address",
+  "updateResolver": "Update Resolving address",
   "transferEnsTo": "Transfer ENS domain to",
-  "ensNotAvailable": "is not available yet"
+  "ensNotAvailable": "is not available yet",
+  "sendMy": "Send My {value}",
+  "nftOwnCount": "{perPage} Per Page | {count} Items Total",
+  "noneOwned": "You own no NFTs",
+  "showing": " Showing {first} - {last}"
 }

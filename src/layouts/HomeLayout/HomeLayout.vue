@@ -10,7 +10,7 @@
 import AboutContainer from '@/containers/AboutContainer';
 import Social from './components/Social';
 import TopBanner from './components/TopBanner';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 
 export default {
   name: 'HomeContainer',
@@ -22,14 +22,11 @@ export default {
   data() {
     return {
       address: '',
-      resolvedAddress: '',
-      message: 'pogchamp'
+      resolvedAddress: ''
     };
   },
   computed: {
-    ...mapGetters({
-      online: 'online'
-    })
+    ...mapState(['online'])
   }
 };
 </script>

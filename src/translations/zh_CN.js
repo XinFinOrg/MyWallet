@@ -14,6 +14,14 @@ import interfaceTranslations from './interface/zh_CN';
 import team from './team/zh_CN';
 import popover from './popover/zh_CN';
 import withoutWallet from './without-wallet/zh_CN';
+import errorsGlobal from './errors-global/zh_CN';
+import trezorError from './errors-trezor/zh_CN';
+import ledgerError from './errors-ledger/zh_CN';
+import secalotError from './errors-secalot/zh_CN';
+import keepkeyError from './errors-keepkey/zh_CN';
+import bitboxError from './errors-bitbox/zh_CN';
+import buyHardwareWallet from './buy-hardware-wallet/zh_CN';
+import dappsMaker from './dapps-maker/zh_CN';
 
 const zh_CN = {
   common: common,
@@ -30,6 +38,14 @@ const zh_CN = {
   createWallet: createWallet,
   interface: interfaceTranslations,
   popover: popover,
-  withoutWallet: withoutWallet
+  withoutWallet: withoutWallet,
+  errorsGlobal: errorsGlobal,
+  trezorError: trezorError,
+  ledgerError: ledgerError,
+  secalotError: secalotError,
+  keepkeyError: keepkeyError,
+  bitboxError: bitboxError,
+  buyHardwareWallet: buyHardwareWallet,
+  dappsMaker: dappsMaker
 };
 export default zh_CN;

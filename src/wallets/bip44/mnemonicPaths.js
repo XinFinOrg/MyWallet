@@ -21,7 +21,12 @@ import {
   mixBlockchain,
   iolite,
   rskMainnet,
-  rskTestnet
+  rskTestnet,
+  thundercore,
+  solidum,
+  metadium,
+  dexon,
+  lightstreamsNetwork
 } from './paths';
 export default [
   ethereum,
@@ -46,5 +51,10 @@ export default [
   mixBlockchain,
   iolite,
   rskMainnet,
-  rskTestnet
+  rskTestnet,
+  thundercore,
+  solidum,
+  metadium,
+  dexon,
+  lightstreamsNetwork
 ];

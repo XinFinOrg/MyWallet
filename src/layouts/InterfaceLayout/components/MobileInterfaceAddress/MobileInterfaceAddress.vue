@@ -6,15 +6,15 @@
         <div class="blockie-container">
           <blockie :address="newAddress" :size="8" :scale="16" class="blockie-image"/>
         </div>
-        <div class="address">{{ newAddress }}</div>
-        <input ref="copyAddress" :value="newAddress" class="hidden-input" autocomplete="off">
+        <div class="address">{{ address }}</div>
+        <input
+          ref="copyAddress"
+          :value="address"
+          class="hidden-input"
+          autocomplete="off"
+        />
         <div class="address-end">
-          {{
-         newAddress.substring(
-          newAddress.length - 4,
-          newAddress.length
-          )
-          }}
+          {{ address.substring(address.length - 4, address.length) }}
         </div>
         <div class="buttons-container">
           <button @click="openQrcode">
@@ -22,6 +22,9 @@
             <div class="floating-barcode">
               <div class="barcode-image"></div>
             </div>
+          </button>
+          <button @click="print">
+            <img src="~@/assets/images/icons/printer-white.svg" />
           </button>
           <button @click="copy">
             <img src="~@/assets/images/icons/copy.svg">
@@ -39,7 +42,7 @@
 <script>
 import AddressQrcodeModal from '@/components/AddressQrcodeModal';
 import Blockie from '@/components/Blockie';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import { Toast } from '@/helpers';
 import {
   KEYSTORE,
@@ -74,9 +77,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      account: 'account'
-    })
+    ...mapState(['account'])
   },
   mounted() {
     if (this.account.address !== null) {

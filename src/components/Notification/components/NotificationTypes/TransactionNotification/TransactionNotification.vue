@@ -16,14 +16,34 @@
       ]"
     >
       <ul>
-        <li>
+        <li v-if="isTokenTransfer">
           <p>{{ $t('header.amount') }}:</p>
-          <p>{{ convertToEth(details.amount) }} ETH</p>
+          <p>{{ details.tokenTransferVal }} {{ details.tokenSymbol }}</p>
+        </li>
+        <li v-if="!isTokenTransfer">
+          <p>{{ $t('header.amount') }}:</p>
+          <p>{{ convertToEth(details.amount) }} {{ network.type.name }}</p>
         </li>
         <li>
           <p>{{ $t('common.toAddress') }}:</p>
           <p>
-            <a :href="addressLink(details.to)" target="_blank">
+            <a
+              :href="addressLink(details.tokenTransferTo || details.to)"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              {{ details.tokenTransferTo || details.to }}
+            </a>
+          </p>
+        </li>
+        <li v-if="isTokenTransfer">
+          <p>Via contract:</p>
+          <p>
+            <a
+              :href="addressLink(details.to)"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
               {{ details.to }}
             </a>
           </p>
@@ -31,16 +51,31 @@
         <li v-if="isContractCreation">
           <p>{{ $t('common.createdContract') }}:</p>
           <p>
-            <a :href="addressLink(details.contractAddress)" target="_blank">
+            <a
+              :href="addressLink(details.contractAddress)"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
               {{ details.contractAddress }}
             </a>
           </p>
         </li>
-        <li>
+        <li v-if="notice.body.gasUsed">
           <p>{{ $t('common.txFee') }}:</p>
           <p>
-            {{ details.gasLimit }} WEI (${{
-              getFiatValue(details.gasPrice * details.gasUsed)
+            {{ convertToEth(details.gasPrice * details.gasUsed) }}
+            {{ network.type.name }}
+            <span>
+              (${{ getFiatValue(details.gasPrice * details.gasUsed) }})
+            </span>
+          </p>
+        </li>
+        <li>
+          <p>{{ $t('header.maxTxFee') }}:</p>
+          <p>
+            {{ convertToEth(details.gasPrice * details.gasLimit) }}
+            {{ network.type.name }} (${{
+              getFiatValue(details.gasPrice * details.gasLimit)
             }})
           </p>
         </li>
@@ -48,7 +83,11 @@
           <p>{{ $t('header.transactionHash') }}:</p>
         </li>
         <li v-if="notice.hash">
-          <a :href="hashLink(notice.hash)" target="_blank">
+          <a
+            :href="hashLink(notice.hash)"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
             {{ notice.hash }}
           </a>
         </li>
@@ -65,7 +104,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import NotificationHeader from '../../NotificationHeader';
 
 export default {
@@ -126,12 +165,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      web3: 'web3',
-      network: 'network',
-      notifications: 'notifications',
-      wallet: 'wallet'
-    }),
+    ...mapState(['web3', 'network', 'notifications', 'wallet']),
     errorMessage() {
       return this.errorMessageString(this.notice);
     },
@@ -143,6 +177,9 @@ export default {
         this.notice.body.contractAddress !== undefined &&
         this.notice.body.contractAddress !== null
       );
+    },
+    isTokenTransfer() {
+      return this.notice.body.tokenTransferTo !== '';
     },
     details() {
       if (  this.notice.body.contractAddress !== undefined && this.notice.body.contractAddress !== null)

@@ -1,10 +1,8 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
 import { shallowMount } from '@vue/test-utils';
 import NetworkAndAddressModal from '@/layouts/AccessWalletLayout/components/NetworkAndAddressModal/NetworkAndAddressModal.vue';
 import sinon from 'sinon';
 import { Tooling } from '@@/helpers';
-import { state, getters } from '@@/helpers/mockStore';
 
 const showModal = sinon.stub();
 const hideModal = sinon.stub();
@@ -32,17 +30,6 @@ describe('NetworkAndAddressModal.vue', () => {
     i18n = baseSetup.i18n;
     store = baseSetup.store;
 
-    const actions = {
-      decryptWallet: jest.fn()
-    };
-
-    store = new Vuex.Store({
-      actions,
-      getters,
-      state
-    });
-
-    Vue.config.errorHandler = () => {};
     Vue.config.warnHandler = () => {};
   });
 
@@ -53,7 +40,8 @@ describe('NetworkAndAddressModal.vue', () => {
       store,
       attachToDocument: true,
       mocks: {
-        $router: mockRoute
+        $router: mockRoute,
+        $route: { path: '/access-my-wallet' }
       },
       stubs: {
         'b-modal': BModalStub
@@ -61,25 +49,25 @@ describe('NetworkAndAddressModal.vue', () => {
     });
   });
 
-  describe('NetworkAndAddressModal.vue Methods', () => {
-    xit('should reset the privateKey via input element', () => {
-      expect(wrapper.vm.$data.accessMyWalletBtnDisabled).toBe(true);
-      const checkboxElement = wrapper.find('.checkbox-container input');
-      checkboxElement.trigger('click');
-      expect(wrapper.vm.$data.accessMyWalletBtnDisabled).toBe(false);
-    });
+  xit('[7-2-19] should render correct accessMyWalletBtnDisabled data', () => {
+    expect(wrapper.vm.$data.accessMyWalletBtnDisabled).toBe(true);
+    const accessMyWalletBtn = wrapper.find({ ref: 'accessMyWalletBtn' });
+    accessMyWalletBtn.trigger('click');
+    expect(wrapper.vm.$data.accessMyWalletBtnDisabled).toBe(false);
+  });
 
-    xit('should render correct unlockWallet method', () => {
+  describe('NetworkAndAddressModal.vue Methods', () => {
+    it('should render correct unlockWallet method', () => {
       wrapper.vm.unlockWallet();
       expect(spy.calledWith({ path: 'interface' })).toBe(true);
     });
 
-    xit('should render correct showCustomPathInput method', () => {
-      let customPath = { label: 'label', dpath: 'dpath' };
+    it('should render correct showCustomPathInput method', () => {
+      let customPath = { label: 'label', path: 'dpath' };
       wrapper.setData({ customPath });
       wrapper.vm.showCustomPathInput();
       expect(wrapper.vm.$data.customPathInput).toBe(true);
-      customPath = { label: '', dpath: '' };
+      customPath = { label: '', path: '' };
       expect(wrapper.vm.$data.customPath).toEqual(customPath);
     });
   });

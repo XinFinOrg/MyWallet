@@ -31,7 +31,9 @@
           <p>
             <strong
               >Scams and
-              <a href="https://www.google.com/safebrowsing/static/faq.html#q1"
+              <a
+                rel="noopener noreferrer"
+                href="https://www.google.com/safebrowsing/static/faq.html#q1"
                 >phishing sites</a
               >
               and malicious links exist. Trust messages and random links about
@@ -217,17 +219,21 @@
         <li>
           <a href="http://www.xinfin.network/">XinFin Wallet.com</a> or
           <a
+            rel="noopener noreferrer"
             href="https://www.reddit.com/r/ethereum/comments/44vbef/myetherwallet_chrome_extension_the_beta_has/"
           >
             MEW Chrome Extension
           </a>
         </li>
         <li>
-          <a href="http://jaxx.io/">JAXX</a> - multi-platform, multi-currency
+          <a rel="noopener noreferrer" href="http://jaxx.io/">JAXX</a> -
+          multi-platform, multi-currency
         </li>
         <li>
-          <a href="https://www.exodus.io/">Exodus.io</a> - multi-currency
-          desktop app
+          <a rel="noopener noreferrer" href="https://www.exodus.io/"
+            >Exodus.io</a
+          >
+          - multi-currency desktop app
         </li>
       </ul>
 
@@ -288,6 +294,7 @@
         <em
           >Originally posted on StackExchange:
           <a
+            rel="noopener noreferrer"
             href="https://ethereum.stackexchange.com/questions/1915/how-do-i-buy-ethereum-with-usd"
           >
             https://ethereum.stackexchange.com/questions/1915/how-do-i-buy-ethereum-with-usd

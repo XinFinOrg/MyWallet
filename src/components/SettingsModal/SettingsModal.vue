@@ -35,12 +35,12 @@
                       Gwei)
                     </label>
                   </div>
-                  <p>
-                    {{ gasPriceInputs[key].eth }} XDC
-                    <!-- <span v-if="ethPrice !== 0">
+                  <p class="hidden">
+                    {{ gasPriceInputs[key].eth }} {{ network.type.name }}
+                    <span v-if="ethPrice !== 0 && network.type.name === 'XDC'">
                       ($
-                      {{ convert(gasPriceInputs[key].eth) | concatAddr }})
-                    </span> -->
+                      {{ convert(gasPriceInputs[key].eth) }})
+                    </span>
                   </p>
                 </li>
                 <li :class="selectedGasType === 'other' ? 'selected' : ''">
@@ -61,11 +61,17 @@
                     />
                     <p class="gwei">Gwei</p>
                   </div>
-                  <p>
-                    {{ customGasEth }} XDC
-                    <!-- <span v-if="ethPrice !== 0 && customGasEth !== 0"
-                      >($ {{ convert(customGasEth) | concatAddr }})</span
-                    > -->
+                  <p class="hidden">
+                    {{ customGasEth }}
+                    {{ network.type.currencyName }}
+                    <span
+                      v-if="
+                        ethPrice !== 0 &&
+                          customGasEth !== 0 &&
+                          network.type.name === 'XDC'
+                      "
+                      >($ {{ convert(customGasEth) }})</span
+                    >
                   </p>
                 </li>
               </ul>
@@ -139,6 +145,7 @@ import BigNumber from 'bignumber.js';
 import utils from 'web3-utils';
 import store from 'store';
 import { Toast } from '@/helpers';
+import { mapState } from 'vuex';
 
 export default {
   name: 'Settings',
@@ -211,18 +218,19 @@ export default {
     };
   },
   computed: {
+    ...mapState(['network', 'online']),
     gasPriceInputs() {
       return {
         economy: {
           gwei: new BigNumber(
             utils.fromWei(
-              new BigNumber(this.gasPrice).div(2).toFixed(0),
+              new BigNumber(this.gasPrice).div(1).toFixed(0),
               'gwei'
             )
           ).toFixed(),
           eth: new BigNumber(
             utils.fromWei(
-              new BigNumber(this.gasPrice).div(2).toFixed(0),
+              new BigNumber(this.gasPrice).div(1).toFixed(0),
               'ether'
             )
           ).toFixed()
@@ -230,13 +238,13 @@ export default {
         regular: {
           gwei: new BigNumber(
             utils.fromWei(
-              new BigNumber(this.gasPrice).div(1).toFixed(0),
+              new BigNumber(this.gasPrice).times(1.5).toFixed(0),
               'gwei'
             )
           ).toFixed(),
           eth: new BigNumber(
             utils.fromWei(
-              new BigNumber(this.gasPrice).div(1).toFixed(0),
+              new BigNumber(this.gasPrice).times(1.5).toFixed(0),
               'ether'
             )
           ).toFixed()
@@ -244,13 +252,13 @@ export default {
         fast: {
           gwei: new BigNumber(
             utils.fromWei(
-              new BigNumber(this.gasPrice).times(1.25).toFixed(0),
+              new BigNumber(this.gasPrice).times(2).toFixed(0),
               'gwei'
             )
           ).toFixed(),
           eth: new BigNumber(
             utils.fromWei(
-              new BigNumber(this.gasPrice).div(1.25).toFixed(0),
+              new BigNumber(this.gasPrice).div(2).toFixed(0),
               'ether'
             )
           ).toFixed()
@@ -268,10 +276,15 @@ export default {
           `${utils.fromWei(toGwei, 'ether')}`
         ).toFixed();
       }
+    },
+    gasPrice() {
+      this.saveGasChanges();
     }
   },
   mounted() {
-    this.getEthPrice();
+    if (this.online) {
+      this.getEthPrice();
+    }
     this.exportConfig();
   },
   methods: {
@@ -400,7 +413,8 @@ export default {
       this.file = window.URL.createObjectURL(file);
     },
     convert(price) {
-      return new BigNumber(price * this.ethPrice).toFixed();
+      const convertedPrice = new BigNumber(price * this.ethPrice).toFixed();
+      return this.$options.filters.concatAddr(convertedPrice);
     },
     async getEthPrice() {
       const price = await fetch(
@@ -413,9 +427,7 @@ export default {
           Toast.responseHandler(e, Toast.ERROR);
         });
 
-      this.ethPrice = Promise.resolve(price).then(res => {
-        return res.data.ETH.quotes.USD.price;
-      });
+      this.ethPrice = price.data.ETH.quotes.USD.price;
     }
   }
 };

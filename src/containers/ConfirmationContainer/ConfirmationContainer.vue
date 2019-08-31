@@ -49,11 +49,21 @@
       ref="successModal"
       :message="successMessage"
       :link-message="linkMessage"
+      :link-to="linkTo"
+      :etherscan-link="etherscanLink"
     />
     <error-modal
       ref="errorModal"
       :message="successMessage"
       :link-message="linkMessage"
+    />
+    <swap-widget
+      ref="swapWidget"
+      :supplied-from="swapWigetData['fromCurrency']"
+      :supplied-to="swapWigetData['toCurrency']"
+      :supplied-from-amount="swapWigetData['fromValue']"
+      :supplied-to-amount="swapWigetData['toValue']"
+      :dest-address="swapWigetData['destAddress']"
     />
   </div>
 </template>
@@ -61,18 +71,19 @@
 <script>
 import * as unit from 'ethjs-unit';
 import BigNumber from 'bignumber.js';
-import * as ethTx from 'ethereumjs-tx';
+import { Transaction } from 'ethereumjs-tx';
 import ConfirmModal from './components/ConfirmModal';
 import ConfirmCollectionModal from './components/ConfirmCollectionModal';
 import SuccessModal from './components/SuccessModal';
 import ErrorModal from './components/ErrorModal';
 import ConfirmSignModal from './components/ConfirmSignModal';
-import { mapGetters } from 'vuex';
-import Web3PromiEvent from 'web3-core-promievent';
+import { mapState } from 'vuex';
 import { type as noticeTypes } from '@/helpers/notificationFormatters';
 import { WEB3_WALLET, KEEPKEY } from '@/wallets/bip44/walletTypes';
 import { Toast, Misc } from '@/helpers';
 import locStore from 'store';
+import parseTokensData from '@/helpers/parseTokensData.js';
+import SwapWidget from '@/layouts/InterfaceLayout/containers/SwapContainer/components/SwapWidget';
 
 const events = {
   showSuccessModal: 'showSuccessModal',
@@ -90,7 +101,8 @@ export default {
     'confirm-collection-modal': ConfirmCollectionModal,
     'success-modal': SuccessModal,
     'error-modal': ErrorModal,
-    'confirm-sign-modal': ConfirmSignModal
+    'confirm-sign-modal': ConfirmSignModal,
+    'swap-widget': SwapWidget
   },
   props: {
     active: {
@@ -115,7 +127,7 @@ export default {
       nonce: '',
       gasLimit: '21000',
       data: '0x',
-      gasAmount: this.gasPrice,
+      gasPrice: 0,
       parsedBalance: 0,
       toAddress: '',
       transactionFee: '',
@@ -129,21 +141,31 @@ export default {
       signedMessage: '',
       successMessage: 'Success',
       linkMessage: 'OK',
+      linkTo: '/',
+      etherscanLink: null,
       dismissed: true,
       signedArray: [],
       txBatch: null,
       sending: false,
       unSignedArray: [],
-      signCallback: {}
+      signCallback: {},
+      swapWigetData: {
+        destAddress: '',
+        fromCurrency: {
+          symbol: 'ETH',
+          name: ''
+        },
+        toCurrency: {
+          symbol: 'ETH',
+          name: ''
+        },
+        fromValue: undefined,
+        toValue: undefined
+      }
     };
   },
   computed: {
-    ...mapGetters({
-      gasPrice: 'gasPrice',
-      wallet: 'wallet',
-      web3: 'web3',
-      account: 'account'
-    }),
+    ...mapState(['wallet', 'web3', 'account', 'network']),
     fromAddress() {
       if (this.account) {
         return this.account.address;
@@ -156,10 +178,13 @@ export default {
     });
   },
   created() {
-    this.$eventHub.$on('showSuccessModal', (message, linkMessage) => {
-      if (!message) message = null;
-      this.showSuccessModal(message, linkMessage);
-    });
+    this.$eventHub.$on(
+      'showSuccessModal',
+      (message, linkMessage, etherscanLink) => {
+        if (!message) message = null;
+        this.showSuccessModal(message, linkMessage, etherscanLink);
+      }
+    );
 
     this.$eventHub.$on('showErrorModal', (message, linkMessage) => {
       if (!message) message = null;
@@ -174,7 +199,9 @@ export default {
       this.isHardwareWallet = this.account.isHardware;
       this.responseFunction = resolve;
       this.successMessage = 'Sending Transaction';
+
       const signPromise = this.wallet.signTransaction(tx);
+
       signPromise
         .then(_response => {
           this.signedTxObject = _response;
@@ -191,7 +218,7 @@ export default {
     });
 
     this.$eventHub.$on('showSendSignedTx', (tx, resolve) => {
-      const newTx = new ethTx(tx);
+      const newTx = new Transaction(tx);
       this.isHardwareWallet = this.account.isHardware;
       this.responseFunction = resolve;
       this.successMessage = 'Sending Transaction';
@@ -217,41 +244,9 @@ export default {
 
     this.$eventHub.$on('showWeb3Wallet', (tx, resolve) => {
       this.parseRawTx(tx);
-      this.responseFunction = resolve;
       this.successMessage = 'Sending Transaction';
-      this.wallet
-        .signTransaction(tx)
-        .once('transactionHash', hash => {
-          this.$store
-            .dispatch('addNotification', [
-              noticeTypes.TRANSACTION_HASH,
-              this.fromAddress,
-              this.lastRaw,
-              hash
-            ])
-            .then(() => {
-              this.showSuccessModal('Transaction sent!', 'Okay');
-            });
-        })
-        .on('receipt', receipt => {
-          this.$store.dispatch('addNotification', [
-            noticeTypes.TRANSACTION_RECEIPT,
-            this.fromAddress,
-            this.lastRaw,
-            receipt
-          ]);
-        })
-        .on('error', err => {
-          this.$store.dispatch('addNotification', [
-            noticeTypes.TRANSACTION_ERROR,
-            this.fromAddress,
-            this.lastRaw,
-            err
-          ]);
-        })
-        .catch(err => {
-          Toast.responseHandler(err, Toast.ERROR);
-        });
+      const promiObject = this.wallet.signTransaction(tx);
+      resolve(promiObject);
       this.showSuccessModal(
         'Continue transaction with Web3 Wallet Provider.',
         'Close'
@@ -297,6 +292,31 @@ export default {
         this.signConfirmationModalOpen();
       }
     });
+
+    this.$eventHub.$on(
+      'showSwapWidget',
+      (destAddress, toCurrency, fromCurrency, fromValue) => {
+        this.swapWidgetModalOpen(
+          destAddress,
+          toCurrency,
+          fromCurrency,
+          fromValue
+        );
+      }
+    );
+
+    this.$eventHub.$on(
+      'showSwapWidgetTo',
+      (destAddress, toCurrency, fromCurrency, toValue) => {
+        this.swapWidgetModalOpen(
+          destAddress,
+          toCurrency,
+          fromCurrency,
+          undefined,
+          toValue
+        );
+      }
+    );
   },
   mounted() {
     this.$refs.confirmModal.$refs.confirmation.$on('hidden', () => {
@@ -311,6 +331,59 @@ export default {
     });
   },
   methods: {
+    swapWidgetModalOpen(
+      destAddress,
+      fromCurrency,
+      toCurrency,
+      fromValue,
+      toValue
+    ) {
+      if (typeof toCurrency === 'string') {
+        this.$set(this.swapWigetData.toCurrency, 'symbol', toCurrency);
+      } else if (typeof toCurrency === 'object') {
+        this.$set(this.swapWigetData, 'toCurrency', toCurrency);
+      } else {
+        throw Error(
+          'swap widget requires requires toCurrency to be a string or object'
+        );
+      }
+
+      if (typeof fromCurrency === 'string') {
+        this.$set(this.swapWigetData.fromCurrency, 'symbol', fromCurrency);
+      } else if (typeof toCurrency === 'object') {
+        this.$set(this.swapWigetData, 'fromCurrency', fromCurrency);
+      } else {
+        throw Error(
+          'swap widget requires requires fromCurrency to be a string or object'
+        );
+      }
+
+      this.swapWigetData = {
+        destAddress: destAddress,
+        fromCurrency: this.swapWigetData.fromCurrency,
+        toCurrency: this.swapWigetData.toCurrency,
+        fromValue: fromValue,
+        toValue: toValue
+      };
+
+      this.$nextTick(() => {
+        this.$refs.swapWidget.$refs.modal.show();
+        this.$refs.swapWidget.$refs.modal.$on('hidden', () => {
+          this.swapWigetData = {
+            destAddress: '',
+            fromCurrency: {
+              symbol: 'ETH',
+              name: ''
+            },
+            toCurrency: {
+              symbol: 'ETH',
+              name: ''
+            },
+            fromValue: 0
+          };
+        });
+      });
+    },
     confirmationModalOpen() {
       window.scrollTo(0, 0);
       this.$refs.confirmModal.$refs.confirmation.show();
@@ -327,27 +400,45 @@ export default {
       window.scrollTo(0, 0);
       this.$refs.signConfirmModal.$refs.signConfirmation.show();
     },
-    showSuccessModal(message, linkMessage) {
+    showSuccessModal(message, linkMessage, etherscanLink) {
       this.reset();
       if (message !== null) this.successMessage = message;
       if (linkMessage !== null) this.linkMessage = linkMessage;
+      if (etherscanLink !== null) this.etherscanLink = etherscanLink;
       this.$refs.successModal.$refs.success.show();
     },
     showErrorModal(message, linkMessage) {
       this.reset();
       if (message !== null) this.successMessage = message;
       if (linkMessage !== null) this.linkMessage = linkMessage;
-      this.$refs.errorModal.$refs.success.show();
+      this.$refs.errorModal.$refs.errorModal.show();
     },
     parseRawTx(tx) {
+      let tokenData = '';
+      if (tx.to && tx.data) {
+        tokenData = parseTokensData(
+          tx.data,
+          tx.to,
+          this.web3,
+          this.network.type.tokens,
+          this.network.type.name
+        );
+        tx.tokenTransferTo = tokenData.tokenTransferTo;
+        tx.tokenTransferVal = tokenData.tokenTransferVal;
+        tx.tokenSymbol = tokenData.tokenSymbol;
+      }
+
       this.raw = tx;
       this.nonce = tx.nonce === '0x' ? 0 : new BigNumber(tx.nonce).toFixed();
       this.data = tx.data;
       this.gasLimit = new BigNumber(tx.gas).toFixed();
+      this.gasPrice = parseInt(
+        unit.fromWei(new BigNumber(tx.gasPrice).toFixed(), 'gwei')
+      );
       this.toAddress = tx.to;
-      this.amount = tx.value === '0x' ? 0 : new BigNumber(tx.value).toFixed();
+      this.amount = tx.value === '0x' ? '0' : new BigNumber(tx.value).toFixed();
       this.transactionFee = unit
-        .fromWei(new BigNumber(tx.gas).times(tx.gasPrice).toString(), 'ether')
+        .fromWei(new BigNumber(tx.gas).times(tx.gasPrice).toFixed(), 'ether')
         .toString();
       this.ens = {};
       if (tx.hasOwnProperty('ensObj')) {
@@ -359,7 +450,6 @@ export default {
       this.dismissed = false;
       this.responseFunction(this.signedMessage);
       this.$refs.signConfirmModal.$refs.signConfirmation.hide();
-      this.showSuccessModal();
     },
     generateTx() {
       this.dismissed = false;
@@ -368,27 +458,19 @@ export default {
     },
     async doBatchTransactions() {
       const web3 = this.web3;
-      const batch = new web3.eth.BatchRequest();
       const _method =
         this.account.identifier === WEB3_WALLET
           ? 'sendTransaction'
           : 'sendSignedTransaction';
-      const _arr = this.signedArray;
+      const _arr =
+        this.account.identifier === WEB3_WALLET
+          ? this.signedArray.reverse()
+          : this.signedArray;
       const promises = _arr.map(tx => {
-        const promiEvent = new Web3PromiEvent(false);
         const _tx = tx.tx;
         _tx.from = this.account.address;
         const _rawTx = tx.rawTransaction;
-        const req = web3.eth[_method].request(_rawTx, (err, data) => {
-          if (err !== null) {
-            promiEvent.eventEmitter.emit('error', err);
-            promiEvent.reject(err);
-          }
-          if (err === null) {
-            promiEvent.eventEmitter.emit('transactionHash', data);
-          }
-        });
-        promiEvent.eventEmitter.on('error', err => {
+        const onError = err => {
           this.$store.dispatch('addNotification', [
             noticeTypes.TRANSACTION_ERROR,
             _tx.from,
@@ -397,27 +479,25 @@ export default {
             ) || _tx,
             err
           ]);
-          this.showErrorModal('Transaction Error!', 'Return');
-          promiEvent.reject(err);
-        });
-        promiEvent.eventEmitter.once('transactionHash', hash => {
-          this.$store
-            .dispatch('addNotification', [
-              noticeTypes.TRANSACTION_HASH,
-              _tx.from,
-              this.unSignedArray.find(entry =>
-                new BigNumber(_tx.nonce).eq(entry.nonce)
-              ),
-              hash
-            ])
-            .then(() => {
-              web3.eth.sendTransaction.method._confirmTransaction(
-                promiEvent,
-                hash,
-                req
-              );
-              this.showSuccessModal('Transaction sent!', 'Okay');
-            });
+          Toast.responseHandler(err, Toast.ERROR);
+        };
+        const promiEvent = web3.eth[_method](_rawTx);
+        promiEvent.catch(onError);
+        promiEvent.on('error', onError);
+        promiEvent.once('transactionHash', hash => {
+          this.showSuccessModal(
+            'Transaction sent!',
+            'Okay',
+            this.network.type.blockExplorerTX.replace('[[txHash]]', hash)
+          );
+          this.$store.dispatch('addNotification', [
+            noticeTypes.TRANSACTION_HASH,
+            _tx.from,
+            this.unSignedArray.find(entry =>
+              new BigNumber(_tx.nonce).eq(entry.nonce)
+            ),
+            hash
+          ]);
           const localStoredObj = locStore.get(
             web3.utils.sha3(this.account.address)
           );
@@ -428,8 +508,7 @@ export default {
             timestamp: localStoredObj.timestamp
           });
         });
-        promiEvent.eventEmitter.once('receipt', receipt => {
-          promiEvent.resolve(receipt);
+        promiEvent.then(receipt => {
           this.$store.dispatch('addNotification', [
             noticeTypes.TRANSACTION_RECEIPT,
             _tx.from,
@@ -439,26 +518,29 @@ export default {
             receipt
           ]);
         });
-        promiEvent.eventEmitter.catch(err => {
-          Toast.responseHandler(err, Toast.ERROR);
-        });
-        batch.add(req);
-        return promiEvent.eventEmitter;
+        return promiEvent;
       });
-
       this.signCallback(promises);
-      batch.execute();
       this.sending = true;
     },
     sendBatchTransactions() {
+      this.$refs.confirmCollectionModal.$refs.confirmCollection.hide();
       this.doBatchTransactions();
     },
     sendTx() {
       this.dismissed = false;
       this.responseFunction(this.signedTxObject);
       this.$refs.confirmModal.$refs.confirmation.hide();
+
       if (this.raw.generateOnly) return;
-      this.showSuccessModal('Transaction sent!', 'Okay');
+      this.showSuccessModal(
+        'Transaction sent!',
+        'Okay',
+        this.network.type.blockExplorerTX.replace(
+          '[[txHash]]',
+          this.signedTxObject.tx.hash
+        )
+      );
     },
     reset() {
       this.responseFunction = null;
@@ -469,7 +551,7 @@ export default {
       this.nonce = '';
       this.gasLimit = '21000';
       this.data = '0x';
-      this.gasAmount = this.gasPrice;
+      this.gasPrice = 0;
       this.parsedBalance = 0;
       this.toAddress = '';
       this.transactionFee = '';
@@ -482,6 +564,18 @@ export default {
       this.txBatch = null;
       this.sending = false;
       this.signCallback = {};
+      this.swapWigetData = {
+        destAddress: '',
+        fromCurrency: {
+          symbol: 'ETH',
+          name: ''
+        },
+        toCurrency: {
+          symbol: 'ETH',
+          name: ''
+        },
+        fromValue: 0
+      };
     }
   }
 };

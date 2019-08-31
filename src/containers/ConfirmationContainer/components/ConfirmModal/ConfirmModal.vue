@@ -10,6 +10,8 @@
       <div class="modal-content qrcode-modal">
         <div class="tx-info">
           <address-block
+            :currency="network.type.currencyName"
+            :icon="network.type.icon"
             :address="from"
             :value="value"
             :token-transfer-val="tokenTransferVal"
@@ -21,6 +23,8 @@
           </div>
           <address-block
             v-show="to !== '' && to !== undefined"
+            :currency="network.type.currencyName"
+            :icon="network.type.icon"
             :address="to"
             :token-transfer-to="tokenTransferTo"
             :token-transfer-val="tokenTransferVal"
@@ -61,7 +65,7 @@
               </div>
               <div class="grid-block">
                 <p>{{ $t('common.txFee') }}</p>
-                <p>{{ fee }} {{ network.type.name }}</p>
+                <p>{{ fee }} {{ network.type.currencyName }}</p>
               </div>
               <div class="grid-block">
                 <p>Nonce</p>
@@ -76,30 +80,11 @@
         </div>
 
         <div class="submit-button-container">
-          <div class="flex-center-align">
-            <div class="button-with-helper">
-              <div
-                ref="ConfirmAndSendButton"
-                :class="[
-                  signedTx !== '' ? '' : 'disabled',
-                  'submit-button large-round-button-green-filled clickable'
-                ]"
-                @click="sendTx"
-              >
-                {{ $t('common.confirmAndSend') }}
-              </div>
-              <div class="tooltip-box-2">
-                <b-btn id="exPopover9">
-                  <img class="icon" src="~@/assets/images/icons/qr-code.svg" />
-                </b-btn>
-                <b-popover
-                  target="exPopover9"
-                  triggers="hover focus"
-                  placement="top"
-                ></b-popover>
-              </div>
-            </div>
-          </div>
+          <standard-button
+            :options="buttonSendTx"
+            :button-disabled="signedTx !== '' ? false : true"
+            @click.native="sendTx"
+          />
         </div>
       </div>
     </b-modal>
@@ -108,13 +93,14 @@
 
 <script>
 import AddressBlock from '../AddressBlock';
-import BigNumber from 'bignumber.js';
-import { mapGetters } from 'vuex';
-import store from 'store';
+import { mapState } from 'vuex';
+import StandardButton from '@/components/Buttons/StandardButton';
+import parseTokensData from '@/helpers/parseTokensData.js';
 
 export default {
   components: {
-    'address-block': AddressBlock
+    'address-block': AddressBlock,
+    'standard-button': StandardButton
   },
   props: {
     confirmSendTx: {
@@ -168,14 +154,17 @@ export default {
       transactionSigned: false,
       tokenTransferTo: '',
       tokenTransferVal: '',
-      tokenSymbol: ''
+      tokenSymbol: '',
+      buttonSendTx: {
+        title: 'Confirm and Send',
+        buttonStyle: 'green',
+        mobileFullWidth: true,
+        helpCenter: true
+      }
     };
   },
   computed: {
-    ...mapGetters({
-      web3: 'web3',
-      network: 'network'
-    }),
+    ...mapState(['web3', 'network']),
     signedTransaction() {
       if (this.signedMessage) {
         return this.signedMessage;
@@ -192,7 +181,7 @@ export default {
   },
   mounted() {
     if (this.data !== '0x') {
-      this.parseData(this.data);
+      this.parseData();
     }
   },
   methods: {
@@ -201,58 +190,18 @@ export default {
         this.confirmSendTx();
       }
     },
-    async parseData(data) {
-      const web3 = this.web3;
-      const networkToken = this.network.type.tokens;
-
-      let token = networkToken.find(el => {
-        return el.address.toLowerCase() === this.to.toLowerCase();
-      });
-      if (!token) {
-        const customStore = store.get('customTokens');
-        if (
-          customStore !== undefined &&
-          customStore[this.network.type.name] !== undefined &&
-          customStore[this.network.type.name].length
-        ) {
-          token = customStore[this.network.type.name].find(el => {
-            return el.address.toLowerCase() === this.to.toLowerCase();
-          });
-        }
-      }
-      const jsonInterface = {
-        constant: false,
-        inputs: [
-          { name: '_to', type: 'address' },
-          { name: '_amount', type: 'uint256' }
-        ],
-        name: 'transfer',
-        outputs: [{ name: '', type: 'bool' }],
-        payable: false,
-        stateMutability: 'nonpayable',
-        type: 'function'
-      };
-      const transferFuncSig = web3.eth.abi.encodeFunctionSignature(
-        jsonInterface
+    parseData(val) {
+      const localVal = val ? val : this.data;
+      const tokenInfo = parseTokensData(
+        localVal,
+        this.to,
+        this.web3,
+        this.network.type.tokens,
+        this.network.type.name
       );
-      this.tokenTransferTo = '';
-      this.tokenTransferVal = '';
-      this.tokenSymbol = '';
-      if (data.substr(0, 10) === transferFuncSig) {
-        const params = web3.eth.abi.decodeParameters(
-          ['address', 'uint256'],
-          `${data.substr(10)}`
-        );
-        const value = new BigNumber(params[1]);
-        this.tokenTransferTo = params[0];
-        this.tokenTransferVal = token
-          ? value
-              .div(new BigNumber(10).pow(token.decimals))
-              .toFixed()
-              .toString()
-          : value.toString();
-        this.tokenSymbol = token ? token.symbol : 'Unknown Token';
-      }
+      this.tokenTransferTo = tokenInfo.tokenTransferTo;
+      this.tokenTransferVal = tokenInfo.tokenTransferVal;
+      this.tokenSymbol = tokenInfo.tokenSymbol;
     }
   }
 };

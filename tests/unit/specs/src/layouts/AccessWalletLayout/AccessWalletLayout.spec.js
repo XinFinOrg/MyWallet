@@ -1,19 +1,15 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
 import { shallowMount } from '@vue/test-utils';
 import AccessWalletLayout from '@/layouts/AccessWalletLayout/AccessWalletLayout.vue';
 import { Tooling } from '@@/helpers';
-import { state, getters } from '@@/helpers/mockStore';
-
 import PriceBar from '@/layouts/AccessWalletLayout/components/PriceBar/PriceBar.vue';
+import { RouterLinkStub } from '@@/helpers/setupTooling';
+import BigNumber from 'bignumber.js';
 
-const RouterLinkStub = {
-  name: 'router-link',
-  template: '<div class="routerlink"><slot> </slot></div>',
-  props: ['to']
-};
+function roundPercentage(num) {
+  return new BigNumber(num).toFixed(2);
+}
 
-//xdescribe
 describe('AccessWalletLayout.vue', () => {
   let localVue, i18n, wrapper, store;
 
@@ -23,13 +19,7 @@ describe('AccessWalletLayout.vue', () => {
     i18n = baseSetup.i18n;
     store = baseSetup.store;
 
-    Vue.config.errorHandler = () => {};
     Vue.config.warnHandler = () => {};
-
-    store = new Vuex.Store({
-      getters,
-      state
-    });
   });
 
   beforeEach(() => {
@@ -45,7 +35,7 @@ describe('AccessWalletLayout.vue', () => {
     });
   });
 
-  xit('[Failing] should render correct tokens data', () => {
+  it('should render correct tokens data', () => {
     const tokens = [
       {
         symbol: 'BURNER',
@@ -81,7 +71,7 @@ describe('AccessWalletLayout.vue', () => {
         '$' + tokens[i].quotes.USD.price
       );
       expect(tokenElement.querySelectorAll('p')[2].textContent.trim()).toEqual(
-        tokens[i].quotes.USD.percent_change_24h + '%'
+        roundPercentage(tokens[i].quotes.USD.percent_change_24h) + '%'
       );
     }
   });

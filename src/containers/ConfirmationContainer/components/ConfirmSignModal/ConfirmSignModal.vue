@@ -24,10 +24,18 @@
               </div>
             </div>
           </div>
-          <div class="tx-data tx-to">
+          <div v-if="hexToUtf8(messageToSign)" class="tx-data tx-to">
             <div class="address-info">
               <p class="title address-title">
                 {{ $t('interface.txSideMenuMessage') }}
+              </p>
+              <p class="message-to-sign">{{ hexToUtf8(messageToSign) }}</p>
+            </div>
+          </div>
+          <div class="tx-data tx-to">
+            <div class="address-info">
+              <p class="title address-title">
+                {{ $t('confirmation.messageInHex') }}
               </p>
               <p class="message-to-sign">{{ messageToSign }}</p>
             </div>
@@ -56,7 +64,8 @@
 
 <script>
 import Blockie from '@/components/Blockie';
-import { mapGetters } from 'vuex';
+import utils from 'web3-utils';
+import { mapState } from 'vuex';
 
 export default {
   components: {
@@ -91,9 +100,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      account: 'account'
-    }),
+    ...mapState(['account']),
     signedMessageSignature() {
       if (this.signedMessage) {
         return this.signedMessage;
@@ -107,6 +114,13 @@ export default {
     signMessage() {
       if (this.signedMessage !== '') {
         this.confirmSignMessage();
+      }
+    },
+    hexToUtf8(hex) {
+      try {
+        return utils.hexToUtf8(hex);
+      } catch (e) {
+        return false;
       }
     }
   }

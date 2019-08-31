@@ -1,5 +1,7 @@
 import normalise from '@/helpers/normalise';
 import { Misc } from '@/helpers';
+import { toChecksumAddress } from '@/helpers/addressUtils';
+import utils from 'web3-utils';
 const EnsResolver = {
   bind: function(el, binding, vnode) {
     vnode.context.$watch(binding.value, function(e) {
@@ -34,7 +36,7 @@ const EnsResolver = {
         if (Misc.isValidETHAddress(e)) {
           if (!checkDarklist(e)) {
             _this.isValidAddress = true;
-            _this.hexAddress = _this.web3.utils.toChecksumAddress(e);
+            _this.hexAddress = toChecksumAddress(e);
             removeElements();
           }
         } else {
@@ -46,7 +48,10 @@ const EnsResolver = {
             removeElements();
             _this.isValidAddress = false;
             _this.hexAddress = '';
-            errorPar.innerText = 'No ENS resolver in this node';
+            // eslint-disable-next-line
+            errorPar.innerText = `No ${
+              _this.network.type.name[0]
+            }NS resolver in this node`;
             el.parentNode.parentNode.appendChild(errorPar);
           } else {
             ens
@@ -55,9 +60,7 @@ const EnsResolver = {
               .then(address => {
                 if (!checkDarklist(address)) {
                   removeElements();
-                  _this.hexAddress = _this.web3.utils.toChecksumAddress(
-                    address
-                  );
+                  _this.hexAddress = toChecksumAddress(address);
                   _this.isValidAddress = true;
                   errorPar.innerText = address;
                   vnode.elm.parentNode.parentNode.appendChild(errorPar);
@@ -65,7 +68,10 @@ const EnsResolver = {
               })
               .catch(() => {
                 removeElements();
-                errorPar.innerText = 'ENS name is invalid or not found';
+                // eslint-disable-next-line
+                errorPar.innerText = `${
+                  _this.network.type.name[0]
+                }NS name is invalid or not found`;
                 _this.isValidAddress = false;
                 _this.hexAddress = '';
                 vnode.elm.parentNode.parentNode.appendChild(errorPar);
@@ -76,7 +82,18 @@ const EnsResolver = {
         _this.isValidAddress = false;
         _this.hexAddress = '';
         removeElements();
-        errorPar.innerText = 'Invalid address';
+        if (e.length > 0) {
+          if (e.length !== 42 || !utils.isHexStrict(e)) {
+            errorPar.innerText = 'Not a valid Ethereum address';
+          } else if (!utils.checkAddressChecksum(e)) {
+            errorPar.innerText =
+              'This address is not checksummed properly. Please copy the address exactly as shown.';
+            // 'Incorrect checksum: check address format on EthVM';
+          }
+        } else {
+          errorPar.innerText = '';
+        }
+
         el.parentNode.parentNode.appendChild(errorPar);
       }
     });

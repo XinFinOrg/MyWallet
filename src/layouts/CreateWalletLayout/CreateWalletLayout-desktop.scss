@@ -33,11 +33,16 @@
 
     .appstores {
       .icons {
-        text-align: center;
+        display: flex;
+        justify-content: center;
         margin-bottom: 25px;
+        text-align: center;
+
         img {
           height: 40px;
           margin: 0 3px;
+          overflow: hidden;
+          border-radius: 7px;
         }
       }
 
@@ -60,6 +65,11 @@
     }
   }
 
+  .tab-content-block {
+    //min-height: 500px;
+    padding: 50px;
+  }
+
   .nav-tab-user-input-box {
     background-color: $background-color-white;
     margin: 0 auto;
@@ -78,14 +88,13 @@
         width: 23.33%;
       }
     }
-
-    .tab-pane {
-      min-height: 500px;
-      padding: 50px;
-    }
   }
 
   .nav-item {
     border: 2px solid black !important;
+  }
+
+  .popover-container {
+    margin-left: 5px;
   }
 } // @media all and (min-width: calc(#{$tablet-width} + 1px))

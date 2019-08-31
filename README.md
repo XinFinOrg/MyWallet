@@ -55,3 +55,5 @@ Windows | [Instructions on our wiki](https://github.com/Automattic/node-canvas/w
 ## Bug / Feature Request
 
 If you find a bug, or want a new feature added, please submit it on the [Github Issues](https://github.com/XinFinOrg/Wallet/issues)
+
+

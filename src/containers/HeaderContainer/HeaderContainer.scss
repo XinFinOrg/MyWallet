@@ -12,7 +12,7 @@
   }
 }
 .wrap {
-  padding-top: 99px;
+  padding-top: 85px;
 
   // Tablet
   @media all and (min-width: calc(#{$mobile-width} + 1px)) and (max-width: $tablet-width) {
@@ -128,6 +128,16 @@
         .nav-item a span {
           color: $text-base-color;
           outline: none;
+        }
+      }
+
+      .buy-eth {
+        position: relative;
+        .buy-eth-icon {
+          position: absolute;
+          top: 19px;
+          left: -13px;
+          height: 24px;
         }
       }
 
@@ -312,6 +322,14 @@
 .settings-container {
   display: flex;
   align-items: center;
+  position: relative;
+  padding-left: 20px;
+
+  .blockie-image {
+    position: absolute;
+    top: -9px;
+    right: 20px;
+  }
 
   i {
     color: $dark-blue-1;

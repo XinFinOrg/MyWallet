@@ -5,13 +5,8 @@ import SomeHelpfulTips from '@/layouts/GettingStarted/components/SomeHelpfulTips
 import WhatIfILoseMyKeysOrPassword from '@/layouts/GettingStarted/components/WhatIfILoseMyKeysOrPassword/WhatIfILoseMyKeysOrPassword.vue';
 import WhatIsMyEtherWallet from '@/layouts/GettingStarted/components/WhatIsMyEtherWallet/WhatIsMyEtherWallet.vue';
 import WhereAreMyFundsStored from '@/layouts/GettingStarted/components/WhereAreMyFundsStored/WhereAreMyFundsStored.vue';
-
 import { Tooling } from '@@/helpers';
-const RouterLinkStub = {
-  name: 'router-link',
-  template: '<div><slot> </slot></div>',
-  props: ['to']
-};
+import { RouterLinkStub } from '@@/helpers/setupTooling';
 
 describe('GettingStarted.vue', () => {
   let localVue, i18n, wrapper, store;
@@ -82,14 +77,16 @@ describe('GettingStarted.vue', () => {
     ).toBeGreaterThan(-1);
   });
 
-  xit('should update cwwCurrent data when mouse wheel down', () => {
-    wrapper.trigger('wheel', { deltaY: 100 });
+  it('should update cwwCurrent data when mouse wheel down', () => {
+    // wrapper.trigger('wheel', { deltaY: 100 });
+    wrapper.vm.mouseScrollDown();
     expect(wrapper.vm.$data.cwwCurrent).toBe(1);
   });
 
-  xit('should update cwwCurrent data when mouse wheel up', () => {
-    wrapper.setData({ cwwCurrent: 1 });
-    wrapper.trigger('wheel', { deltaY: -100 });
+  it('should update cwwCurrent data when mouse wheel up', () => {
+    // wrapper.setData({ cwwCurrent: 1 });
+    // wrapper.trigger('wheel', { deltaY: -100 });
+    wrapper.vm.mouseScrollUp();
     expect(wrapper.vm.$data.cwwCurrent).toBe(0);
   });
 

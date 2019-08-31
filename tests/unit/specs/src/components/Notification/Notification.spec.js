@@ -1,7 +1,5 @@
-import VueX from 'vuex';
 import { shallowMount } from '@vue/test-utils';
 import Notification from '@/components/Notification/Notification.vue';
-import { state, getters } from '@@/helpers/mockStore';
 import { Tooling } from '@@/helpers';
 
 const showModal = jest.fn();
@@ -25,11 +23,6 @@ describe('Notification.vue', () => {
   });
 
   beforeEach(() => {
-    store = new VueX.Store({
-      getters,
-      state
-    });
-
     wrapper = shallowMount(Notification, {
       localVue,
       i18n,
@@ -41,18 +34,21 @@ describe('Notification.vue', () => {
     });
   });
 
-  xit('should render correct unreadCount', () => {
+  it('should render correct unreadCount', () => {
     expect(wrapper.find('.notification-dot').isVisible()).toBe(false);
-    wrapper.setData({ unreadCount: 1 });
+    wrapper.setData({ unreadCount: 1, detailsShown: false });
     expect(wrapper.find('.notification-dot').isVisible()).toBe(true);
   });
 
-  xit('should show no notification item text', () => {
+  it('should render correct detailsShown', () => {
+    wrapper.setData({ detailsShown: true });
+    expect(wrapper.find('.notification-item-container').isVisible()).toBe(true);
+    wrapper.setData({ detailsShown: false });
     expect(wrapper.find('.notification-no-item').isVisible()).toBe(true);
   });
 
   describe('Notification.vue Methods', () => {
-    xit('should show notification when button click', () => {
+    it('should show notification when button click', () => {
       const notificationLogo = wrapper.find('.notification-logo');
       notificationLogo.trigger('click');
       expect(showModal).toHaveBeenCalled();

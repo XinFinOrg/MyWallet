@@ -22,7 +22,7 @@
 
 <script>
 import InterfaceNetworkModal from '@/layouts/InterfaceLayout/components/InterfaceNetworkModal';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import { WEB3_WALLET } from '@/wallets/bip44/walletTypes';
 
 export default {
@@ -43,11 +43,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      network: 'network',
-      account: 'account',
-      web3: 'web3'
-    })
+    ...mapState(['network', 'account', 'web3'])
   },
   watch: {
     blockNumber(newVal) {

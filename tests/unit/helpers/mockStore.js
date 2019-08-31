@@ -1,3 +1,7 @@
+import nodeList from '@/networks';
+import Web3 from 'web3';
+const network = nodeList['ETH'][0];
+const newWeb3 = new Web3();
 const state = {
   account: {
     balance: 0,
@@ -5,20 +9,27 @@ const state = {
     identifier: 'keystore',
     isHardware: false
   },
+  customTokens: [
+    { name: 'ETH', balance: 200 },
+    { name: 'BTH', balance: 300 },
+    { name: 'ETC', balance: 400 }
+  ],
+
   customPaths: {},
   ens: true,
   Errors: {},
   ethDonationAddress: '0xDECAF9CD2367cdbb726E904cD6397eDFcAe6068D',
   gasPrice: 41,
-  Networks: {},
-  network: {},
+  Networks: nodeList,
+  network: network,
   notifications: {},
   online: true,
   Transactions: {},
-  wallet: null,
-  web3: {
-    eth: {}
-  }
+  wallet: {
+    getAddressString: jest.fn()
+  },
+  web3: newWeb3,
+  linkQuery: {}
 };
 
 const getters = {
@@ -30,7 +41,9 @@ const getters = {
   Errors: () => {},
   ethDonationAddress: () => '',
   gasPrice: () => 41,
-  Networks: () => {},
+  Networks: () => {
+    return nodeList;
+  },
   network: () => {
     return {
       auth: false,
@@ -51,24 +64,36 @@ const getters = {
           registry: '0x123456789',
           registrarTLD: 'eth',
           registrarType: 'auction'
-        }
+        },
+        currencyName: 'ETH'
       },
-      url: 'https://api.myetherwallet.com/eth'
+      url: 'https://mainnet.infura.io/mew'
     };
   },
-  notifications: () => {},
+  notifications: () => [],
   online: () => true,
+  sidemenuOpen: () => {
+    return false;
+  },
+
+  customTokens: () => [
+    { name: 'ETH', balance: 200 },
+    { name: 'BTH', balance: 300 },
+    { name: 'ETC', balance: 400 }
+  ],
+
   Transactions: () => {},
   wallet: () => {
     return {
-      getChecksumAddressString: () => ''
+      getChecksumAddressString: () =>
+        '0xDECAF9CD2367cdbb726E904cD6397eDFcAe6068D'
     };
   },
   web3: () => {
-    return {
-      eth: {}
-    };
-  }
+    return newWeb3;
+  },
+  path: () => {},
+  linkQuery: () => {}
 };
 
 export { state, getters };

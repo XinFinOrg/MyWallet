@@ -16,8 +16,10 @@ import {
 } from '../../utils';
 import HDKey from 'hdkey';
 import { toBuffer } from 'ethereumjs-util';
-import ethTx from 'ethereumjs-tx';
+import { Transaction } from 'ethereumjs-tx';
 import errorHandler from './errorHandler';
+import store from '@/store';
+import commonGenerator from '@/helpers/commonGenerator';
 
 const { MessageType } = Messages;
 const {
@@ -46,7 +48,7 @@ class KeepkeyWallet {
         'showHardwarePinMatrix',
         { name: this.identifier },
         pin => {
-          this.keepkey.acknowledgeWithPin(pin);
+          this.keepkey.acknowledgeWithPin(pin).catch(errorHandler);
         }
       );
     });
@@ -55,7 +57,9 @@ class KeepkeyWallet {
         'showHardwarePassword',
         { name: this.identifier },
         passPhrase => {
-          this.keepkey.acknowledgeWithPassphrase(passPhrase);
+          this.keepkey
+            .acknowledgeWithPassphrase(passPhrase)
+            .catch(errorHandler);
         }
       );
     });
@@ -86,9 +90,11 @@ class KeepkeyWallet {
       accountPath = this.basePath + '/' + idx;
     }
     const txSigner = async tx => {
-      tx = new ethTx(tx);
+      tx = new Transaction(tx, {
+        common: commonGenerator(store.state.network)
+      });
       const hexTx = getUint8Tx(tx);
-      const networkId = tx._chainId;
+      const networkId = tx.getChainId();
       hexTx.addressNList = bip32ToAddressNList(accountPath);
       const result = await this.keepkey.ethereumSignTx(
         hexTx,
@@ -121,6 +127,12 @@ class KeepkeyWallet {
       );
       return Buffer.from(response.toObject().signature, 'base64');
     };
+    const displayAddress = async () => {
+      await this.keepkey.ethereumGetAddress({
+        addressNList: bip32ToAddressNList(accountPath),
+        showDisplay: true
+      });
+    };
     return new HDWalletInterface(
       accountPath,
       derivedKey.publicKey,
@@ -128,7 +140,8 @@ class KeepkeyWallet {
       this.identifier,
       errorHandler,
       txSigner,
-      msgSigner
+      msgSigner,
+      displayAddress
     );
   }
   getCurrentPath() {
@@ -143,6 +156,7 @@ const createWallet = async (basePath, eventHub) => {
   await _keepkeyWallet.init(basePath);
   return _keepkeyWallet;
 };
+
 createWallet.errorHandler = errorHandler;
 
 const getRootPubKey = async (_keepkey, _path) => {

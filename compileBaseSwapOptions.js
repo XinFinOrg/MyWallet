@@ -9,6 +9,12 @@ const swapConfigFolder = './src/partners/partnersConfig';
 const changellyConfigFolder = './src/partners/changelly/config';
 const kyberConfigFolder = './src/partners/kyber/config';
 
+const explicitStringReplacements = {
+  RLC: {
+    fullName: 'iExec RLC'
+  }
+};
+
 class CompileSwapOptions {
   constructor() {
     this.web3 = new web3('https://api.myetherwallet.com/eth');
@@ -28,6 +34,7 @@ class CompileSwapOptions {
         .call();
     } catch (e) {
       console.error(e);
+      return {};
     }
   }
 
@@ -87,13 +94,13 @@ class CompileSwapOptions {
           const symbol = tokenList[i].symbol.toUpperCase();
           tokenDetails[symbol] = {
             symbol: tokenList[i].symbol,
-            name: tokenList[i].name,
+            name: tokenList[i].name.trim(),
             decimals: tokenList[i].decimals,
             contractAddress: tokenList[i].contractAddress
           };
           this.kyberBaseOptions[symbol] = {
             symbol: tokenList[i].symbol,
-            name: tokenList[i].name,
+            name: tokenList[i].name.trim(),
             decimals: tokenList[i].decimals,
             contractAddress: tokenList[i].contractAddress
           };
@@ -127,10 +134,11 @@ class CompileSwapOptions {
 
     if (match === null) {
       return {
-        name: item.fullName,
+        name: item.fullName.trim(),
         symbol: item.name.toUpperCase(),
         contractAddress: item.addressUrl,
-        decimals: decimals
+        decimals: decimals,
+        fixRateEnabled: item.fixRateEnabled
       };
     } else {
       if (decimals === 0) {
@@ -140,17 +148,24 @@ class CompileSwapOptions {
         });
       }
       return {
-        name: item.fullName,
+        name: item.fullName.trim(),
         symbol: item.name.toUpperCase(),
         contractAddress: match[0],
-        decimals: decimals
+        decimals: decimals,
+        fixRateEnabled: item.fixRateEnabled
       };
     }
   }
 
   processChangelly(accumulator, currentValue) {
     const regex = /https:\/\/etherscan\.io/;
-    if(!currentValue.enabled) return accumulator;
+    if (!currentValue.enabled) return accumulator;
+    if (explicitStringReplacements[currentValue.name.toUpperCase()]) {
+      currentValue = {
+        ...currentValue,
+        ...explicitStringReplacements[currentValue.name.toUpperCase()]
+      };
+    }
     if (regex.test(currentValue.transactionUrl)) {
       accumulator.ETH[currentValue.name.toUpperCase()] = this.createEntry(
         currentValue
@@ -159,9 +174,14 @@ class CompileSwapOptions {
       if (!currentValue.extraIdName) {
         accumulator.other[currentValue.name.toUpperCase()] = {
           symbol: currentValue.name.toUpperCase(),
-          name: currentValue.fullName,
-          addressLookup: currentValue.addressUrl,
+          name: currentValue.fullName.trim(),
+          addressLookup: currentValue.addressUrl
+            ? currentValue.addressUrl.replace('%1$s', '[[address]]')
+            : currentValue.addressUrl,
           explorer: currentValue.transactionUrl
+            ? currentValue.transactionUrl.replace('%1$s', '[[txHash]]')
+            : currentValue.transactionUrl,
+          fixRateEnabled: currentValue.fixRateEnabled
         };
       }
     }
@@ -217,7 +237,8 @@ class CompileSwapOptions {
     for (let prop in options) {
       this.changellyBaseOptions[prop] = {
         symbol: prop,
-        name: options[prop].name
+        name: options[prop].name.trim(),
+        fixRateEnabled: options[prop].fixRateEnabled
       };
     }
   }
@@ -232,6 +253,14 @@ class CompileSwapOptions {
         withChangelly.ETH[this.needDecimalCheck[i].symbol].decimals = +decimals;
       }
     }
+
+    if (Object.keys(withChangelly.other).length > 0) {
+      fs.writeFileSync(
+        `${swapConfigFolder}/OtherCoins.js`,
+        `export default ${JSON.stringify(withChangelly.other)} `
+      );
+    }
+
     if (Object.keys(withChangelly.ETH).length > 0) {
       fs.writeFileSync(
         `${swapConfigFolder}/EthereumTokens.js`,
@@ -248,6 +277,12 @@ class CompileSwapOptions {
     }
 
     if (Object.keys(this.kyberBaseOptions).length > 0) {
+      this.kyberBaseOptions['THISISADUMMYTOKEN'] = {
+        symbol: 'THISISADUMMYTOKEN',
+          name: 'For tests',
+          decimals: 18,
+          contractAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      };
       fs.writeFileSync(
         `${kyberConfigFolder}/currenciesETH.js`,
         `const KyberCurrenciesETH = ${JSON.stringify(
@@ -255,6 +290,7 @@ class CompileSwapOptions {
         )}; \nexport { KyberCurrenciesETH };\n`
       );
     }
+    console.log('Complete');
   }
 }
 
