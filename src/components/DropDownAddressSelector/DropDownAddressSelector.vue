@@ -33,7 +33,7 @@
             Show QRcode Scanner
           </div> -->
           <button class="title-button prevent-user-select" @click="closeCam">
-            {{ $t('QRCode Scan111') }}>
+            {{ $t('QRCode Scan11221') }}>
           </button>
           <div>
             <p class="error">{{ error }}</p>
@@ -291,6 +291,8 @@ export default {
       this.result = result;
       this.address = result;
       this.hexAddress = result;
+      this.hexAddress = result;
+      this.isValidAddress = true;
       this.$refs.addressInput.value = result;
       this.camera = 'off';
     },
@@ -299,6 +301,8 @@ export default {
       this.result = result;
       this.address = result;
       this.hexAddress = result;
+      this.hexAddress = result;
+      this.isValidAddress = true;
       this.$refs.addressInput.value = result;
 
     },
