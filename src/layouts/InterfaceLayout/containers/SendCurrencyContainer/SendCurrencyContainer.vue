@@ -56,6 +56,7 @@
             </div>
             <div class="the-form amount-number">
               <input
+                v-on:keyup="xdcAddress($event)"
                 v-model="result"
                 :placeholder="$t('sendTx.to-addr')"
                 type="text"
@@ -64,7 +65,7 @@
             </div>
           </div>
         </div>
-        <div class="to-address">
+        <div class="to-address single-input-block">
           <div
             class="submit-button large-round-button-green-filled"
             @click="closeCam"
@@ -526,11 +527,17 @@ export default {
       this.camera = 'off';
     },
     onDecode(result) {
-      this.camera = 'off';
       this.result = result;
       this.address = result;
       this.hexAddress = result;
       this.isValidAddress = true;
+      this.camera = 'off';
+    },
+    xdcAddress(data) {
+      this.address = this.result;
+      this.hexAddress = this.result;
+      this.isValidAddress = true;
+      this.camera = 'off';
     },
     async onInit(promise) {
       try {
