@@ -262,7 +262,7 @@ export default {
       selectedCurrency: '',
       ethPrice: 0,
       clearAddress: false,
-      result: null,
+      result: '',
       error: ''
     };
   },
@@ -450,7 +450,7 @@ export default {
       this.toValue = '0';
       this.hexAddress = '';
       this.address = '';
-      this.result = null;
+      this.result = '';
       this.gasLimit = '21000';
       this.isValidAddress = false;
       this.advancedExpand = false;
@@ -507,9 +507,15 @@ export default {
 
     readQRCode(result) {
       this.result = result;
+      this.isValidAddress = true;
+      this.address = result;
+      this.hexAddress = result;
     },
     onDecode(result) {
       this.result = result;
+      this.address = result;
+      this.hexAddress = result;
+      this.isValidAddress = true;
     },
     async onInit(promise) {
       try {
