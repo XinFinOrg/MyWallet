@@ -55,7 +55,12 @@
               <h4>{{ $t('sendTx.to-addr') }}</h4>
             </div>
             <div class="the-form amount-number">
-              <p class="title-button prevent-user-select">{{ result }}</p>
+              <input
+                v-model="result"
+                :placeholder="$t('sendTx.to-addr')"
+                type="text"
+                name="value"
+              />
             </div>
           </div>
         </div>
