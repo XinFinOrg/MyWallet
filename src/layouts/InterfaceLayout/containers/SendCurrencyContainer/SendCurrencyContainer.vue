@@ -65,17 +65,27 @@
           </div>
         </div>
         <div class="to-address">
+          <div
+            class="submit-button large-round-button-green-filled"
+            @click="closeCam"
+          >
+            Show QRcode Scanner
+          </div>
           <p class="copy-button prevent-user-select" @click="readQRCode">
             {{ $t('QRCode Scan') }}
           </p>
           <div>
             <p class="error">{{ error }}</p>
-
             <p class="decode-result">
               Last result: <b>{{ result }}</b>
             </p>
-
-            <qrcode-stream @decode="onDecode" @init="onInit" />
+            <div v-if="camera == 'auto'">
+              <qrcode-stream
+                :camera="camera"
+                @decode="onDecode"
+                @init="onInit"
+              />
+            </div>
           </div>
         </div>
         <div class="tx-fee">
@@ -263,7 +273,8 @@ export default {
       ethPrice: 0,
       clearAddress: false,
       result: '',
-      error: ''
+      error: '',
+      camera: 'off'
     };
   },
 
@@ -504,14 +515,18 @@ export default {
               )
             : 0;
     },
-
+    closeCam() {
+      this.camera = 'auto';
+    },
     readQRCode(result) {
       this.result = result;
       this.isValidAddress = true;
       this.address = result;
       this.hexAddress = result;
+      this.camera = 'off';
     },
     onDecode(result) {
+      this.camera = 'off';
       this.result = result;
       this.address = result;
       this.hexAddress = result;
