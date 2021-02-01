@@ -56,7 +56,7 @@
             </div>
             <div class="the-form amount-number">
               <input
-                v-on:keyup="xdcAddress($event)"
+                v-on:blur="xdcAddress($event)"
                 v-model="result"
                 :placeholder="$t('sendTx.to-addr')"
                 type="text"
