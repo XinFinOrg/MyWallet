@@ -50,44 +50,13 @@
               <p>{{ isValidAmount.msg }}</p>
             </div>
           </div>
-          <div class="single-input-block">
-            <div class="title">
-              <h4>{{ $t('sendTx.to-addr') }}</h4>
-            </div>
-            <div class="the-form amount-number">
-              <input
-                v-on:blur="xdcAddress($event)"
-                v-model="result"
-                :placeholder="$t('sendTx.to-addr')"
-                type="text"
-                name="value"
-              />
-            </div>
-          </div>
         </div>
-        <div class="to-address single-input-block">
-          <div
-            class="submit-button large-round-button-green-filled"
-            @click="closeCam"
-          >
-            Show QRcode Scanner
-          </div>
-          <p class="copy-button prevent-user-select" @click="readQRCode">
-            {{ $t('QRCode Scan') }}
-          </p>
-          <div>
-            <p class="error">{{ error }}</p>
-            <p class="decode-result">
-              Last result: <b>{{ result }}</b>
-            </p>
-            <div v-if="camera == 'auto'">
-              <qrcode-stream
-                :camera="camera"
-                @decode="onDecode"
-                @init="onInit"
-              />
-            </div>
-          </div>
+        <div class="to-address">
+          <dropdown-address-selector
+            :clear-address="clearAddress"
+            :title="$t('sendTx.to-addr')"
+            @toAddress="getToAddress($event)"
+          />
         </div>
         <div class="tx-fee">
           <div class="title">
@@ -204,14 +173,11 @@ import ethUnit from 'ethjs-unit';
 import utils from 'web3-utils';
 import fetch from 'node-fetch';
 import DropDownAddressSelector from '@/components/DropDownAddressSelector';
-import { QrcodeStream } from 'vue-qrcode-reader';
-
 export default {
   components: {
     'interface-container-title': InterfaceContainerTitle,
     'currency-picker': CurrencyPicker,
-    'dropdown-address-selector': DropDownAddressSelector,
-    QrcodeStream: QrcodeStream
+    'dropdown-address-selector': DropDownAddressSelector
   },
   props: {
     checkPrefilled: {
@@ -272,13 +238,9 @@ export default {
       toData: '',
       selectedCurrency: '',
       ethPrice: 0,
-      clearAddress: false,
-      result: '',
-      error: '',
-      camera: 'off'
+      clearAddress: false
     };
   },
-
   computed: {
     ...mapState('main', [
       'account',
@@ -462,7 +424,6 @@ export default {
       this.toValue = '0';
       this.hexAddress = '';
       this.address = '';
-      this.result = '';
       this.gasLimit = '21000';
       this.isValidAddress = false;
       this.advancedExpand = false;
@@ -472,7 +433,11 @@ export default {
         symbol: this.network.type.currencyName
       };
     },
-
+    getToAddress(data) {
+      this.address = data.address;
+      this.hexAddress = data.address;
+      this.isValidAddress = data.valid;
+    },
     prefillForm() {
       if (this.isPrefilled) {
         const foundToken = this.tokensymbol
@@ -482,13 +447,11 @@ export default {
               );
             })
           : undefined;
-
         this.toData = Misc.validateHexString(this.data) ? this.data : '';
         this.toValue = this.value;
         this.hexAddress = this.to;
         this.address = this.to;
         this.gasLimit = new BigNumber(this.gaslimit).toString();
-
         this.selectedCurrency = foundToken ? foundToken : this.selectedCurrency;
         this.advancedExpand = true;
         Toast.responseHandler(
@@ -515,48 +478,6 @@ export default {
                 )
               )
             : 0;
-    },
-    closeCam() {
-      this.camera = 'auto';
-    },
-    readQRCode(result) {
-      this.result = result;
-      this.isValidAddress = true;
-      this.address = result;
-      this.hexAddress = result;
-      this.camera = 'off';
-    },
-    onDecode(result) {
-      this.result = result;
-      this.address = result;
-      this.hexAddress = result;
-      this.isValidAddress = true;
-      this.camera = 'off';
-    },
-    xdcAddress(data) {
-      this.address = this.result;
-      this.hexAddress = this.result;
-      this.isValidAddress = true;
-      this.camera = 'off';
-    },
-    async onInit(promise) {
-      try {
-        await promise;
-      } catch (error) {
-        if (error.name === 'NotAllowedError') {
-          this.error = 'ERROR: you need to grant camera access permisson';
-        } else if (error.name === 'NotFoundError') {
-          this.error = 'ERROR: no camera on this device';
-        } else if (error.name === 'NotSupportedError') {
-          this.error = 'ERROR: secure context required (HTTPS, localhost)';
-        } else if (error.name === 'NotReadableError') {
-          this.error = 'ERROR: is the camera already in use?';
-        } else if (error.name === 'OverconstrainedError') {
-          this.error = 'ERROR: installed cameras are not suitable';
-        } else if (error.name === 'StreamApiNotSupportedError') {
-          this.error = 'ERROR: Stream API is not supported in this browser';
-        }
-      }
     },
     getTokenTransferABI(amount, decimals) {
       const jsonInterface = [
@@ -592,7 +513,6 @@ export default {
         ),
         data: this.txData
       };
-
       this.web3.eth
         .estimateGas(params)
         .then(gasLimit => {

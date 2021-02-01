@@ -18,8 +18,40 @@
         >
           {{ $t('common.copy') }}
         </button>
+        <!-- <button
+          v-show="!hideCopy"
+          class="title-button prevent-user-select"
+          @click="readQRCode"
+        >
+          {{ $t('QRCode Scan 2') }}
+        </button> -->
+            <div class="to-address single-input-block">
+          <!-- <div
+            class="submit-button large-round-button-green-filled"
+            @click="closeCam"
+          >
+            Show QRcode Scanner
+          </div> -->
+          <button class="title-button prevent-user-select" @click="closeCam">
+            {{ $t('QRCode Scan') }}>
+          </button>
+          <div>
+            <p class="error">{{ error }}</p>
+            <p class="decode-result">
+              Last result: <b>{{ result }}</b>
+            </p>
+            <div v-if="camera == 'auto'">
+              <qrcode-stream
+                :camera="camera"
+                @decode="onDecode"
+                @init="onInit"
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+    
     <div class="dropdown--content">
       <div
         :class="dropdownOpen ? 'dropdown-open' : ''"
@@ -131,11 +163,14 @@ import { mapState, mapActions } from 'vuex';
 import { Toast } from '@/helpers';
 import utils from 'web3-utils';
 import AddressBookModal from '@/components/AddressBookModal';
+import { QrcodeStream } from 'vue-qrcode-reader';
 
 export default {
   components: {
     blockie: Blockie,
-    'address-book-modal': AddressBookModal
+    'address-book-modal': AddressBookModal,
+     QrcodeStream: QrcodeStream
+
   },
   props: {
     title: {
@@ -163,7 +198,10 @@ export default {
       toAddressCheckMark: false,
       hexAddress: '',
       currentAddress: '',
-      avatar: ''
+      avatar: '',
+      result: '',
+      error: '',
+      camera: 'off'
     };
   },
   computed: {
@@ -245,6 +283,41 @@ export default {
       this.dropdownOpen = !this.dropdownOpen;
       this.selectedAddress = address;
       this.$refs.addressInput.value = address;
+    },
+    closeCam() {
+      this.camera = 'auto';
+    },
+    readQRCode(result) {
+      this.result = result;
+      this.address = result;
+      this.hexAddress = result;
+      this.camera = 'off';
+    },
+    onDecode(result) {
+      this.camera = 'off';
+      this.result = result;
+      this.address = result;
+      this.hexAddress = result;
+
+    },
+    async onInit(promise) {
+      try {
+        await promise;
+      } catch (error) {
+        if (error.name === 'NotAllowedError') {
+          this.error = 'ERROR: you need to grant camera access permisson';
+        } else if (error.name === 'NotFoundError') {
+          this.error = 'ERROR: no camera on this device';
+        } else if (error.name === 'NotSupportedError') {
+          this.error = 'ERROR: secure context required (HTTPS, localhost)';
+        } else if (error.name === 'NotReadableError') {
+          this.error = 'ERROR: is the camera already in use?';
+        } else if (error.name === 'OverconstrainedError') {
+          this.error = 'ERROR: installed cameras are not suitable';
+        } else if (error.name === 'StreamApiNotSupportedError') {
+          this.error = 'ERROR: Stream API is not supported in this browser';
+        }
+      }
     },
     validateAddress() {
       if (this.isValidAddress) {
