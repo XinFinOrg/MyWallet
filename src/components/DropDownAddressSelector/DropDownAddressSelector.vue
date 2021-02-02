@@ -18,7 +18,6 @@
         >
           {{ $t('common.copy') }}
         </button>
-        </button> -->
         <div class="to-address single-input-block">
           <button class="title-button prevent-user-select" @click="openCam">
             {{ $t('QRCode') }}
