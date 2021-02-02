@@ -225,6 +225,7 @@ export default {
       this.selectedAddress = '';
       this.isValidAddress = false;
       this.hexAddress = '';
+      this.result = '';
       this.$refs.addressInput.value = '';
     },
     hexAddress() {
@@ -276,8 +277,8 @@ export default {
       this.result = '0x' + result.slice(3);
       this.address = '0x' + result.slice(3);
       this.hexAddress = '0x' + result.slice(3);
-      this.isValidAddress = true;
-      this.$refs.addressInput.value = result;
+      this.isValidAddress = isAddress(result);
+      this.$refs.addressInput.value = '0x' + result.slice(3);
       this.camera = 'off';
     },
     async onInit(promise) {

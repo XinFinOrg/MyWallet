@@ -173,6 +173,7 @@ import ethUnit from 'ethjs-unit';
 import utils from 'web3-utils';
 import fetch from 'node-fetch';
 import DropDownAddressSelector from '@/components/DropDownAddressSelector';
+
 export default {
   components: {
     'interface-container-title': InterfaceContainerTitle,
@@ -369,9 +370,7 @@ export default {
       );
     },
     txTo() {
-      return this.isToken
-        ? this.selectedCurrency.address.toLowerCase()
-        : this.hexAddress.toLowerCase().trim();
+      return this.isToken ? this.selectedCurrency.address : this.hexAddress;
     },
     multiWatch() {
       return (
@@ -497,7 +496,7 @@ export default {
       const contract = new this.web3.eth.Contract(jsonInterface);
       return contract.methods
         .transfer(
-          this.hexAddress.toLowerCase(),
+          this.hexAddress,
           new BigNumber(amount).times(new BigNumber(10).pow(decimals)).toFixed()
         )
         .encodeABI();

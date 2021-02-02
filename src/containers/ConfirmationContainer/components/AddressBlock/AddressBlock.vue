@@ -85,15 +85,22 @@ export default {
       return this.tokenSymbol.toLowerCase();
     },
     checksumAddress() {
-      console.log(this.tokenTransferTo,"this.tokenTransferTo.addressthis.address",'xdc'+toChecksumAddress(this.address).substring(2),"toChecksumAddress(this.address)")
-      if (isAddress(this.tokenTransferTo.toLowerCase()))
-        return toChecksumAddress(this.tokenTransferTo.toLowerCase());
-      if (isAddress(this.address)) return 'xdc'+ toChecksumAddress(this.address).substring(2);
+      // console.log(
+      //   this.tokenTransferTo,
+      //   'this.tokenTransferTo.addressthis.address',
+      //   'xdc' + toChecksumAddress(this.address).substring(2),
+      //   'toChecksumAddress(this.address)'
+      // );
+      if (isAddress(this.tokenTransferTo))
+        return toChecksumAddress(this.tokenTransferTo);
+      if (isAddress(this.address))
+        return 'xdc' + toChecksumAddress(this.address).substring(2);
       return '';
     },
     tokenChecksumAddress() {
-      console.log(this.address,"this.addressthis.addressthis.address")
-      if (isAddress(this.address)) return 'xdc'+ toChecksumAddress(this.address).substring(2);
+      console.log(this.address, 'this.addressthis.addressthis.address');
+      if (isAddress(this.address))
+        return 'xdc' + toChecksumAddress(this.address).substring(2);
       return '';
     }
   },
