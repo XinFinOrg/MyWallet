@@ -18,22 +18,10 @@
         >
           {{ $t('common.copy') }}
         </button>
-        <!-- <button
-          v-show="!hideCopy"
-          class="title-button prevent-user-select"
-          @click="readQRCode"
-        >
-          {{ $t('QRCode Scan 2') }}
         </button> -->
-            <div class="to-address single-input-block">
-          <!-- <div
-            class="submit-button large-round-button-green-filled"
-            @click="closeCam"
-          >
-            Show QRcode Scanner
-          </div> -->
-          <button class="title-button prevent-user-select" @click="closeCam">
-            {{ $t('QRCode') }}>
+        <div class="to-address single-input-block">
+          <button class="title-button prevent-user-select" @click="openCam">
+            {{ $t('QRCode') }}
           </button>
           <div>
             <p class="error">{{ error }}</p>
@@ -49,7 +37,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="dropdown--content">
       <div
         :class="dropdownOpen ? 'dropdown-open' : ''"
@@ -121,7 +109,7 @@
             </div>
             <div class="address-block">
               <p class="listed-address">
-                {{ addr.address }}
+                {{ result }}
                 <span
                   v-if="
                     addr.address !== currentAddress &&
@@ -162,13 +150,13 @@ import { Toast } from '@/helpers';
 import utils from 'web3-utils';
 import AddressBookModal from '@/components/AddressBookModal';
 import { QrcodeStream } from 'vue-qrcode-reader';
+import { isAddress, toChecksumAddress } from '@/helpers/addressUtils';
 
 export default {
   components: {
     blockie: Blockie,
     'address-book-modal': AddressBookModal,
-     QrcodeStream: QrcodeStream
-
+    QrcodeStream: QrcodeStream
   },
   props: {
     title: {
@@ -282,27 +270,17 @@ export default {
       this.selectedAddress = address;
       this.$refs.addressInput.value = address;
     },
-    closeCam() {
+    openCam() {
       this.camera = 'auto';
     },
-    readQRCode(result) {
-      this.result = '0x'+result.substring(3);
-      this.address = '0x'+result.substring(3);
-      this.hexAddress = '0x'+result.substring(3);
-      this.hexAddress = '0x'+result.substring(3);
-      this.isValidAddress = true;
-      this.$refs.addressInput.value = result;
-      this.camera = 'off';
-    },
     onDecode(result) {
-      this.result = '0x'+result.substring(3);
-      this.address = '0x'+result.substring(3);
-      this.hexAddress = '0x'+result.substring(3);
-      this.hexAddress = '0x'+result.substring(3);
+      this.result = isAddress(result);
+      this.address = isAddress(result);
+      this.hexAddress = isAddress(result);
+      this.hexAddress = isAddress(result);
       this.isValidAddress = true;
       this.$refs.addressInput.value = result;
       this.camera = 'off';
-
     },
     async onInit(promise) {
       try {
