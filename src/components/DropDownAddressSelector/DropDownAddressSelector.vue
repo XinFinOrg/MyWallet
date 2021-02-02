@@ -33,13 +33,11 @@
             Show QRcode Scanner
           </div> -->
           <button class="title-button prevent-user-select" @click="closeCam">
-            {{ $t('QRCode Scan11221') }}>
+            {{ $t('QRCode') }}>
           </button>
           <div>
             <p class="error">{{ error }}</p>
-            <p class="decode-result">
-              Last result: <b>{{ result }}</b>
-            </p>
+
             <div v-if="camera == 'auto'">
               <qrcode-stream
                 :camera="camera"
@@ -288,22 +286,22 @@ export default {
       this.camera = 'auto';
     },
     readQRCode(result) {
-      this.result = result;
-      this.address = result;
-      this.hexAddress = result;
-      this.hexAddress = result;
+      this.result = '0x'+result.substring(3);
+      this.address = '0x'+result.substring(3);
+      this.hexAddress = '0x'+result.substring(3);
+      this.hexAddress = '0x'+result.substring(3);
       this.isValidAddress = true;
       this.$refs.addressInput.value = result;
       this.camera = 'off';
     },
     onDecode(result) {
-      this.camera = 'off';
-      this.result = result;
-      this.address = result;
-      this.hexAddress = result;
-      this.hexAddress = result;
+      this.result = '0x'+result.substring(3);
+      this.address = '0x'+result.substring(3);
+      this.hexAddress = '0x'+result.substring(3);
+      this.hexAddress = '0x'+result.substring(3);
       this.isValidAddress = true;
       this.$refs.addressInput.value = result;
+      this.camera = 'off';
 
     },
     async onInit(promise) {
