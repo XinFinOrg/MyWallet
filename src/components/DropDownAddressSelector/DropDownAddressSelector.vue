@@ -148,7 +148,7 @@ import { Toast } from '@/helpers';
 import utils from 'web3-utils';
 import AddressBookModal from '@/components/AddressBookModal';
 import { QrcodeStream } from 'vue-qrcode-reader';
-import { isAddress, toChecksumAddress } from '@/helpers/addressUtils';
+import { isAddress } from '@/helpers/addressUtils';
 
 export default {
   components: {
