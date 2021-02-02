@@ -56,6 +56,7 @@ To find out how to disclose a vulnerability visit [hackerone.com/myetherwallet](
 5. run `npm run build`. If instructed to edit `package.json` to use newly released versions of dependencies, do so and then run `npm update` and `npm run build` again. After this step succeeds, you can stop and use the offline version by opening the index file from the dist folder with your preferred browser.
 6. start with `npm start`. If instructed to edit `package.json` for newly updated dependencies, see previous step.
 7. If `npm start` fails and above the error message it states 'new update found' then the package.json version of the indicated packages needs to be updated to match the versions shown in the notice.
+npm i copy-webpack-plugin@5.1.1
 8. App should be running in `https://localhost:8080`
 
 ## Developers
