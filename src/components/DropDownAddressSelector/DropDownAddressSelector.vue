@@ -24,7 +24,6 @@
           </button>
           <div>
             <p class="error">{{ error }}</p>
-
             <div v-if="camera == 'auto'">
               <qrcode-stream
                 :camera="camera"
@@ -273,11 +272,10 @@ export default {
       this.camera = 'auto';
     },
     onDecode(result) {
+      this.isValidAddress = true;
       this.result = isAddress(result);
       this.address = isAddress(result);
       this.hexAddress = isAddress(result);
-      this.hexAddress = isAddress(result);
-      this.isValidAddress = true;
       this.$refs.addressInput.value = result;
       this.camera = 'off';
     },
