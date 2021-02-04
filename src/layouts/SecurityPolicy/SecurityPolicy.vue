@@ -60,7 +60,7 @@
               <div>
                 Code base can be found:
                 <a
-                  href="https://github.com/MyEtherWallet/MyEtherWallet"
+                  href="https://github.com/XinFinOrg/Wallet"
                   target="_blank"
                 >
                   https://github.com/MyEtherWallet/MyEtherWallet

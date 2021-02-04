@@ -74,7 +74,7 @@ export default {
         },
         {
           title: `v${version}`,
-          href: `https://github.com/MyEtherWallet/MyEtherWallet/releases/tag/v${version}`
+          href: `https://github.com/XinFinOrg/Wallet/releases/tag/v${version}`
         }
       ],
       links: [
