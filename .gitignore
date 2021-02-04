@@ -19,4 +19,4 @@ release
 chrome-extension
 
 # Generated files
-src/_generated
+# src/_generated

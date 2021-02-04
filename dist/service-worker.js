@@ -15,7 +15,7 @@ importScripts("workbox-v4.3.1/workbox-sw.js");
 workbox.setConfig({modulePathPrefix: "workbox-v4.3.1"});
 
 importScripts(
-  "precache-manifest.dc301e22c14a7e4a74fd83580f408235.js"
+  "precache-manifest.d078346130361ec760b7328a26fe1e92.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "xdcwallet"});
