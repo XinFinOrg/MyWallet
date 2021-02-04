@@ -5,36 +5,36 @@
       <div class="block-image">
         <div class="network-type">
           <div class="icon-block">
-            <img :src="network.type.icon" class="icon" />
+            <img :src="network.type.icon" alt class="icon" />
           </div>
         </div>
       </div>
       <div class="block-content">
         <div class="information-container">
           <div class="title-and-helper">
-            <h2>{{ $t('interface.network') }}</h2>
+            <h2>{{ $t('common.network') }}</h2>
           </div>
           <p v-if="account.identifier !== identifier">
             {{ network.service + '(' + network.type.name + ')' }}
           </p>
           <p v-else>{{ 'Web3 Provider' + '(' + network.type.name + ')' }}</p>
           <p>
-            {{ $t('interface.lastBlock') }}# :
+            {{ $t('interface.network-modal.last-block') }}# :
             <span v-show="parsedNetwork !== ''"> {{ parsedNetwork }}</span>
             <i v-show="parsedNetwork === ''" class="fa fa-spinner fa-spin" />
           </p>
         </div>
         <div class="icon-container">
-          <!-- <button
+          <button
             v-if="account.identifier !== identifier"
             id="networkModal"
             class="change-button"
             @click="networkModalOpen"
           >
-            Change
-          </button> -->
+            {{ $t('interface.network-modal.button-change') }}
+          </button>
           <b-popover
-            content="Open Networks"
+            :content="$t('interface.network-modal.popup-open-networks')"
             target="networkModal"
             placement="top"
             triggers="hover"
@@ -48,7 +48,7 @@
 
 <script>
 import InterfaceNetworkModal from '../InterfaceNetworkModal';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import { WEB3_WALLET } from '@/wallets/bip44/walletTypes';
 
 export default {
@@ -68,11 +68,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      network: 'network',
-      account: 'account',
-      web3: 'web3'
-    })
+    ...mapState('main', ['network', 'account', 'web3'])
   },
   watch: {
     blockNumber(newVal) {

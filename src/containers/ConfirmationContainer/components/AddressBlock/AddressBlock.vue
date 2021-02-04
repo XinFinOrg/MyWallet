@@ -1,9 +1,9 @@
 <template lang="html">
   <div class="address-container">
     <div class="currency-container">
-      <img
-        :src="require(`@/assets/images/currency/${lowerCaseCurrency}.svg`)"
-      />
+      <div class="icon-matcher">
+        <img :src="iconFetcher" alt />
+      </div>
       <p>
         <span class="currency-amt">
           {{ direction === 'from' ? '-' : '+' }}
@@ -15,15 +15,25 @@
       </p>
     </div>
     <div class="identicon-container">
-      <p>{{ direction | capitalize }} Address</p>
+      <p v-if="direction === 'to'">{{ $t('sendTx.to-addr') }}</p>
+      <p v-else>{{ $t('sendTx.from-addr') }}</p>
     </div>
-    <div class="address">{{ checksumAddress.replace('0x', 'XDC') }}</div>
+    <div class="address" @click="doubleCheckLink(checksumAddress)">
+      {{ checksumAddress }}
+    </div>
+    <div v-if="tokenSymbol !== '' && direction === 'to'">
+      <p>{{ $t('sendTx.via-contract') }}</p>
+      <div class="address" @click="doubleCheckLink(tokenChecksumAddress)">
+        {{ tokenChecksumAddress }}
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import { isAddress, toChecksumAddress } from '@/helpers/addressUtils';
 import web3 from 'web3';
+import { mapState } from 'vuex';
 export default {
   props: {
     address: {
@@ -40,7 +50,7 @@ export default {
     },
     currency: {
       type: String,
-      default: 'xdc'
+      default: 'eth'
     },
     tokenTransferTo: {
       type: String,
@@ -53,22 +63,57 @@ export default {
     tokenSymbol: {
       type: String,
       default: ''
+    },
+    icon: {
+      type: String,
+      default: ''
     }
   },
   computed: {
+    ...mapState('main', ['network']),
+    iconFetcher() {
+      let icon;
+      try {
+        // eslint-disable-next-line
+        icon = require(`@/assets/images/currency/${lowerCaseCurrency}.svg`);
+      } catch (e) {
+        icon = this.icon;
+      }
+      return icon;
+    },
     lowerCaseCurrency() {
-      return this.currency.toLowerCase();
+      return this.tokenSymbol.toLowerCase();
     },
     checksumAddress() {
+      // console.log(
+      //   this.tokenTransferTo,
+      //   'this.tokenTransferTo.addressthis.address',
+      //   'xdc' + toChecksumAddress(this.address).substring(2),
+      //   'toChecksumAddress(this.address)'
+      // );
       if (isAddress(this.tokenTransferTo))
         return toChecksumAddress(this.tokenTransferTo);
-      if (isAddress(this.address)) return toChecksumAddress(this.address);
+      if (isAddress(this.address))
+        return 'xdc' + toChecksumAddress(this.address).substring(2);
+      return '';
+    },
+    tokenChecksumAddress() {
+      console.log(this.address, 'this.addressthis.addressthis.address');
+      if (isAddress(this.address))
+        return 'xdc' + toChecksumAddress(this.address).substring(2);
       return '';
     }
   },
   methods: {
     converter(num) {
       return web3.utils.fromWei(num.toString(), 'ether');
+    },
+    doubleCheckLink(address) {
+      // eslint-disable-next-line
+      window.open(
+        this.network.type.blockExplorerAddr.replace('[[address]]', address),
+        '_blank'
+      );
     }
   }
 };

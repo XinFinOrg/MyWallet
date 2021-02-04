@@ -10,7 +10,7 @@ function shortenAddress(address) {
 }
 
 describe('DropDownAddressSelector.vue', () => {
-  let localVue, i18n, store;
+  let localVue, i18n, store, wrapper;
 
   beforeAll(() => {
     const baseSetup = Tooling.createLocalVueInstance();
@@ -28,16 +28,19 @@ describe('DropDownAddressSelector.vue', () => {
     });
   });
 
+  afterEach(() => {
+    wrapper.destroy();
+    wrapper = null;
+  });
+
   xit('render correct addresses', () => {
-    const wrapper = shallowMount(DropDownAddressSelector);
     const dropdownOpen = wrapper.find('.dropdown-open-button');
     dropdownOpen.trigger('click');
     expect(wrapper.vm.$data.dropdownOpen).toBe(true);
     const addressElements = wrapper.vm.$el.querySelectorAll(
       '.dropdown-list-box .listed-address'
     );
-    for (let i = 0; i < addressElements.length; i++) {
-      const addressElement = addressElements[i];
+    for (const [i, addressElement] of addressElements.entries()) {
       expect(addressElement.textContent.trim()).toEqual(
         shortenAddress(wrapper.vm.$data.addresses[i])
       );

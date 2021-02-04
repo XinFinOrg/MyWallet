@@ -3,13 +3,15 @@
   align-items: center;
   border: 1px solid $light-grey-14;
   border-radius: 5px;
-  color: $light-grey-14;
+  color: $text-black;
+  background-color: $white;
   cursor: pointer;
-  justify-content: space-between;
   display: flex;
+  justify-content: space-between;
   padding: 5px 20px;
   text-align: left;
   user-select: none;
+  position: relative;
 
   span {
     font-weight: 500;
@@ -19,20 +21,68 @@
   &:hover,
   &.selected {
     border: 1px solid $mew-green;
-    color: $text-black;
+  }
+
+  &.selected {
+    box-shadow: 0 8px 15px 0 rgba(59, 64, 69, 0.12);
+
+    span {
+      font-weight: 700;
+    }
+  }
+
+  &:hover {
+    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.2);
   }
 
   .icon {
     margin-right: 8px;
     width: 50px;
   }
+
+  .img-title-container {
+    align-items: center;
+    display: flex;
+  }
+
+  .title-link-container {
+    display: flex;
+    flex-direction: column;
+
+    span {
+      font-size: 16px;
+    }
+
+    .no-link {
+      font-size: 13px;
+    }
+
+    a {
+      display: block;
+      margin-top: 0;
+      font-size: 13px;
+    }
+  }
 }
 
-.disabled {
+.inactive {
   background-color: $white !important;
-  pointer-events: none;
 
   div {
     background-color: $white !important;
+  }
+}
+
+.has-link {
+  padding: 20px 30px !important;
+}
+
+.promotion-container {
+  position: absolute;
+  right: -2px;
+  top: -2px;
+
+  img {
+    width: 50px;
   }
 }

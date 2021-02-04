@@ -1,51 +1,57 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
 import { shallowMount } from '@vue/test-utils';
 import AccessWalletLayout from '@/layouts/AccessWalletLayout/AccessWalletLayout.vue';
 import { Tooling } from '@@/helpers';
+import { RouterLinkStub } from '@@/helpers/setupTooling';
+import BigNumber from 'bignumber.js';
+import VueX from 'vuex';
 import { state, getters } from '@@/helpers/mockStore';
+import { fetch } from 'whatwg-fetch';
 
-import PriceBar from '@/layouts/AccessWalletLayout/components/PriceBar/PriceBar.vue';
+function roundPercentage(num) {
+  return new BigNumber(num).toFixed(2);
+}
 
-const RouterLinkStub = {
-  name: 'router-link',
-  template: '<div class="routerlink"><slot> </slot></div>',
-  props: ['to']
-};
-
-//xdescribe
-describe('AccessWalletLayout.vue', () => {
+xdescribe('AccessWalletLayout.vue', () => {
   let localVue, i18n, wrapper, store;
 
   beforeAll(() => {
     const baseSetup = Tooling.createLocalVueInstance();
     localVue = baseSetup.localVue;
     i18n = baseSetup.i18n;
-    store = baseSetup.store;
-
-    Vue.config.errorHandler = () => {};
-    Vue.config.warnHandler = () => {};
-
-    store = new Vuex.Store({
-      getters,
-      state
+    store = new VueX.Store({
+      modules: {
+        main: {
+          namespaced: true,
+          state,
+          getters
+        }
+      }
     });
+
+    Vue.config.warnHandler = () => {};
   });
 
   beforeEach(() => {
+    global.fetch = fetch;
+
     wrapper = shallowMount(AccessWalletLayout, {
       localVue,
       i18n,
       store,
       attachToDocument: true,
       stubs: {
-        'router-link': RouterLinkStub,
-        'price-bar': PriceBar
+        'router-link': RouterLinkStub
       }
     });
   });
 
-  xit('[Failing] should render correct tokens data', () => {
+  afterEach(() => {
+    wrapper.destroy();
+    wrapper = null;
+  });
+
+  it('should render correct tokens data', () => {
     const tokens = [
       {
         symbol: 'BURNER',
@@ -72,8 +78,7 @@ describe('AccessWalletLayout.vue', () => {
       '.slider-container div'
     );
 
-    for (let i = 0; i < tokenElements.length; i++) {
-      const tokenElement = tokenElements[i];
+    for (const [i, tokenElement] of tokenElements.entries()) {
       expect(tokenElement.querySelectorAll('p')[0].textContent.trim()).toEqual(
         tokens[i].symbol
       );
@@ -81,10 +86,8 @@ describe('AccessWalletLayout.vue', () => {
         '$' + tokens[i].quotes.USD.price
       );
       expect(tokenElement.querySelectorAll('p')[2].textContent.trim()).toEqual(
-        tokens[i].quotes.USD.percent_change_24h + '%'
+        roundPercentage(tokens[i].quotes.USD.percent_change_24h) + '%'
       );
     }
   });
-
-  describe('AccessWalletLayout.vue Methods', () => {});
 });

@@ -1,312 +1,355 @@
 <template>
   <div class="send-offline-helper">
-    <div class="wrap">
-      <div class="page-title">
-        <page-title
-          :options="{
-            title: 'Send Offline Helper',
-            boldSubTitle: '',
-            textContent: [
-              'Customize actions, debug reveals, and more with this set of advance tools. Please be mindful of the capabilities and limitations of these tools before using.'
-            ]
-          }"
-        />
-      </div>
-      <div class="page-content-container">
-        <!-- Select Network-->
-        <div class="collapse-container">
+    <div class="page-container">
+      <div class="wrap">
+        <div class="page-title">
+          <page-title
+            :options="{
+              title: $t('withoutWallet.offline-helper'),
+              boldSubTitle: '',
+              textContent: []
+            }"
+          />
+        </div>
+        <div class="page-content-container">
+          <!-- Select Network-->
+          <div class="collapse-container">
+            <accordion-menu
+              :greytitle="false"
+              :isopen="stage1"
+              :title="$t('withoutWallet.select-network')"
+              :right-text="networkTitle"
+              number="1"
+              @titleClicked="stage1 = !stage1"
+            >
+              <ul class="networks">
+                <li
+                  v-for="(key, index) in Object.keys(reorderNetworkList)"
+                  :key="$router.path + key + index"
+                >
+                  <div class="network-title">
+                    <div class="network-icon">
+                      <img
+                        v-if="
+                          key !== 'Custom Networks' &&
+                          Networks[key][0].type.icon
+                        "
+                        :src="Networks[key][0].type.icon"
+                        alt
+                      />
+                      <div
+                        v-if="
+                          key !== 'Custom Networks' &&
+                          !Networks[key][0].type.icon
+                        "
+                        class="no-icon"
+                      >
+                        <p>{{ $t('common.no-icon') }}</p>
+                      </div>
+                    </div>
+                    <p>{{ key }}</p>
+                  </div>
+                  <div class="network-content">
+                    <p
+                      v-for="net in reorderNetworkList[key]"
+                      :key="net.service"
+                      :class="
+                        net.service === selectedNetwork.service &&
+                        net.type &&
+                        net.type.name === selectedNetwork.type.name
+                          ? 'current-network'
+                          : ''
+                      "
+                      @click="callSwitchNetwork(net)"
+                    >
+                      {{ net.service }}
+                    </p>
+                  </div>
+                </li>
+              </ul>
+            </accordion-menu>
+          </div>
+
+          <!-- Generate Info -->
           <accordion-menu
             :greytitle="false"
-            :isopen="stage1"
-            :title="$t('withoutWallet.selectNetwork')"
-            :right-text="networkTitle"
-            number="1"
-            @titleClicked="stage1 = !stage1"
+            :editbutton="true"
+            :isopen="stage2"
+            :title="$t('withoutWallet.generate-info')"
+            number="2"
+            class="address-selector"
+            @titleClicked="stage2 = !stage2"
           >
-            <ul class="networks">
-              <li
-                v-for="(key, index) in Object.keys(reorderNetworkList)"
-                :key="$router.path + key + index"
-              >
-                <div class="network-title">
-                  <img :src="Networks[key][0].type.icon" />
-                  <p>{{ key }}</p>
-                </div>
-                <div class="network-content">
-                  <p
-                    v-for="net in Networks[key]"
-                    :key="net.service"
-                    :class="
-                      net.service === selectedNetwork.service &&
-                      net.type &&
-                      net.type.name === selectedNetwork.type.name
-                        ? 'current-network'
-                        : ''
-                    "
-                    @click="switchNetwork(net)"
+            <dropdown-address-selector
+              :title="$t('sendTx.from-addr')"
+              @toAddress="generateInformation($event)"
+            />
+            <div v-if="informationGenerated">
+              <ul>
+                <li class="detail-container">
+                  <span class="detail-name">{{ $t('sendTx.sender') }}:</span>
+                  <span class="detail-text">{{ genInfo.address }}</span>
+                </li>
+                <li class="detail-container">
+                  <span class="detail-name">{{ $t('sendTx.nonce') }}:</span>
+                  <span class="detail-text">{{ genInfo.nonce }}</span>
+                </li>
+                <li class="detail-container">
+                  <span class="detail-name">{{ $t('common.chain-id') }}:</span>
+                  <span class="detail-text"
+                    >{{ genInfo.chainID }} ({{ genInfo.networkName }})</span
                   >
-                    {{ net.service }}
-                  </p>
+                </li>
+                <li class="detail-container with-divider">
+                  <span class="detail-name"
+                    >{{ $t('common.gas.current-gas') }}:</span
+                  >
+                  <span class="detail-text">
+                    {{ toGwei(genInfo.gasPrice) }}
+                    {{ $t('common.gas.gwei') }}
+                  </span>
+                </li>
+                <div v-if="showGenInfoGasWarning" class="gas-price-warning">
+                  {{ $t('errorsGlobal.high-gas-limit-warning') }}
                 </div>
-              </li>
-            </ul>
-          </accordion-menu>
-        </div>
+                <li class="detail-container">
+                  <span class="detail-name">{{ $t('sendTx.retrieved') }}:</span>
+                  <span class="detail-text">{{
+                    dateTimeDisplay(genInfo.timestamp)
+                  }}</span>
+                </li>
+                <li class="detail-container">
+                  <span class="detail-name">{{ $t('sendTx.at-block') }}:</span>
+                  <span class="detail-text">{{ genInfo.blockNumber }}</span>
+                </li>
+              </ul>
+            </div>
+            <div v-show="informationGenerated" class="button-container">
+              <a
+                ref="generatedDownloadLink"
+                :href="generatedJson"
+                :download="exportFileName"
+                rel="noopener noreferrer"
+              >
+                <standard-button
+                  :options="{
+                    title: $t('withoutWallet.export-json'),
+                    buttonStyle: 'green-border',
+                    noWalletTerms: true,
+                    noMinWidth: true
+                  }"
+                />
+              </a>
 
-        <!-- Generate Info -->
-        <accordion-menu
-          :greytitle="false"
-          :editbutton="true"
-          :isopen="stage2"
-          :title="$t('withoutWallet.generateInfo')"
-          number="2"
-          @titleClicked="stage2 = !stage2"
-        >
-          <dropdown-address-selector
-            title="From Address"
-            @toAddress="generateInformation($event)"
-          />
-          <div v-if="informationGenerated">
-            <ul>
-              <li class="detail-container">
-                <span class="detail-name">Sender:</span>
-                <span class="detail-text">{{ genInfo.address }}</span>
-              </li>
-              <li class="detail-container">
-                <span class="detail-name">Nonce:</span>
-                <span class="detail-text">{{ genInfo.nonce }}</span>
-              </li>
-              <li class="detail-container">
-                <span class="detail-name">Chain ID:</span>
-                <span class="detail-text"
-                  >{{ genInfo.chainID }} ({{ genInfo.networkName }})</span
-                >
-              </li>
-              <li class="detail-container with-divider">
-                <span class="detail-name">Current Gas Price:</span>
-                <span class="detail-text"
-                  >{{ toGwei(genInfo.gasPrice) }} Gwei</span
-                >
-              </li>
-              <li class="detail-container">
-                <span class="detail-name">Retrieved:</span>
-                <span class="detail-text">
-                  {{ dateTimeDisplay(genInfo.timestamp) }}
-                </span>
-              </li>
-              <li class="detail-container">
-                <span class="detail-name">at block:</span>
-                <span class="detail-text">{{ genInfo.blockNumber }}</span>
-              </li>
-            </ul>
-          </div>
-          <div v-show="informationGenerated" class="button-container">
-            <a
-              ref="generatedDownloadLink"
-              :href="generatedJson"
-              :download="exportFileName"
-            >
               <standard-button
                 :options="{
-                  title: 'Export JSON File',
+                  title: $t('common.continue'),
+                  buttonStyle: 'green',
+                  noWalletTerms: true,
+                  rightArrow: true
+                }"
+                :click-function="stage2Btn"
+              />
+            </div>
+          </accordion-menu>
+
+          <!-- Paste/Upload Signed Tx-->
+          <accordion-menu
+            :greytitle="false"
+            :isopen="stage3"
+            :title="$t('withoutWallet.signed-tx')"
+            number="3"
+            @titleClicked="stage3 = !stage3"
+          >
+            <textarea v-model="rawSigned" class="no-margin raw-tx-input" />
+            <p v-if="invalidSignature">{{ $t('sendTx.invalid-signature') }}</p>
+            <i18n
+              v-if="wrongNetwork && correctNetwork === ''"
+              tag="p"
+              path="sendTx.signed-chain-id"
+            ></i18n>
+            <i18n
+              v-if="wrongNetwork && correctNetwork !== ''"
+              tag="p"
+              path="sendTx.signed-chain-id"
+            >
+              <span slot="network">({{ correctNetwork }})</span>
+            </i18n>
+            <expanding-option :title="$t('sendTx.raw-tx')">
+              <textarea
+                :value="JSON.stringify(rawTx)"
+                class="no-margin raw-tx-input"
+                disabled
+              />
+            </expanding-option>
+            <div class="button-container">
+              <input
+                ref="jsonInput"
+                type="file"
+                name="file"
+                style="display: none"
+                @change="uploadFile"
+              />
+              <standard-button
+                :options="{
+                  title: $t('withoutWallet.upload-json'),
                   buttonStyle: 'green-border',
                   noWalletTerms: true,
                   noMinWidth: true
                 }"
+                :click-function="uploadClick"
               />
-            </a>
+              <standard-button
+                :options="{
+                  title: $t('common.continue'),
+                  buttonStyle: 'green',
+                  noWalletTerms: true
+                }"
+                :click-function="stage3Btn"
+              />
+            </div>
+          </accordion-menu>
 
-            <standard-button
-              :options="{
-                title: 'Continue',
-                buttonStyle: 'green',
-                noWalletTerms: true,
-                rightArrow: true
-              }"
-              @click.native="stage2Btn"
-            />
-          </div>
-        </accordion-menu>
-
-        <!-- Paste/Upload Signed Tx-->
-        <accordion-menu
-          :greytitle="false"
-          :isopen="stage3"
-          :title="$t('withoutWallet.signedTx')"
-          number="3"
-          @titleClicked="stage3 = !stage3"
-        >
-          <textarea v-model="rawSigned" class="no-margin raw-tx-input" />
-          <p v-if="invalidSignature">Invalid Signature</p>
-          <p v-if="wrongNetwork && correctNetwork === ''">
-            Signed Chain ID does not match chain id for selected network
-          </p>
-          <p v-if="wrongNetwork && correctNetwork !== ''">
-            Signed Chain ID ({{ correctNetwork }}) does not match chain id for
-            selected network
-          </p>
-          <expending-option title="Raw Transaction">
-            <textarea
-              :value="JSON.stringify(rawTx)"
-              class="no-margin raw-tx-input"
-              disabled
-            />
-          </expending-option>
-          <div class="button-container">
-            <input
-              ref="jsonInput"
-              type="file"
-              name="file"
-              style="display: none"
-              @change="uploadFile"
-            />
-            <standard-button
-              :options="{
-                title: 'Upload JSON File',
-                buttonStyle: 'green-border',
-                noWalletTerms: true,
-                noMinWidth: true
-              }"
-              @click.native="uploadClick()"
-            />
-            <standard-button
-              :options="{
-                title: 'Continue',
-                buttonStyle: 'green',
-                noWalletTerms: true
-              }"
-              @click.native="stage3Btn"
-            />
-          </div>
-        </accordion-menu>
-
-        <!-- Review and Send-->
-        <accordion-menu
-          :greytitle="false"
-          :editbutton="false"
-          :isopen="stage4"
-          :title="$t('withoutWallet.txDetails')"
-          number="4"
-          @titleClicked="stage4 = !stage4"
-        >
-          <ul>
-            <li class="detail-container">
-              <span class="detail-name">Sender:</span>
-              <span class="detail-text">{{ from }}</span>
-            </li>
-            <li class="detail-container">
-              <span class="detail-name">Receiver:</span>
-              <span class="detail-text">{{ to }}</span>
-            </li>
-            <li class="detail-container">
-              <span class="detail-name">Nonce:</span>
-              <span class="detail-text">{{ nonce }}</span>
-            </li>
-            <li class="detail-container">
-              <span class="detail-name">Value:</span>
-              <span class="detail-text"
-                >{{ toEth(value) }} {{ selectedNetwork.type.name }}</span
-              >
-            </li>
-            <li class="detail-container">
-              <span class="detail-name">Data:</span>
-              <span v-if="data !== '0x'" class="detail-text">
-                {{ truncateData(data) }}
-                <span class="show-all-btn" @click="showAllData = !showAllData"
-                  >Show All</span
-                >
-              </span>
-              <span v-else class="data-all">{{ data }}</span>
-              <span v-if="showAllData" class="data-all">{{ data }}</span>
-            </li>
-
-            <li class="detail-container with-divider">
-              <span class="detail-name">Chain ID:</span>
-              <span class="detail-text"
-                >{{ chainID }} ({{ selectedNetwork.type.name_long }})</span
-              >
-            </li>
-            <li class="detail-container">
-              <span class="detail-name">Gas Limit:</span>
-              <span class="detail-text">{{ gasLimit }}</span>
-            </li>
-            <li class="detail-container">
-              <span class="detail-name">Gas Price:</span>
-              <span class="detail-text">{{ toGwei(gasPrice) }} Gwei</span>
-            </li>
-            <li class="detail-container">
-              <span class="detail-name">Fee:</span>
-              <span class="detail-text">
-                {{ toEth(fee) }} {{ selectedNetwork.type.name }} ($
-                {{ calculateCost(fee) }})
-              </span>
-            </li>
-          </ul>
-          <div class="button-container">
-            <standard-button
-              :options="{
-                title: 'Send',
-                buttonStyle: 'green',
-                noWalletTerms: true,
-                rightArrow: true
-              }"
-              @click.native="stage4Btn"
-            />
-          </div>
-        </accordion-menu>
-
-        <!-- Sent Tx Details & Hash-->
-        <accordion-menu
-          :greytitle="false"
-          :editbutton="false"
-          :isopen="stage5"
-          :title="$t('withoutWallet.txStatus')"
-          number="5"
-          @titleClicked="stage5 = !stage5"
-        >
-          <ul v-if="error === ''">
-            <li class="tx-hash-container">
-              <p>Transaction Hash:</p>
-              <a
-                :href="replaceUrl('', txHash)"
-                class="detail-text"
-                target="_blank"
-                >{{ txHash }}</a
-              >
-            </li>
-            <li class="tx-receipt-container">
-              <p>Transaction Receipt:</p>
-              <div
-                v-if="Object.keys(txReceipt).length > 0"
-                class="tx-receipt-items"
-              >
-                <div
-                  v-for="(item, idx) in Object.keys(txReceipt)"
-                  :key="item + idx"
-                >
-                  <span>{{ item }}</span>
-                  <a
-                    v-if="item === 'transactionHash'"
-                    :href="replaceUrl('', txReceipt[item])"
-                    target="_blank"
-                    class="right-side"
-                    >{{ txReceipt[item] }}</a
+          <!-- Review and Send-->
+          <accordion-menu
+            :greytitle="false"
+            :editbutton="false"
+            :isopen="stage4"
+            :title="$t('withoutWallet.tx-details')"
+            number="4"
+            @titleClicked="stage4 = !stage4"
+          >
+            <ul>
+              <li class="detail-container">
+                <span class="detail-name">{{ $t('sendTx.sender') }}:</span>
+                <span class="detail-text">{{ from }}</span>
+              </li>
+              <li class="detail-container">
+                <span class="detail-name">{{ $t('sendTx.receiver') }}:</span>
+                <span class="detail-text">{{ to }}</span>
+              </li>
+              <li class="detail-container">
+                <span class="detail-name">{{ $t('sendTx.nonce') }}:</span>
+                <span class="detail-text">{{ nonce }}</span>
+              </li>
+              <li class="detail-container">
+                <span class="detail-name">{{ $t('common.value') }}:</span>
+                <span class="detail-text">
+                  {{ toEth(value) }}
+                  {{ selectedNetwork.type.currencyName }}
+                </span>
+              </li>
+              <li class="detail-container">
+                <span class="detail-name">{{ $t('sendTx.data') }}:</span>
+                <span v-if="data !== '0x'" class="detail-text">
+                  {{ truncateData(data) }}
+                  <span
+                    class="show-all-btn"
+                    @click="showAllData = !showAllData"
+                    >{{ $t('common.show-all') }}</span
                   >
-                  <a
-                    v-else-if="item === 'contractAddress'"
-                    :href="replaceUrl('address', txReceipt[item])"
-                    target="_blank"
-                    class="right-side"
-                    >{{ txReceipt[item] }}</a
-                  >
-                  <span v-else class="right-side">{{ txReceipt[item] }}</span>
-                </div>
+                </span>
+                <span v-else class="data-all">{{ data }}</span>
+                <span v-if="showAllData" class="data-all">{{ data }}</span>
+              </li>
+
+              <li class="detail-container with-divider">
+                <span class="detail-name">{{ $t('common.chain-id') }}:</span>
+                <span class="detail-text"
+                  >{{ chainID }} ({{ selectedNetwork.type.name_long }})</span
+                >
+              </li>
+              <li class="detail-container">
+                <span class="detail-name">{{ $t('common.gas.limit') }}:</span>
+                <span class="detail-text">{{ gasLimit }}</span>
+              </li>
+              <li class="detail-container">
+                <span class="detail-name">{{ $t('common.gas.price') }}:</span>
+                <span class="detail-text"
+                  >{{ toGwei(gasPrice) }} {{ $t('common.gas.gwei') }}</span
+                >
+              </li>
+              <div v-if="showGasWarning" class="gas-price-warning">
+                {{ $t('errorsGlobal.high-gas-limit-warning') }}
               </div>
-              <div v-else class="loading">Loading....</div>
-            </li>
-          </ul>
-          <div v-else>{{ error }}</div>
-        </accordion-menu>
+              <li class="detail-container">
+                <span class="detail-name">{{ $t('common.gas.fee') }}:</span>
+                <span class="detail-text">
+                  {{ toEth(toWei(fee)) }}
+                  {{ selectedNetwork.type.currencyName }}
+                  ($ {{ calculateCost(fee) }})
+                </span>
+              </li>
+            </ul>
+            <div class="button-container">
+              <standard-button
+                :options="{
+                  title: $t('common.send'),
+                  buttonStyle: 'green',
+                  noWalletTerms: true,
+                  rightArrow: true
+                }"
+                :click-function="stage4Btn"
+              />
+            </div>
+          </accordion-menu>
+
+          <!-- Sent Tx Details & Hash-->
+          <accordion-menu
+            :greytitle="false"
+            :editbutton="false"
+            :isopen="stage5"
+            :title="$t('withoutWallet.tx-status')"
+            number="5"
+            @titleClicked="stage5 = !stage5"
+          >
+            <ul v-if="error === ''">
+              <li class="tx-hash-container">
+                <p>{{ $t('sendTx.tx-hash') }}:</p>
+                <a
+                  :href="replaceUrl('', txHash)"
+                  class="detail-text"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >{{ txHash }}</a
+                >
+              </li>
+              <li class="tx-receipt-container">
+                <p>{{ $t('sendTx.transaction-receipt') }}:</p>
+                <div
+                  v-if="Object.keys(txReceipt).length > 0"
+                  class="tx-receipt-items"
+                >
+                  <div
+                    v-for="(item, idx) in Object.keys(txReceipt)"
+                    :key="item + idx"
+                  >
+                    <span>{{ getTranslatedItem(item) }}</span>
+                    <a
+                      v-if="item === 'transactionHash'"
+                      :href="replaceUrl('', txReceipt[item])"
+                      target="_blank"
+                      class="right-side"
+                      rel="noopener noreferrer"
+                      >{{ txReceipt[item] }}</a
+                    >
+                    <a
+                      v-else-if="item === 'contractAddress'"
+                      :href="replaceUrl('address', txReceipt[item])"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="right-side"
+                      >{{ txReceipt[item] }}</a
+                    >
+                    <span v-else class="right-side">{{ txReceipt[item] }}</span>
+                  </div>
+                </div>
+                <div v-else class="loading">{{ $t('common.loading') }}....</div>
+              </li>
+            </ul>
+            <div v-else>{{ error }}</div>
+          </accordion-menu>
+        </div>
       </div>
     </div>
 
@@ -320,35 +363,33 @@
 </template>
 
 <script>
-import ethTx from 'ethereumjs-tx';
-import { mapGetters } from 'vuex';
+import { Transaction } from 'ethereumjs-tx';
+import { mapState, mapActions } from 'vuex';
 import Misc from '@/helpers/misc';
 import BigNumber from 'bignumber.js';
 import web3Utils from 'web3-utils';
 import * as networkTypes from '@/networks/types';
-
-import TitleTextContentsLayout from '@/layouts/InformationPages/Components/TitleTextContentsLayout';
+import store from 'store';
+import PageTitleComponent from '@/components/PageTitleComponent';
 import AccordionMenu from '@/components/AccordionMenu';
 import DropDownAddressSelector from '@/components/DropDownAddressSelector';
 import StandardButton from '@/components/Buttons/StandardButton';
-import StandardInput from '@/components/StandardInput';
-import ExpendingOption from '@/components/ExpendingOption';
+import ExpandingOption from '@/components/ExpandingOption';
 import ConfirmationModal from './components/ConfirmationModal';
-
+import ENS from 'ethereum-ens';
 export default {
   components: {
-    'page-title': TitleTextContentsLayout,
+    'page-title': PageTitleComponent,
     'accordion-menu': AccordionMenu,
     'dropdown-address-selector': DropDownAddressSelector,
     'standard-button': StandardButton,
-    'standard-input': StandardInput,
-    'expending-option': ExpendingOption,
+    'expanding-option': ExpandingOption,
     'confirmation-modal': ConfirmationModal
   },
   data() {
     return {
       networkTypes: Object.values(networkTypes),
-      selectedNetwork: this.$store.state.network,
+      selectedNetwork: this.$store.state.main.network,
       stage1: false, // Select Network
       stage2: true, // Generate Information
       stage3: false, // Enter/Upload Signed Transaction
@@ -373,8 +414,8 @@ export default {
         address: '0x',
         gasPrice: 0,
         nonce: 0,
-        chainID: this.$store.state.network.type.chainID,
-        networkName: this.$store.state.network.type.name_long
+        chainID: this.$store.state.main.network.type.chainID,
+        networkName: this.$store.state.main.network.type.name_long
       },
       generatedJson: {},
       file: '',
@@ -389,21 +430,39 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      network: 'network',
-      Networks: 'Networks',
-      customPaths: 'customPaths',
-      path: 'path',
-      web3: 'web3',
-      wallet: 'wallet'
-    }),
+    ...mapState('main', [
+      'network',
+      'Networks',
+      'customPaths',
+      'path',
+      'web3',
+      'wallet',
+      'online',
+      'gasLimitWarning'
+    ]),
+    showGasWarning() {
+      return this.gasPrice >= this.gasLimitWarning;
+    },
+    showGenInfoGasWarning() {
+      const num = new BigNumber(this.toGwei(this.genInfo.gasPrice)).gte(
+        this.gasLimitWarning
+      );
+      return num;
+    },
     reorderNetworkList() {
-      return Misc.reorderNetworks();
+      const customNetworks =
+        store.get('customNetworks') !== undefined
+          ? store.get('customNetworks')
+          : [];
+      const currentNetworks = Misc.reorderNetworks();
+      const newObj = Object.assign({}, currentNetworks, {
+        'Custom Networks': customNetworks
+      });
+      if (customNetworks.length === 0) delete newObj['Custom Networks'];
+      return newObj;
     },
     networkTitle() {
-      return `${this.selectedNetwork.type.name} - ${
-        this.selectedNetwork.service
-      } `;
+      return `${this.selectedNetwork.type.name} - ${this.selectedNetwork.service} `;
     },
     rawTx() {
       return {
@@ -430,10 +489,26 @@ export default {
     }
   },
   mounted() {
-    this.switchNetwork(this.$store.state.network);
-    this.fetchBalanceData();
+    this.callSwitchNetwork(this.$store.state.main.network);
+    if (this.online) {
+      this.fetchBalanceData();
+    }
   },
   methods: {
+    ...mapActions('main', ['switchNetwork', 'setWeb3Instance', 'setENS']),
+    callSetENS() {
+      if (this.network.type.ens) {
+        this.setENS(
+          new ENS(this.web3.currentProvider, this.network.type.ens.registry)
+        );
+      } else {
+        this.setENS(null);
+      }
+    },
+    getTranslatedItem(item) {
+      const kebabItem = item.replace(/([A-Z])/g, '-$1').toLowerCase();
+      return this.$t('withoutWallet.' + kebabItem);
+    },
     replaceUrl(type, hash) {
       if (type === 'address') {
         return this.network.type.blockExplorerAddr.replace('[[address]]', hash);
@@ -471,12 +546,13 @@ export default {
           });
       }
     },
-    switchNetwork(network) {
-      this.$store.dispatch('switchNetwork', network).then(() => {
+    callSwitchNetwork(network) {
+      this.switchNetwork(network).then(() => {
         this.selectedNetwork = network;
-        this.$store.dispatch('setWeb3Instance');
+        this.setWeb3Instance();
         this.stage1Btn();
         this.getTransactionDetails();
+        this.callSetENS();
       });
     },
     truncateData(data) {
@@ -498,7 +574,9 @@ export default {
       if (rawSigned) this.rawSigned = rawSigned;
       if (this.rawSigned !== '') {
         const sanitizedRawSigned = Misc.sanitizeHex(this.rawSigned);
-        const tx = new ethTx(sanitizedRawSigned);
+        const tx = new Transaction(sanitizedRawSigned, {
+          chain: this.genInfo['chainID']
+        });
         this.invalidSignature = !tx.verifySignature();
         this.chainID = tx.getChainId();
         this.wrongNetwork = !new BigNumber(
@@ -526,7 +604,7 @@ export default {
         ).toFixed();
         this.fee = new BigNumber(this.toGwei(this.gasPrice))
           .times(this.gasLimit)
-          .toFixed();
+          .toString();
       }
     },
     async fetchBalanceData() {
@@ -539,7 +617,7 @@ export default {
     },
     toEth(val) {
       if (!val || isNaN(val)) return 0;
-      return web3Utils.fromWei(new BigNumber(val).toFixed(), 'ether');
+      return web3Utils.fromWei(new BigNumber(val).toString(), 'ether');
     },
     toWei(val) {
       if (!val) return 0;
@@ -554,33 +632,36 @@ export default {
     },
     calculateCost(inGwei) {
       const fromGweiToWei = this.toWei(inGwei);
-      return new BigNumber(this.ethPrice)
+      const cost = new BigNumber(this.ethPrice)
         .times(this.toEth(fromGweiToWei))
         .precision(2, BigNumber.ROUND_UP)
         .toNumber();
+      return cost < 0.01 ? 0.01 : cost;
     },
-    async generateInformation(address) {
-      if (address === '') return;
-      this.genInfo.address = address;
-      this.genInfo.gasPrice = await this.web3.eth.getGasPrice();
-      this.genInfo.nonce = await this.web3.eth.getTransactionCount(address);
-      this.genInfo.blockNumber = await this.web3.eth.getBlockNumber();
-      this.genInfo.chainID = this.selectedNetwork.type.chainID;
-      this.genInfo.timestamp = Date.now(); //;
+    async generateInformation(data) {
+      if (data.address === '') return;
+      this.genInfo['address'] = data.address;
+      this.genInfo['gasPrice'] = await this.web3.eth.getGasPrice();
+      this.genInfo['nonce'] = await this.web3.eth.getTransactionCount(
+        data.address
+      );
+      this.genInfo['blockNumber'] = await this.web3.eth.getBlockNumber();
+      this.genInfo['chainID'] = this.selectedNetwork.type.chainID;
+      this.genInfo['timestamp'] = Date.now(); //;
       this.exportGeneratedInfo();
       this.informationGenerated = true;
     },
     exportGeneratedInfo() {
-      const createBlob = (mime, str) => {
+      const createBlob = (str, type) => {
         const string = typeof str === 'object' ? JSON.stringify(str) : str;
         if (string === null) return '';
         const blob = new Blob([string], {
-          type: mime
+          type: type
         });
         this.downloadable = true;
         return window.URL.createObjectURL(blob);
       };
-      this.generatedJson = createBlob('mime', this.genInfo);
+      this.generatedJson = createBlob(this.genInfo, 'mime');
       this.exportFileName = `generated-offline-tx-${Date.now()}.json`;
     },
     uploadClick() {
@@ -591,7 +672,7 @@ export default {
     uploadFile(e) {
       const self = this;
       const reader = new FileReader();
-      reader.onloadend = function(evt) {
+      reader.onloadend = function (evt) {
         self.file = JSON.parse(evt.target.result);
         self.getTransactionDetails(self.file.rawTransaction);
       };

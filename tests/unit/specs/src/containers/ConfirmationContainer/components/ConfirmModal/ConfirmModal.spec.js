@@ -4,6 +4,7 @@ import { shallowMount } from '@vue/test-utils';
 import ConfirmModal from '@/containers/ConfirmationContainer/components/ConfirmModal/ConfirmModal.vue';
 import VueQrcode from '@xkeshi/vue-qrcode';
 import { Tooling } from '@@/helpers';
+import StandardButton from '@/components/Buttons/StandardButton';
 import { state, getters } from '@@/helpers/mockStore';
 
 const AddressBlockStub = {
@@ -28,12 +29,17 @@ describe('ConfirmModal.vue', () => {
     const baseSetup = Tooling.createLocalVueInstance();
     localVue = baseSetup.localVue;
     i18n = baseSetup.i18n;
-    store = baseSetup.store;
-    Vue.config.errorHandler = () => {};
     store = new Vuex.Store({
-      getters,
-      state
+      modules: {
+        main: {
+          namespaced: true,
+          state,
+          getters
+        }
+      }
     });
+
+    Vue.config.warnHandler = () => {};
   });
 
   beforeEach(() => {
@@ -44,7 +50,8 @@ describe('ConfirmModal.vue', () => {
       attachToDocument: true,
       stubs: {
         qrcode: VueQrcode,
-        'address-block': AddressBlockStub
+        'address-block': AddressBlockStub,
+        'standard-button': StandardButton
       },
       propsData: {
         confirmSendTx,
@@ -62,6 +69,11 @@ describe('ConfirmModal.vue', () => {
     });
   });
 
+  afterEach(() => {
+    wrapper.destroy();
+    wrapper = null;
+  });
+
   it('should render correct gas props', () => {
     wrapper.setData({ modalDetailInformation: true });
     expect(
@@ -69,7 +81,7 @@ describe('ConfirmModal.vue', () => {
         .querySelectorAll('.grid-block')[1]
         .querySelectorAll('p')[1]
         .textContent.trim()
-    ).toEqual(wrapper.props().gas + ' wei');
+    ).toEqual(`${wrapper.props().gas}`);
   });
 
   it('should render correct gasPrice props', () => {
@@ -79,7 +91,7 @@ describe('ConfirmModal.vue', () => {
         .querySelectorAll('.grid-block')[2]
         .querySelectorAll('p')[1]
         .textContent.trim()
-    ).toEqual(wrapper.props().gasPrice + ' gwei');
+    ).toEqual(wrapper.props().gasPrice + ' Gwei');
   });
 
   it('should render correct fee props', () => {
@@ -89,7 +101,8 @@ describe('ConfirmModal.vue', () => {
         .querySelectorAll('.grid-block')[3]
         .querySelectorAll('p')[1]
         .textContent.trim()
-    ).toEqual(wrapper.props().fee + ' ETH');
+        .indexOf(wrapper.props().fee)
+    ).toBeGreaterThan(-1);
   });
 
   it('should render correct nonce props', () => {
@@ -112,61 +125,35 @@ describe('ConfirmModal.vue', () => {
     ).toEqual(wrapper.props().data);
   });
 
-  it('should render correct sendTx props', () => {
-    expect(
-      wrapper
-        .find('.submit-button')
-        .classes()
-        .indexOf('disabled')
-    ).toBe(-1);
-    wrapper.setProps({ signedTx: '' });
-    expect(
-      wrapper
-        .find('.submit-button')
-        .classes()
-        .indexOf('disabled')
-    ).toBeGreaterThan(-1);
-  });
-
   it('should render correct from props', () => {
     expect(
-      wrapper
-        .findAll('.address-block')
-        .at(0)
-        .attributes('address')
+      wrapper.findAll('.address-block').at(0).attributes('address')
     ).toEqual(from);
   });
 
   it('should render correct to props', () => {
     expect(
-      wrapper
-        .findAll('.address-block')
-        .at(1)
-        .attributes('address')
+      wrapper.findAll('.address-block').at(1).attributes('address')
     ).toEqual(to);
   });
 
   it('should render correct value props', () => {
-    expect(
-      wrapper
-        .findAll('.address-block')
-        .at(0)
-        .attributes('value')
-    ).toEqual(String(value));
-  });
-
-  it('should render correct isHardwareWallet props', () => {
-    expect(wrapper.vm.signedTransaction).toEqual('');
-    wrapper.setProps({ isHardwareWallet: true });
-    expect(wrapper.vm.signedTransaction).toEqual(
-      'Please Approve on Hardware Wallet'
+    expect(wrapper.findAll('.address-block').at(0).attributes('value')).toEqual(
+      String(value)
     );
   });
 
+  // it('should render correct isHardwareWallet props', () => {
+  //   expect(wrapper.vm.signedTransaction).toEqual('');
+  //   wrapper.setProps({ isHardwareWallet: true });
+  //   expect(wrapper.vm.signedTransaction).toEqual(
+  //     'Please Approve on Hardware Wallet'
+  //   );
+  // });
+
   describe('ConfirmModal.vue Methods', () => {
     it('should confirm sendtx when click submit button', () => {
-      const submitButton = wrapper.find('div.submit-button');
-      submitButton.trigger('click');
+      wrapper.vm.sendTx();
       expect(confirmSendTx).toHaveBeenCalled();
     });
 

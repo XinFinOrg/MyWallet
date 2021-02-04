@@ -1,13 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import TutorialModal from '@/layouts/CreateWalletLayout/components/TutorialModal/TutorialModal.vue';
-
 import { Tooling } from '@@/helpers';
-
-const RouterLinkStub = {
-  name: 'router-link',
-  template: '<div><slot></slot></div>',
-  props: ['to']
-};
+import { RouterLinkStub } from '@@/helpers/setupTooling';
 
 describe('TutorialModal.vue', () => {
   let localVue, i18n, wrapper, store;
@@ -26,6 +20,11 @@ describe('TutorialModal.vue', () => {
       attachToDocument: true,
       stubs: { 'router-link': RouterLinkStub }
     });
+  });
+
+  afterEach(() => {
+    wrapper.destroy();
+    wrapper = null;
   });
 
   it('should call skip function when trigger click skip', () => {

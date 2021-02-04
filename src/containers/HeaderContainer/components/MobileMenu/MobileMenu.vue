@@ -1,124 +1,102 @@
 <template>
   <div class="mobile-menu">
     <mobile-language-selector
+      v-show="!isMewCx"
       :open="langSelectorOpen"
       @isopen="langSelectorOpen = false"
       @currentlang="langChange"
       @currentflag="flagChange"
     />
 
-    <!-- Mobile menu header ************************************ -->
-    <div :class="!isOnTop && !isMenuOpen ? 'small-menu' : ''" class="mobile-menu-header">
+    <!-- Mobile menu header (STARTS) -->
+    <div
+      :class="!isOnTop && !isMenuOpen ? 'small-menu' : ''"
+      class="mobile-menu-header"
+    >
       <router-link
         to="/"
+        aria-label="Home"
         @click.native="
           scrollTop();
           isMenuOpen = false;
         "
       >
-        <div :class="!isOnTop && !isMenuOpen ? 'small-menu' : ''" class="logo-image--container">
-          <img class="logo" src>
+        <div
+          :class="!isOnTop && !isMenuOpen ? 'small-menu' : ''"
+          class="logo-image--container"
+        >
+          <img
+            :src="require(`@/assets/images/short-hand-logo-${buildType}.png`)"
+            class="logo"
+            alt
+          />
         </div>
       </router-link>
       <div class="mobile-menu-button--container">
-        <mobile-menu-button :ismenuopen="isMenuOpen" @click.native="isMenuOpen = !isMenuOpen"/>
+        <a
+          href="https://ccswap.myetherwallet.com/#/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <div class="buy-eth">
+            <img src="@/assets/images/icons/buy-eth.svg" alt />
+            <p>{{ $t('common.buy-eth') }}</p>
+          </div>
+        </a>
+        <mobile-menu-button :ismenuopen="false" @click.native="openMenu" />
       </div>
     </div>
-    <!-- Mobile menu header ************************************ -->
-    <!-- Mobile menu shadow backdrop ************************************ -->
-    <div :class="isMenuOpen ? 'menu-open' : ''" class="mobile-menu-shadow-backdrop"></div>
-    <!-- Mobile menu shadow backdrop ************************************ -->
-    <!-- Mobile menu content ************************************ -->
-    <div :class="isMenuOpen ? 'menu-open' : ''" class="mobile-menu-content--container">
-      <div class="mobile-menu-content">
-        <div v-if="account.address" class="block--container">
-          <mobile-balance-block/>
-          <mobile-network-block :block-number="blockNumber"/>
-        </div>
-        <ul>
-          <li>
-            <router-link
-              to="/"
-              @click.native="
-                scrollTop();
-                isMenuOpen = false;
-              "
-            >
-              <div class="menu-link-block">
-                <div>{{ $t('header.home') }}</div>
-                <i class="fa fa-angle-right" aria-hidden="true"></i>
-              </div>
-            </router-link>
-          </li>
-          <li v-if="isHomePage">
-            <router-link to="/#about-mew" @click.native="isMenuOpen = false">
-              <div class="menu-link-block">
-                <div>{{ $t('header.about') }}</div>
-                <i class="fa fa-angle-right" aria-hidden="true"></i>
-              </div>
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/#faqs" @click.native="isMenuOpen = false">
-              <div class="menu-link-block">
-                <div>{{ $t('common.faqs') }}</div>
-                <i class="fa fa-angle-right" aria-hidden="true"></i>
-              </div>
-            </router-link>
-          </li>
-          <li>
-            <div class="menu-link-block" @click="langSelectorOpen = !langSelectorOpen">
-              <div>{{ $t('common.language') }}</div>
-              <div class="selected-lang">
-                <div>{{ currentLang }}</div>
-                <img :src="require(`@/assets/images/flags/${currentFlag}.svg`)">
-              </div>
-              <i class="fa fa-angle-right" aria-hidden="true"></i>
-            </div>
-          </li>
-          <li v-if="account.address">
-            <div class="menu-link-block" @click="opensettings">
-              <div>{{ $t('common.settings') }}</div>
-              <i class="fa fa-angle-right" aria-hidden="true"></i>
-            </div>
-          </li>
-        </ul>
-        <div v-if="account.address" class="logout-button" @click="logout">
-          <button>{{ $t('common.logout') }}</button>
-        </div>
-      </div>
+    <!-- Mobile menu header (ENDS) -->
+
+    <div
+      :class="isMenuOpen ? 'menu-open' : ''"
+      class="mobile-menu-shadow-backdrop"
+    ></div>
+
+    <div
+      class="mobile-menu-content-container"
+      :class="isMenuOpen ? 'menu-open' : ''"
+    >
+      <mobile-menu-content
+        :close-menu="closeMenu"
+        :logout="logout"
+        :opensettings="opensettings"
+        :language-menu="languageMenuOpen"
+      />
     </div>
-    <!-- Mobile menu content ************************************ -->
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
+import MobileMenuContent from './components/MobileMenuContent';
 import MobileMenuButton from './components/MobileMenuButton';
-import MobileAddressBlock from './components/MobileAddressBlock';
-import MobileBalanceBlock from './components/MobileBalanceBlock';
-import MobileNetworkBlock from './components/MobileNetworkBlock';
 import MobileLanguageSelector from './components/MobileLanguageSelector';
+import { Misc } from '@/helpers';
+import supportedLang from '../../supportedLang';
 
 export default {
   components: {
+    'mobile-menu-content': MobileMenuContent,
     'mobile-menu-button': MobileMenuButton,
-    'mobile-address-block': MobileAddressBlock,
-    'mobile-balance-block': MobileBalanceBlock,
-    'mobile-network-block': MobileNetworkBlock,
     'mobile-language-selector': MobileLanguageSelector
   },
   props: {
     opensettings: {
       type: Function,
-      default: function() {}
+      default: function () {}
     },
     logout: {
       type: Function,
-      default: function() {}
+      default: function () {}
+    },
+    buildType: {
+      type: String,
+      default: 'web'
     }
   },
   data() {
+    const isMewCx = Misc.isMewCx();
     return {
       localGasPrice: '10',
       balance: 0,
@@ -127,14 +105,13 @@ export default {
       isHomePage: true,
       langSelectorOpen: false,
       currentLang: 'English',
-      currentFlag: 'en'
+      currentFlag: 'en',
+      isMewCx: isMewCx,
+      supportedLanguages: supportedLang
     };
   },
   computed: {
-    ...mapGetters({
-      account: 'account',
-      blockNumber: 'blockNumber'
-    })
+    ...mapState('main', ['account', 'blockNumber', 'locale'])
   },
   watch: {
     $route(newVal) {
@@ -143,14 +120,32 @@ export default {
       } else {
         this.isHomePage = true;
       }
+    },
+    locale() {
+      this.getCurrentLang();
     }
   },
   mounted() {
+    this.getCurrentLang();
+
     window.onscroll = () => {
       this.onPageScroll();
     };
   },
   methods: {
+    languageMenuOpen() {
+      this.langSelectorOpen = !this.langSelectorOpen;
+    },
+    getCurrentLang() {
+      const storedLocale = this.supportedLanguages.find(item => {
+        return item.langCode === this.locale;
+      });
+
+      this._i18n.locale = this.locale;
+      this.currentFlag = storedLocale.flag;
+      this.currentLang = storedLocale.name;
+    },
+
     langChange(data) {
       this.currentLang = data;
     },
@@ -168,6 +163,19 @@ export default {
       } else {
         this.isOnTop = true;
       }
+    },
+    openMenu() {
+      this.isMenuOpen = true;
+      const x = document.getElementsByTagName('BODY')[0];
+      x.classList.add('overflow--hidden');
+
+      const y = document.querySelector('.mobile-menu-content-container');
+      y.scrollTo(0, 0);
+    },
+    closeMenu() {
+      this.isMenuOpen = false;
+      const x = document.getElementsByTagName('BODY')[0];
+      x.classList.remove('overflow--hidden');
     }
   }
 };

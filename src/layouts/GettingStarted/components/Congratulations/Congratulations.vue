@@ -3,31 +3,27 @@
     <div class="block-progressbar">
       <dir class="block-progressbar__container">
         <div class="block-progressbar__title">
-          {{ $t('gettingStarted.congratulationsTitle') }}
+          {{ $t('gettingStarted.title-congrats') }}
         </div>
         <div class="block-progressbar__progressbar">
           <div :class="progressBarValue" />
         </div>
         <div class="block-progressbar__content text-cented">
-          <img src="~@/assets/images/icons/drink.svg" />
-
-          <p>
-            {{ $t('gettingStarted.congratulationsDesc') }}
+          <img alt src="~@/assets/images/icons/drink.svg" />
+          <i18n path="gettingStarted.congratulations.desc" tag="p">
             <a
+              slot="helpCenter"
               rel="noopener noreferrer"
               target="_blank"
-              href="https://xinfin.network"
+              href="https://howto.xinfin.org/XinFinWallet/features"
+              >{{ $t('common.help-center') }}</a
             >
-              {{ $t('gettingStarted.congratulationsLink') }}
-            </a>
-            {{ $t('gettingStarted.congratulationsDescCont') }}
-          </p>
-
+          </i18n>
           <div
             class="done-button mid-round-button-green-filled-green-border"
             @click="done"
           >
-            Get Started
+            {{ $t('common.get-started') }}
           </div>
         </div>
       </dir>
@@ -37,7 +33,7 @@
 
 <script>
 import store from 'store';
-
+import { mapActions } from 'vuex';
 export default {
   props: {
     progressBarValue: {
@@ -49,10 +45,11 @@ export default {
     return {};
   },
   methods: {
+    ...mapActions('main', ['gettingStartedDone']),
     done() {
       store.set('skipTutorial', 'done');
       this.$router.push({ path: 'create-wallet' });
-      this.$store.dispatch('gettingStartedDone');
+      this.gettingStartedDone();
     }
   }
 };

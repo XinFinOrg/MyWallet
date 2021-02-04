@@ -13,6 +13,23 @@ $red-filled-button-background: #ff436d;
 $red-filled-button-background--hover: #ff7795;
 $red-filled-button-background--click: #ff5a7f;
 
+.address-icon-container {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+
+  i {
+    cursor: pointer;
+    color: $text-color-6 !important;
+  }
+
+  input {
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+}
+
 @media all and (min-width: calc(#{$tablet-width} + 1px)) {
   $collapse-button-color: $dark-blue-12;
 
@@ -51,7 +68,7 @@ $red-filled-button-background--click: #ff5a7f;
             width: 35px;
             height: 35px;
             text-align: center;
-            background-color: $light-grey-12;
+            background-color: $dark-grey-11;
             border-radius: 100%;
             display: flex;
             align-items: center;
@@ -196,6 +213,7 @@ $red-filled-button-background--click: #ff5a7f;
           grid-column-gap: 15px;
           grid-template-columns: 35px 1fr 35px;
           padding: 8px 25px;
+          align-items: center;
 
           &.threes {
             grid-template-columns: 35px 1fr 35px;
@@ -233,6 +251,9 @@ $red-filled-button-background--click: #ff5a7f;
       border-radius: 5px;
       padding: 2px 7px;
       user-select: none;
+      font-size: 13px;
+      font-family: 'Inconsolata', monospace;
+      font-display: block;
     }
 
     .current-network {
@@ -302,3 +323,14 @@ $red-filled-button-background--click: #ff5a7f;
     grid-template-columns: 1fr 1fr;
   }
 } // @media all and (min-width: calc(#{$tablet-width} + 1px))
+
+.accept-terms {
+  padding-top: 20px;
+}
+
+.dropdown-paths {
+  span {
+    font-size: 6px;
+    font-weight: bold;
+  }
+}

@@ -5,20 +5,31 @@
       hide-footer
       hide-header
       centered
+      static
+      lazy
       class="bootstrap-modal nopadding"
     >
       <div class="modal-contents">
         <div class="icon">
-          <img src="@/assets/images/icons/disconnected.png" />
+          <img
+            :alt="$t('common.disconnected')"
+            src="@/assets/images/icons/disconnected.png"
+          />
         </div>
         <div class="modal-title">
-          Oops!
+          {{ $t('common.oops') }}
         </div>
         <div class="text-content">
-          {{ $t('header.mewConnectDisconnected') }}
+          {{ $t('interface.mewconnect-disconnected') }}
         </div>
         <div class="ok-button">
-          <standard-button :options="okayButtonOptions" @click.native="close" />
+          <standard-button
+            :options="{
+              title: $t('common.ok'),
+              buttonStyle: 'green'
+            }"
+            :click-function="close"
+          />
         </div>
       </div>
     </b-modal>
@@ -34,14 +45,6 @@ export default {
     'standard-button': StandardButton
   },
   props: {},
-  data() {
-    return {
-      okayButtonOptions: {
-        title: this.$t('common.ok'),
-        buttonStyle: 'green'
-      }
-    };
-  },
   methods: {
     close() {
       this.$refs.disconnected.hide();

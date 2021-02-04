@@ -1,4 +1,21 @@
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
+import { Toast } from '@/helpers';
+
+const createProxy = (valueObject = {}, defaultValue = 42) => {
+  const handler = function (defaultValue) {
+    return {
+      get: function (target, name) {
+        return target.hasOwnProperty(name) ? target[name] : defaultValue;
+      },
+      set: function (obj, prop, value) {
+        obj[prop] = value;
+        return true;
+      }
+    };
+  };
+
+  return new Proxy(valueObject, handler(defaultValue));
+};
 
 const mapToObject = map => {
   const obj = {};
@@ -37,8 +54,8 @@ const getTimeRemaining = (timestamp, validFor = 600) => {
   );
 };
 
-const getTimeRemainingString = timestamp => {
-  const timeRemaining = getTimeRemaining(timestamp);
+const getTimeRemainingString = (timestamp, validFor = 600) => {
+  const timeRemaining = getTimeRemaining(timestamp, validFor);
   if (timeRemaining < 0) {
     return 'expired';
   }
@@ -76,12 +93,33 @@ const isJson = str => {
     } catch (e) {
       return false;
     }
-    // return false;
   }
 };
 
+const checkErrorJson = (results, source) => {
+  if (typeof results.error == 'string') {
+    if (results.error === 'Error retrieving trade, try a different dex') {
+      throw Error('Error retrieving trade, try a different dex');
+    }
+  }
+  if (
+    results.error.message.includes('gas required exceeds allowance') &&
+    source === 'eth_estimateGasList'
+  ) {
+    throw Error('Please try a different dex. Problem calculating gas Limit.');
+  }
+  if (isJson(results.error.message)) {
+    throw Error(JSON.stringify(results.error.message));
+  }
+  throw Error(results.error.message);
+};
+
 const handleOrThrow = (e, source) => {
-  if (source) {
+  if (source === 'suppress') {
+    return;
+  } else if (source === 'handle') {
+    Toast.responseHandler('Swap Error', 1, true);
+  } else if (source) {
     throw Error('abort');
   }
   // typeErrors
@@ -90,6 +128,22 @@ const handleOrThrow = (e, source) => {
       return;
     }
     throw e;
+  } else if (e.message) {
+    if (
+      e.message.includes('This order can not be placed') &&
+      e.message.includes('bity.com')
+    ) {
+      Toast.responseHandler(e.message, 3);
+      return;
+    } else if (
+      e.message.includes('Error retrieving trade, try a different dex') ||
+      e.message.includes(
+        'Please try a different dex. Problem calculating gas Limit.'
+      )
+    ) {
+      Toast.responseHandler(e.message, 3);
+      return;
+    }
   }
   throw e;
 };
@@ -104,5 +158,7 @@ export {
   buildPayload,
   isValidEntry,
   checkInvalidOrMissingValue,
-  handleOrThrow
+  handleOrThrow,
+  checkErrorJson,
+  createProxy
 };

@@ -5,10 +5,7 @@ import BigNumber from 'bignumber.js';
 import { Tooling } from '@@/helpers';
 
 function valueForRate(rate, value) {
-  return new BigNumber(value)
-    .times(rate)
-    .toFixed(6)
-    .toString(10);
+  return new BigNumber(value).times(rate).toFixed(6).toString(10);
 }
 
 xdescribe('ProvidersRadioSelector.vue', () => {
@@ -28,6 +25,11 @@ xdescribe('ProvidersRadioSelector.vue', () => {
       store,
       attachToDocument: true
     });
+  });
+
+  afterEach(() => {
+    wrapper.destroy();
+    wrapper = null;
   });
 
   it('should render correct loadingData data', () => {
@@ -95,9 +97,8 @@ xdescribe('ProvidersRadioSelector.vue', () => {
     const liElements = wrapper.vm.$el.querySelectorAll(
       '.radio-button-container ul li'
     );
-    for (let i = 0; i < liElements.length; i++) {
-      const liElement = liElements[i];
 
+    for (const [i, liElement] of liElements.entries()) {
       if (providerData[i] != undefined) {
         const rateDisplay =
           providerData[i].fromValue +

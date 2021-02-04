@@ -4,21 +4,27 @@
     <div class="buy-subdomain-content">
       <div class="buy-subdomain-form-container">
         <div class="title">
-          <h4>{{ $t('interface.subdomains') }}</h4>
+          <h4>{{ $t('subDomain.title') }}</h4>
         </div>
         <div class="form">
           <div class="subdomain-input">
             <input
-              :placeholder="$t('dapps.subDomainPlaceholder')"
+              :placeholder="$t('subDomain.ph-enter-name')"
+              :class="hasError ? 'errorInput' : ''"
               type="text"
               @input="debounceInput"
             />
-            <button type="button" @click="query">Check</button>
+            <button type="button" @click="query">
+              {{ $t('subDomain.check') }}
+            </button>
           </div>
+          <p v-if="hasError" class="errorText">
+            <span>{{ $t('subDomain.invalid-symbol') }}</span>
+          </p>
         </div>
         <div v-show="results.length > 0" class="result-section">
           <div class="title">
-            <h4>{{ $t('dapps.allSubDomains') }}</h4>
+            <h4>{{ $t('subDomain.all') }}</h4>
           </div>
           <div class="results-container">
             <div
@@ -31,10 +37,11 @@
               >
               <div class="buy-button-container">
                 <span class="amt"
-                  >{{ web3.utils.fromWei(item.price, 'ether') }} ETH</span
+                  >{{ web3.utils.fromWei(item.price, 'ether') }}
+                  {{ $t('common.currency.eth') }}</span
                 >
                 <button @click="buyDomain(item)">
-                  <span v-if="item.active">{{ $t('dapps.buy') }}</span>
+                  <span v-if="item.active">{{ $t('subDomain.buy') }}</span>
                   <span v-else>
                     <i class="fa fa-times" />
                   </span>
@@ -46,9 +53,9 @@
       </div>
       <div>
         <interface-bottom-text
-          :link-text="$t('interface.helpCenter')"
-          :question="$t('interface.haveIssues')"
-          link="https://xinfin.network"
+          :link-text="$t('common.help-center')"
+          :question="$t('common.have-issues')"
+          link="https://howto.xinfin.org/XinFinWallet/features"
         />
       </div>
     </div>
@@ -63,32 +70,25 @@ import domains from './domains.json';
 import normalise from '@/helpers/normalise';
 import BigNumber from 'bignumber.js';
 import web3 from 'web3';
-import { mapGetters } from 'vuex';
-import StandardButton from '@/components/Buttons/StandardButton';
+import { mapState } from 'vuex';
 import { Toast } from '@/helpers';
-
 export default {
   components: {
     'interface-bottom-text': InterfaceBottomText,
-    'back-button': BackButton,
-    'standard-button': StandardButton
+    'back-button': BackButton
   },
   data() {
     return {
-      subdomainContract: function() {},
-      ensContract: function() {},
+      subdomainContract: function () {},
+      ensContract: function () {},
       results: [],
       domainName: '',
-      knownRegistrarInstances: {}
+      knownRegistrarInstances: {},
+      hasError: false
     };
   },
   computed: {
-    ...mapGetters({
-      ethDonationAddress: 'ethDonationAddress',
-      ens: 'ens',
-      account: 'account',
-      web3: 'web3'
-    }),
+    ...mapState('main', ['ethDonationAddress', 'ens', 'account', 'web3']),
     sortedResults() {
       const newArr = this.results;
       newArr.sort((a, b) => {
@@ -102,7 +102,6 @@ export default {
       const taken = newArr.filter(item => {
         return item.active === false;
       });
-
       const available = newArr.filter(item => {
         return item.active === true;
       });
@@ -123,8 +122,15 @@ export default {
     });
   },
   methods: {
-    debounceInput: web3.utils._.debounce(function(e) {
-      this.domainName = normalise(e.target.value);
+    debounceInput: web3.utils._.debounce(function (e) {
+      try {
+        this.domainName = normalise(e.target.value);
+        this.hasError = false;
+      } catch (e) {
+        Toast.responseHandler(e, Toast.WARN);
+        this.hasError = true;
+        return;
+      }
     }, 1500),
     async query() {
       this.results = [];
@@ -173,16 +179,14 @@ export default {
               referrerAddress
             )
             .encodeABI());
-
       const raw = {
         from: ownerAddress,
         data: data,
         to: itemContract.registrar,
         value: item.price
       };
-
       this.web3.eth.sendTransaction(raw).catch(err => {
-        Toast.responseHandler(err, false);
+        Toast.responseHandler(err, Toast.ERROR);
       });
     }
   }

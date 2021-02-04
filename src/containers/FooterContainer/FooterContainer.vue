@@ -1,57 +1,104 @@
 <template>
-  <div class="footer">
-    <!-- Modal -->
-    <feedback-modal />
-    <div class="wrap">
-      <div class="page-container">
-        <div class="grid-col-1-1-1-2 footer-contents">
-          <!-- <div 
-            v-for="(item, index) in footerContent"
-            :ref="item.class"
-            :class="item.class"
-            :key="item.title + index"
-          >
-          </div> -->
-        </div>
-        <div class="flex-space-between foot-note">
-          <div class="links">
-            <div v-for="(link, index) in lowerLinks" :key="link.title + index">
-              <router-link v-if="link.hasOwnProperty('to')" :to="link.to">
-                <span>{{ link.title }}</span>
-              </router-link>
-              <a
-                v-else
-                :href="link.href"
-                target="_blank"
-                rel="noopener noreferrer"
+  <div>
+    <cx-footer v-if="isMewCx" />
+    <div v-if="!isMewCx" class="footer">
+      <!-- Modal -->
+      <div class="wrap">
+        <div class="page-container">
+          <div class="grid-col-1-1-1-2 footer-contents">
+            <div
+              v-for="(item, index) in footerContent"
+              :ref="item.class"
+              :key="item.title + index"
+              :class="item.class"
+            >
+              <div class="content-title" @click="toggler(item.class)">
+                <h3 class="lite">{{ $t(item.title) }}</h3>
+                <p class="open" @click="openContent(item.class)">
+                  <i class="fa fa-plus" aria-hidden="true" />
+                </p>
+                <p class="close" @click="closeContent(item.class)">
+                  <i class="fa fa-minus" aria-hidden="true" />
+                </p>
+              </div>
+              <div class="content-links">
+                <div class="content-links-animation-block">
+                  <div
+                    v-for="(content, idx) in item.contents"
+                    :key="content.text + idx"
+                    class="content"
+                  >
+                    <div v-if="content.text === 'common.cstm-support'">
+                      <customer-support :no-icon="true" />
+                    </div>
+                    <router-link
+                      v-else-if="content.to !== undefined"
+                      :to="content.to"
+                    >
+                      <p>{{ $t(content.text) }}</p>
+                    </router-link>
+                    <a
+                      v-else-if="content.to === undefined"
+                      :href="content.href"
+                      :aria-label="content.text"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <p v-if="item.class === 'e2'">
+                        {{ $t(`${content.text}`) }}
+                      </p>
+                      <p v-else>{{ $t(content.text) }}</p>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+          <div class="flex-space-between foot-note">
+            <div class="links">
+              <div
+                v-for="(link, index) in lowerLinks"
+                :key="link.title + index"
               >
-                <span>{{ link.title }}</span>
+                <router-link v-if="link.hasOwnProperty('to')" :to="link.to">
+                  <span>{{ $t(link.title) }}</span>
+                </router-link>
+                <a
+                  v-else
+                  :href="link.href"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span>{{ $t(link.title) }}</span>
+                </a>
+              </div>
+            </div>
+            <div class="copyright">
+              <p>
+                {{ $t('footer.pricing-p') }}
+                <a
+                  href="https://coingecko.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >{{ $t('footer.coingecko') }}</a
+                >
+                <br />
+                {{ $t('footer.copyright') }}
+              </p>
+            </div>
+            <div class="social">
+              <a
+                v-for="link in links"
+                :key="link.class"
+                :href="link.to"
+                :aria-label="link.to"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <i :class="'fa ' + link.class" />
               </a>
             </div>
-          </div>
-          <div class="copyright">
-            <p>
-              {{ $t('footer.pricingP') }}
-              <a
-                href="https://coingecko.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >CoinGecko</a
-              >
-              <br />
-              {{ $t('footer.copyright') }}
-            </p>
-          </div>
-          <div class="social">
-            <a
-              v-for="link in links"
-              :href="link.to"
-              :key="link.class"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <i :class="'fa ' + link.class" />
-            </a>
           </div>
         </div>
       </div>
@@ -60,121 +107,58 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-import FeedbackModal from '@/components/FeedbackModal';
+import { mapState } from 'vuex';
+import CustomerSupport from '@/components/CustomerSupport';
+import affiliates from './affiliates.js';
 const version = VERSION;
+import { Misc } from '@/helpers';
+import CxFooter from '@/layouts/ExtensionBrowserAction/components/CxFooter';
 
 export default {
   components: {
-    'feedback-modal': FeedbackModal
+    'customer-support': CustomerSupport,
+    'cx-footer': CxFooter
   },
   data() {
+    const isMewCx = Misc.isMewCx();
     return {
+      isMewCx: isMewCx,
       version: version,
       lowerLinks: [
         {
-          title: this.$t('footer.feedback'),
-          href: 'mailto:support@xinfin.network'
+          title: 'footer.feedback',
+          href: 'mailto:support@xinfin.org'
         },
         {
-          title: this.$t('footer.privacy'),
+          title: 'footer.privacy',
           to: '/privacy-policy'
         },
         {
-          title: this.$t('common.terms'),
-          to: '/terms-and-conditions'
+          title: 'common.terms',
+          to: '/terms-of-service'
         },
         {
           title: `v${version}`,
-          href: `https://github.com/xinfinorg/Wallet/releases/tag/v${version}`
+          href: `https://github.com/XinFinOrg/Wallet/releases/tag/v${version}`
         }
       ],
       footerContent: [
         {
           class: 'e1',
-          title: this.$t('footer.discover'),
+          title: 'footer.title.discover',
           contents: [
             {
-              text: this.$t('footer.units'),
-              to: '/convert-units'
-            },
-            // {
-            //   text: this.$t('footer.advanced'),
-            //   to: '/advanced-tools'
-            // },
-            {
-              text: this.$t('footer.extension'),
-              href:
-                'https://chrome.google.com/webstore/detail/myetherwallet/nlbmnnijcnlegkjjpcfjclmcfggfefdm?hl=en'
-            },
-            {
-              text: this.$t('footer.sendOffline'),
+              text: 'footer.send-offline',
               to: '/send-offline-helper'
-            }
+            },
+            {
+              text: 'verifyMessage.title',
+              to: '/verify-message'
+            },
           ]
         },
-        {
-          class: 'e2',
-          title: this.$t('footer.affiliates'),
-          contents: [
-            {
-              text: this.$t('footer.ledger'),
-              href:
-                'https://www.ledgerwallet.com/products/?utm_source=&utm_medium=affiliate&utm_campaign=fa4b&utm_content='
-            },
-            {
-              text: this.$t('footer.digital'),
-              href: 'https://digitalbitbox.com/?ref=mew'
-            },
-            {
-              text: this.$t('footer.ethCard'),
-              href:
-                'https://ether.cards/?utm_source=mew&utm_medium=cpm&utm_campaign=site'
-            },
-            {
-              text: 'KeepKey',
-              href: 'http://keepkey.go2cloud.org/aff_c?offer_id=1&aff_id=5561'
-            },
-            {
-              text: this.$t('footer.trezor'),
-              href: 'https://trezor.io/?a=myetherwallet.com'
-            },
-            {
-              text: this.$t('footer.bity'),
-              href: 'https://bity.com/af/jshkb37v'
-            }
-          ]
-        },
-        {
-          class: 'e3',
-          title: this.$t('footer.mew'),
-          contents: [
-            {
-              text: this.$t('footer.about'),
-              to: '/#about-mew'
-            },
-            {
-              text: this.$t('footer.team'),
-              to: '/team'
-            },
-            {
-              text: this.$t('common.faqs'),
-              to: '/#faqs'
-            },
-            {
-              text: this.$t('common.vintage'),
-              href: 'https://vintage.myetherwallet.com'
-            },
-            {
-              text: this.$t('common.customerSupport'),
-              href: 'mailto:support@xinfin.network'
-            },
-            {
-              text: 'Help Center',
-              href: 'https://xinfin.network'
-            }
-          ]
-        }
+        
+  
       ],
       links: [
         {
@@ -209,14 +193,10 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      ethDonationAddress: 'ethDonationAddress'
-    })
+    ...mapState('main', ['ethDonationAddress'])
   },
+  mounted() {},
   methods: {
-    openFeedbackModal() {
-      this.$children[0].$refs.feedback.show();
-    },
     openContent(element) {
       const openButton = document.querySelector('.' + element + ' .open');
       const closeButton = document.querySelector('.' + element + ' .close');
@@ -244,5 +224,4 @@ export default {
 <style lang="scss" scoped>
 @import 'FooterContainer-desktop.scss';
 @import 'FooterContainer-tablet.scss';
-@import 'FooterContainer-mobile.scss';
 </style>

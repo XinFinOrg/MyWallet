@@ -10,7 +10,7 @@
         class="dropdown-input-box"
         @click="openDropdownFocustToSearchInput"
       >
-        <div class="selected-coin">ETH</div>
+        <div class="selected-coin">{{ $t('common.currency.eth') }}</div>
         <div class="dropdown-open-button">
           <i
             v-if="!dropdownOpen"
@@ -25,8 +25,8 @@
         class="dropdown-list-box"
       >
         <ul>
-          <li>ETH</li>
-          <li>BTC</li>
+          <li>{{ $t('common.currency.eth') }}</li>
+          <li>{{ $t('common.currency.btc') }}</li>
         </ul>
       </div>
     </div>
@@ -38,7 +38,7 @@ export default {
   props: {
     options: {
       type: Object,
-      default: function() {
+      default: function () {
         return {};
       }
     }
@@ -56,11 +56,11 @@ export default {
     document.removeEventListener('click', this.clickEvent, false);
   },
   methods: {
-    openDropdownFocustToSearchInput: function() {
+    openDropdownFocustToSearchInput: function () {
       // Focus user input to the seach input.
       this.dropdownOpen = !this.dropdownOpen;
     },
-    clickEvent: function(event) {
+    clickEvent: function (event) {
       for (let count = 0; count < event.path.length; count++) {
         if (event.path[count].className === 'coin-selector-click-safe-zone') {
           return;

@@ -19,40 +19,61 @@
     </div>
     <div :class="buttonClass">
       <button
-        :disabled="buttonDisabled"
+        v-show="spinner"
+        :disabled="diableButton"
         :class="[
           options.isThisMobileBottomButton ? 'mobile-bottom-button' : '',
-          options.noMinWidth ? 'no-min-width' : ''
+          options.noMinWidth ? 'no-min-width' : '',
+          options.paddingSmall ? 'padding-small' : ''
         ]"
         class="the-button-box"
       >
+        <i class="fa fa-spin fa-spinner fa-lg" />
+      </button>
+      <button
+        v-show="!spinner"
+        :disabled="diableButton"
+        :class="[
+          options.isThisMobileBottomButton ? 'mobile-bottom-button' : '',
+          options.noMinWidth ? 'no-min-width' : '',
+          options.paddingSmall ? 'padding-small' : ''
+        ]"
+        class="the-button-box"
+        @click.stop="clickFunction"
+      >
         {{ options.title }}
+        <i v-show="spinner" class="fa fa-spin fa-spinner fa-lg" />
         <img
           v-if="options.loadingIcon"
+          :alt="$t('common.loading')"
           class="loading-left"
           src="@/assets/images/icons/loading.png"
         />
 
         <img
           v-if="options.rightArrow && options.buttonStyle == 'green'"
+          :alt="$t('common.right-arrow')"
           class="arrow-right"
           src="@/assets/images/icons/arrow-right.svg"
         />
 
         <img
           v-if="options.rightArrow && options.buttonStyle == 'green-border'"
+          :alt="$t('common.right-arrow')"
           class="arrow-right"
           src="@/assets/images/icons/arrow-right.svg"
         />
 
         <img
           v-if="options.leftArrow && options.buttonStyle == 'green'"
+          :alt="$t('common.left-arrow')"
           class="arrow-left"
           src="@/assets/images/icons/arrow-left.svg"
         />
 
         <img
           v-if="options.leftArrow && options.buttonStyle == 'green-border'"
+          :alt="$t('common.left-arrow')"
           class="arrow-left"
           src="@/assets/images/icons/arrow-green-left.svg"
         />
@@ -63,8 +84,13 @@
     </div>
     <div v-if="options.helpCenter" class="help-center-block">
       <p>
-        Having issues?
-        <a href="https://xinfin.network/" target="_blank">Help Center</a>
+        {{ $t('common.having-issues') }}
+        <a
+          href="https://howto.xinfin.org/XinFinWallet/features/"
+          rel="noopener noreferrer"
+          target="_blank"
+          >{{ $t('common.help-center') }}</a
+        >
       </p>
     </div>
   </div>
@@ -82,18 +108,38 @@ export default {
   props: {
     options: {
       type: Object,
-      default: function() {
+      default: function () {
         return {};
+      }
+    },
+    buttonDisabled: {
+      type: Boolean,
+      default: false
+    },
+    spinner: {
+      type: Boolean,
+      default: false
+    },
+    clickFunction: {
+      type: Function,
+      default: function () {
+        return;
       }
     }
   },
   data() {
     return {
       onBottomOfPage: false,
-      buttonDisabled: this.options.acceptTermsCheckBox
+      termsAccepted: this.options.acceptTermsCheckBox
     };
   },
   computed: {
+    diableButton() {
+      if (this.options.terms !== undefined && this.options.terms) {
+        return this.termsAccepted;
+      }
+      return this.buttonDisabled;
+    },
     buttonClass() {
       switch (this.options.buttonStyle) {
         case 'white':
@@ -119,6 +165,7 @@ export default {
         case 'blue-border':
           return 'standard-button__blue-border';
         default:
+          return '';
       }
     }
   },
@@ -130,7 +177,7 @@ export default {
   },
   methods: {
     updateCheckbox(event) {
-      this.buttonDisabled = !event;
+      this.termsAccepted = !event;
     },
     onPageScroll() {
       if (

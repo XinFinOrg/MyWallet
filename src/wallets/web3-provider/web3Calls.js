@@ -16,6 +16,16 @@ class Web3Calls {
         params: 0
       }),
       new Method({
+        name: 'getBlockNumber',
+        call: 'eth_blockNumber',
+        params: 0
+      }),
+      new Method({
+        name: 'getBlockByNumber',
+        call: 'eth_getBlockByNumber',
+        params: 2
+      }),
+      new Method({
         name: 'estimateGas',
         call: 'eth_estimateGas',
         params: 1,
@@ -39,7 +49,7 @@ class Web3Calls {
         call: 'eth_getTransactionCount',
         params: 2,
         inputFormatter: [
-          function(address) {
+          function (address) {
             if (utils.isAddress(address.toLowerCase())) {
               return address;
             }
@@ -49,7 +59,7 @@ class Web3Calls {
                 ' is not a valid address to get the "transactionCount".'
             );
           },
-          function() {
+          function () {
             return 'latest';
           }
         ]

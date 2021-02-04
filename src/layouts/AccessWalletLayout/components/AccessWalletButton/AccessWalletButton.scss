@@ -11,9 +11,17 @@
   transition: all 0.3s ease;
   border: 0;
 
+  .access-wallet-or {
+    text-transform: uppercase;
+  }
+
   .button-image {
     font-size: 90px;
     margin-bottom: 5px;
+
+    img {
+      min-width: 70px;
+    }
   }
 
   p {
@@ -50,6 +58,7 @@
     background-color: $background-color-2;
     box-shadow: 0 5px 20px $box-shadow-color-1;
     top: -8px;
+    transform: scale(1.1);
 
     @media all and (max-width: $tablet-width) {
       top: 0;
@@ -64,6 +73,12 @@
       color: $link-text-color-2;
       display: block;
     }
+  }
+}
+
+.button-metamask {
+  img {
+    max-width: 80px;
   }
 }
 

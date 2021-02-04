@@ -2,30 +2,75 @@
   <div class="drop-down-address-selector">
     <div class="dropdown--title">
       <h4>{{ title }}</h4>
-      <button
-        class="title-button prevent-user-select"
-        @click="copyToClipboard($refs.addressInput)"
-      >
-        {{ $t('common.copy') }}
-      </button>
+      <div class="top-button-block">
+        <button
+          v-show="!hideCopy"
+          v-if="isValidAddress"
+          :class="['save-addr-txt', !selectedAddress ? 'disabled-txt' : '']"
+          @click="openAddrModal()"
+        >
+          {{ $t('interface.address-book.save-addr') }}
+        </button>
+        <button
+          v-show="!hideCopy"
+          class="title-button prevent-user-select"
+          @click="copyToClipboard($refs.addressInput)"
+        >
+          {{ $t('common.copy') }}
+        </button>
+        <div class="to-address single-input-block">
+          <button class="title-button prevent-user-select" @click="openCam">
+            {{ $t('QRCode') }}
+          </button>
+          <div>
+            <p class="error">{{ error }}</p>
+
+            <div v-if="camera == 'auto'">
+              <qrcode-stream
+                :camera="camera"
+                @decode="onDecode"
+                @init="onInit"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
     <div class="dropdown--content">
       <div
         :class="dropdownOpen ? 'dropdown-open' : ''"
         class="dropdown-input-box"
       >
-        <input
-          ref="addressInput"
-          v-model="selectedAddress"
-          type="text"
-          placeholder="Please enter the address"
-          @focus="dropdownOpen = false"
-        />
-        <div v-if="!validAddress" class="blockie-place-holder-image" />
-        <div v-if="validAddress" class="selected-address-blockie">
-          <blockie :address="selectedAddress" width="30px" height="30px" />
+        <div>
+          <input
+            ref="addressInput"
+            v-addr-resolver="'selectedAddress'"
+            :placeholder="$t('common.enter-addr')"
+            type="text"
+            autocomplete="off"
+            @focus="dropdownOpen = false"
+            @input="debouncedInput"
+          />
+        </div>
+
+        <div v-if="!isValidAddress" class="blockie-place-holder-image" />
+        <div v-if="isValidAddress" class="selected-address-blockie">
+          <blockie
+            v-if="avatar === ''"
+            :address="hexAddress"
+            width="30px"
+            height="30px"
+          />
+          <div v-if="avatar !== ''" class="avatar-container">
+            <img :src="avatar" />
+          </div>
           <div v-if="isToken(currency)">
-            <img class="currency-icon" src="@/assets/images/currency/xdc.svg" />
+            <img
+              :alt="$t('common.currency.ethereum')"
+              class="currency-icon"
+              src="@/assets/images/currency/eth.svg"
+            />
           </div>
           <div v-else>
             <i
@@ -50,100 +95,171 @@
             @click="listedAddressClick(addr.address)"
           >
             <div class="list-blockie">
-              <blockie :address="addr.address" width="30px" height="30px" />
+              <blockie
+                :address="addr.resolverAddr"
+                width="30px"
+                height="30px"
+              />
               <img
+                :alt="$t('common.currency.ethereum')"
                 class="currency-icon"
-                src="@/assets/images/currency/xdc.svg"
+                src="@/assets/images/currency/eth.svg"
               />
             </div>
             <div class="address-block">
               <p class="listed-address">
-                {{ addr.address }}
-                <!-- Address book feature
+                {{ result }}
                 <span
-                  v-if="addr.address !== currentAddress && addr.currency !== 'ETH'"
+                  v-if="
+                    addr.address !== currentAddress &&
+                    addr.currency !== 'ETH' &&
+                    addr.currency
+                  "
                   class="address-note"
                   >{{ addr.currency }} {{ $t('interface.addr') }}</span
                 >
-                -->
               </p>
             </div>
             <p v-if="addr.address === currentAddress" class="address-note">
-              {{ $t('interface.myAddr') }}
+              {{ $t('common.my-addr') }}
             </p>
-            <i
-              v-if="toAddressCheckMark"
-              aria-hidden="true"
-              class="fa fa-check-circle good-button"
-            />
+            <p v-if="addr.address !== currentAddress" class="address-note">
+              {{ addr.nickname }}
+            </p>
           </li>
         </ul>
       </div>
     </div>
-    <!-- .dropdown--content -->
+    <address-book-modal
+      ref="addressBook"
+      :selected-address="selectedAddress"
+      :title="'interface.address-book.add-new'"
+      :modal-action="'add'"
+    />
   </div>
 </template>
 
 <script>
 import '@/assets/images/currency/coins/asFont/cryptocoins.css';
 import '@/assets/images/currency/coins/asFont/cryptocoins-colors.css';
-import debugLogger from 'debug';
-import WAValidator from 'wallet-address-validator';
 import Blockie from '@/components/Blockie';
 import { EthereumTokens, BASE_CURRENCY } from '@/partners';
-
-const errorLogger = debugLogger('v5:error');
+import { mapState, mapActions } from 'vuex';
+import { Toast } from '@/helpers';
+import utils from 'web3-utils';
+import AddressBookModal from '@/components/AddressBookModal';
+import { QrcodeStream } from 'vue-qrcode-reader';
+import { isAddress } from '@/helpers/addressUtils';
 
 export default {
   components: {
-    blockie: Blockie
+    blockie: Blockie,
+    'address-book-modal': AddressBookModal,
+    QrcodeStream: QrcodeStream
   },
   props: {
     title: {
       type: String,
       default: ''
     },
-    currentAddress: {
-      type: String,
-      default: ''
-    },
     currency: {
       type: String,
       default: 'XDC'
+    },
+    clearAddress: {
+      type: Boolean,
+      default: false
+    },
+    hideCopy: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
     return {
       selectedAddress: '',
-      validAddress: false,
+      isValidAddress: false,
       dropdownOpen: false,
-      addresses: [],
-      toAddressCheckMark: false
+      toAddressCheckMark: false,
+      hexAddress: '',
+      currentAddress: '',
+      avatar: '',
+      result: '',
+      error: '',
+      camera: 'off'
     };
   },
-  watch: {
-    currentAddress(address) {
-      if (this.addresses.findIndex(addr => addr.address === address) === -1) {
-        this.addresses = [
-          {
-            address: address,
-            currency: BASE_CURRENCY
-          },
-          ...this.addresses
-        ];
-      }
+  computed: {
+    ...mapState('main', ['addressBook', 'account']),
+    hasMessage() {
+      return (
+        (!this.isValidAddress && this.selectedAddress.length > 0) ||
+        (this.isValidAddress &&
+          this.selectedAddress.toLowerCase() !== this.hexAddress.toLowerCase())
+      );
     },
-    selectedAddress(address) {
-      this.validateAddress(address);
+    sortedAddressBook() {
+      const addrBk = this.addressBook;
+      return addrBk.sort((a, b) => {
+        a = a.nickname.toString().toLowerCase();
+        b = b.nickname.toString().toLowerCase();
+
+        return a < b ? -1 : a > b ? 1 : 0;
+      });
+    },
+    addresses() {
+      return this.currentAddress
+        ? [
+            {
+              address: 'xdc' + this.currentAddress.substring(2),
+              currency: BASE_CURRENCY,
+              resolverAddr: 'xdc' + this.currentAddress.substring(2)
+            },
+            ...this.sortedAddressBook
+          ]
+        : [...this.sortedAddressBook];
+    }
+  },
+  watch: {
+    clearAddress() {
+      this.selectedAddress = '';
+      this.isValidAddress = false;
+      this.hexAddress = '';
+      this.result = '';
+      this.$refs.addressInput.value = '';
+    },
+    hexAddress() {
+      this.validateAddress();
     },
     currency() {
       this.validateAddress(this.selectedAddress);
+    },
+    dropdownOpen(val) {
+      const resolverTxtElem =
+        document.querySelector('.resolver-error') ||
+        document.querySelector('.resolver-addr');
+      if (resolverTxtElem) {
+        val === true
+          ? resolverTxtElem.classList.add('hidden')
+          : resolverTxtElem.classList.remove('hidden');
+      }
     }
   },
+  mounted() {
+    this.currentAddress = this.account.address;
+  },
   methods: {
+    ...mapActions('main', ['setAddressBook']),
+    openAddrModal() {
+      this.$refs.addressBook.$refs.addressBookModal.show();
+    },
+    debouncedInput: utils._.debounce(function (e) {
+      this.selectedAddress = e.target.value;
+    }, 300),
     copyToClipboard(ref) {
       ref.select();
       document.execCommand('copy');
+      Toast.responseHandler(this.$t('common.copied'), Toast.INFO);
     },
     isToken(symbol) {
       return typeof EthereumTokens[symbol] !== 'undefined';
@@ -152,31 +268,45 @@ export default {
       this.toAddressCheckMark = true;
       this.dropdownOpen = !this.dropdownOpen;
       this.selectedAddress = address;
+      this.$refs.addressInput.value = address;
     },
-    validateAddress(addr) {
-      if (this.selectedAddress !== '') {
-        const checkAddress = addr.address ? addr.address : addr;
-        if (EthereumTokens[this.currency]) {
-          this.validAddress = WAValidator.validate(checkAddress, 'ETH');
-        } else {
-          try {
-            this.validAddress = WAValidator.validate(
-              checkAddress,
-              this.currency
-            );
-          } catch (e) {
-            errorLogger(e);
-            this.validAddress = false;
-          }
+    openCam() {
+      this.camera = 'auto';
+    },
+    onDecode(result) {
+      this.result = '0x' + result.slice(3);
+      this.address = '0x' + result.slice(3);
+      this.hexAddress = '0x' + result.slice(3);
+      this.isValidAddress = isAddress(result);
+      this.$refs.addressInput.value = '0x' + result.slice(3);
+      this.camera = 'off';
+    },
+    async onInit(promise) {
+      try {
+        await promise;
+      } catch (error) {
+        if (error.name === 'NotAllowedError') {
+          this.error = 'ERROR: you need to grant camera access permisson';
+        } else if (error.name === 'NotFoundError') {
+          this.error = 'ERROR: no camera on this device';
+        } else if (error.name === 'NotSupportedError') {
+          this.error = 'ERROR: secure context required (HTTPS, localhost)';
+        } else if (error.name === 'NotReadableError') {
+          this.error = 'ERROR: is the camera already in use?';
+        } else if (error.name === 'OverconstrainedError') {
+          this.error = 'ERROR: installed cameras are not suitable';
+        } else if (error.name === 'StreamApiNotSupportedError') {
+          this.error = 'ERROR: Stream API is not supported in this browser';
         }
-
-        if (this.validAddress) {
-          this.$emit('toAddress', checkAddress);
-          this.$emit('validAddress', true);
-        } else {
-          this.$emit('toAddress', '');
-          this.$emit('validAddress', false);
-        }
+      }
+    },
+    validateAddress() {
+      if (this.isValidAddress) {
+        this.$emit('toAddress', { address: this.hexAddress, valid: true });
+        this.$emit('validAddress', true);
+      } else {
+        this.$emit('toAddress', { address: '', valid: false });
+        this.$emit('validAddress', false);
       }
     }
   }

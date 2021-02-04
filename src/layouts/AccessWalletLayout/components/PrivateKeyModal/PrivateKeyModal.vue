@@ -1,41 +1,45 @@
 <template>
   <b-modal
     ref="privateKey"
-    :title="$t('accessWallet.accessByPrivateKey')"
+    :title="$t('accessWallet.private-key.modal.title')"
     hide-footer
     class="bootstrap-modal nopadding modal-software"
     centered
+    static
+    lazy
     @shown="focusInput"
+    @hide="privateKey = ''"
   >
-    <div class="modal-content">
-      <form class="private-key-form">
+    <div class="warning">
+      <warning-message />
+    </div>
+    <div class="modal-content-block">
+      <div class="private-key-form">
         <div class="input-container">
           <input
             ref="privateKeyInput"
             v-model="privateKey"
+            :placeholder="$t('accessWallet.private-key.modal.placeholder')"
             type="text"
             name="PrivateKey"
             autocomplete="off"
-            placeholder="Enter Private Key"
+            @keypress.enter="unlockWallet"
           />
         </div>
-        <!-- <div class="not-recommended">
-          {{ $t('accessWallet.notARecommendedWay') }}
-        </div> -->
-        <button
-          :disabled="
-            privateKey === '' &&
-              privateKey.length === 0 &&
-              privateKey.length < 64
-          "
-          class="submit-button large-round-button-green-filled"
-          type="submit"
-          @click.prevent="unlockWallet"
-        >
-          <span v-show="!spinner">{{ $t('common.accessWallet') }}</span>
-          <i v-show="spinner" class="fa fa-spin fa-spinner fa-lg" />
-        </button>
-      </form>
+        <standard-button
+          :button-disabled="notValid"
+          :options="{
+            title: $t('common.wallet.access'),
+            buttonStyle: 'green',
+            noMinWidth: true
+          }"
+          :click-function="unlockWallet"
+          class="submit-button"
+        />
+      </div>
+      <div class="customer-support-block">
+        <customer-support />
+      </div>
     </div>
   </b-modal>
 </template>
@@ -43,8 +47,19 @@
 <script>
 import { WalletInterface } from '@/wallets';
 import { PRIV_KEY as privKeyType } from '@/wallets/bip44/walletTypes';
-import { mapGetters } from 'vuex';
+import { mapState, mapActions } from 'vuex';
+import { isHexString } from 'ethereumjs-util';
+import WarningMessage from '@/components/WarningMessage';
+import CustomerSupport from '@/components/CustomerSupport';
+import StandardButton from '@/components/Buttons/StandardButton';
+import { Toast } from '@/helpers';
+
 export default {
+  components: {
+    'customer-support': CustomerSupport,
+    'warning-message': WarningMessage,
+    'standard-button': StandardButton
+  },
   data() {
     return {
       privateKey: '',
@@ -52,21 +67,39 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      path: 'path'
-    })
+    ...mapState('main', ['path']),
+    notValid() {
+      const _priv = this.privateKey.replace('0x', '');
+      return !isHexString('0x' + _priv, 32);
+    },
+    actualPrivKey() {
+      return this.privateKey.substr(0, 2) === '0x'
+        ? this.privateKey.replace('0x', '')
+        : this.privateKey;
+    }
   },
   methods: {
+    ...mapActions('main', ['decryptWallet']),
     unlockWallet() {
-      this.spinner = true;
-      this.$store.dispatch('decryptWallet', [
-        new WalletInterface(this.privateKey, false, privKeyType)
-      ]);
-      this.privateKey = '';
-      this.spinner = false;
-      this.$router.push({
-        path: 'interface'
-      });
+      try {
+        const walletInstance = new WalletInterface(
+          this.actualPrivKey,
+          false,
+          privKeyType
+        );
+        this.spinner = true;
+        this.decryptWallet([walletInstance]).then(() => {
+          this.spinner = false;
+          this.$router.push({
+            path: 'interface'
+          });
+        });
+      } catch (e) {
+        Toast.responseHandler(
+          `${this.$i18n.t('common.invalid-private-key')}`,
+          Toast.WARN
+        );
+      }
     },
     focusInput() {
       this.$refs.privateKeyInput.focus();

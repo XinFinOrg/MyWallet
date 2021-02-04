@@ -1,10 +1,10 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
+
 import { shallowMount } from '@vue/test-utils';
 import InterfaceNetworkModal from '@/layouts/InterfaceLayout/components/InterfaceNetworkModal/InterfaceNetworkModal.vue';
 import InterfaceBottomText from '@/components/InterfaceBottomText/InterfaceBottomText.vue';
+import VueX from 'vuex';
 import { state, getters } from '@@/helpers/mockStore';
-
 import { Tooling } from '@@/helpers';
 
 describe('InterfaceNetworkModal.vue', () => {
@@ -14,23 +14,17 @@ describe('InterfaceNetworkModal.vue', () => {
     const baseSetup = Tooling.createLocalVueInstance();
     localVue = baseSetup.localVue;
     i18n = baseSetup.i18n;
-    store = baseSetup.store;
-
-    Vue.config.errorHandler = () => {};
-    Vue.config.warnHandler = () => {};
-
-    const actions = {
-      switchNetwork: jest.fn(),
-      setWeb3Instance: jest.fn()
-    };
-
-    store = new Vuex.Store({
-      getters,
-      state,
-      actions
+    store = new VueX.Store({
+      modules: {
+        main: {
+          namespaced: true,
+          state,
+          getters
+        }
+      }
     });
 
-    Vue.config.errorHandler = () => {};
+    Vue.config.warnHandler = () => {};
   });
 
   beforeEach(() => {
@@ -44,13 +38,17 @@ describe('InterfaceNetworkModal.vue', () => {
     });
   });
 
-  xit('[Failing] should render correct types data', () => {
+  afterEach(() => {
+    wrapper.destroy();
+    wrapper = null;
+  });
+
+  it('should render correct types data', () => {
     const optionElements = wrapper.vm.$el.querySelectorAll(
       '.input-block-container select option'
     );
     const types = Object.keys(wrapper.vm.$data.types);
-    for (let i = 0; i < types.length; i++) {
-      const type = types[i];
+    for (const [i, type] of types.entries()) {
       if (optionElements[i] !== undefined) {
         expect(
           optionElements[i].textContent
@@ -68,92 +66,80 @@ describe('InterfaceNetworkModal.vue', () => {
     }
   });
 
-  xit('[Failing] should render correct username data', () => {
-    wrapper.setData({ selectedNetwork: wrapper.vm.network });
-    const username = 'username';
+  it('should render correct username data', () => {
+    const username = 'TEST_WALLET';
     wrapper.setData({ username });
-    expect(
-      wrapper.vm.$el.querySelectorAll('.auth-form-container input')[0].value
-    ).toEqual(username);
+    const inputUsername = wrapper.vm.$el.querySelectorAll(
+      '.auth-form-container input'
+    )[0];
+    expect(inputUsername.value).toEqual(username);
   });
 
-  xit('[Failing] should render correct password data', () => {
-    wrapper.setData({ selectedNetwork: wrapper.vm.network });
-    const password = 'password';
+  it('should render correct password data', () => {
+    const password = '&3aB#(CC@0dk@x';
     wrapper.setData({ password });
-    expect(
-      wrapper.vm.$el.querySelectorAll('.auth-form-container input')[1].value
-    ).toEqual(password);
+    const inputPassword = wrapper.vm.$el.querySelectorAll(
+      '.auth-form-container input'
+    )[1];
+    expect(inputPassword.value).toEqual(password);
   });
 
-  xit('[Failing] should render correct name data', () => {
-    wrapper.setData({ selectedNetwork: wrapper.vm.network });
-    const name = 'name';
+  it('should render correct name data', () => {
+    const name = 'James';
     wrapper.setData({ name });
-    expect(
-      wrapper.vm.$el.querySelectorAll(
-        '.content-block .input-block-container input'
-      )[0].value
-    ).toEqual(name);
+    const inputName = wrapper.vm.$el.querySelectorAll(
+      '.content-block .input-block-container input'
+    )[0];
+    expect(inputName.value).toEqual(name);
   });
 
-  xit('[Failing] should render correct url data', () => {
-    wrapper.setData({ selectedNetwork: wrapper.vm.network });
-    const url = 'url';
+  it('should render correct url data', () => {
+    const url = 'https://localhost:8000';
     wrapper.setData({ url });
-    expect(
-      wrapper.vm.$el.querySelectorAll(
-        '.content-block .input-block-container input'
-      )[1].value
-    ).toEqual(url);
+    const inputURL = wrapper.vm.$el.querySelectorAll(
+      '.content-block .input-block-container input'
+    )[1];
+    expect(inputURL.value).toEqual(url);
   });
 
-  xit('[Failing] should render correct port data', () => {
-    wrapper.setData({ selectedNetwork: wrapper.vm.network });
-    const port = 'port';
+  it('should render correct port data', () => {
+    const port = 80;
     wrapper.setData({ port });
-    expect(
-      wrapper.vm.$el.querySelectorAll(
-        '.content-block .input-block-container input'
-      )[2].value
-    ).toEqual(port);
+    const inputPort = wrapper.vm.$el.querySelectorAll(
+      '.content-block .input-block-container input'
+    )[2];
+    expect(inputPort.value).toEqual(String(port));
   });
 
-  xit('[Failing] should render correct blockExplorerTX data', () => {
-    wrapper.setData({ selectedNetwork: wrapper.vm.network });
-    const blockExplorerTX = 123;
+  it('should render correct blockExplorerTX data', () => {
+    const blockExplorerTX = 'blockExplorerTX';
     wrapper.setData({ blockExplorerTX });
-    expect(
-      wrapper.vm.$el.querySelectorAll(
-        '.content-block .input-block-container input'
-      )[3].value
-    ).toEqual(String(blockExplorerTX));
+    const inputBlockExplorerTX = wrapper.vm.$el.querySelectorAll(
+      '.content-block .input-block-container input'
+    )[3];
+    expect(inputBlockExplorerTX.value).toEqual(String(blockExplorerTX));
   });
 
-  xit('[Failing] should render correct chainID data', () => {
-    wrapper.setData({ selectedNetwork: wrapper.vm.network });
-    const chainID = 333221;
+  it('should render correct chainID data', () => {
+    const chainID = '100000000';
     wrapper.setData({ chainID });
-    expect(
-      wrapper.vm.$el.querySelectorAll(
-        '.content-block .input-block-container input'
-      )[4].value
-    ).toEqual(String(chainID));
+    const inputChainID = wrapper.vm.$el.querySelectorAll(
+      '.content-block .input-block-container input'
+    )[4];
+    expect(inputChainID.value).toEqual(String(chainID));
   });
 
-  xit('[Failing] should render correct blockExplorerAddr data', () => {
-    wrapper.setData({ selectedNetwork: wrapper.vm.network });
-    const blockExplorerAddr = 423432;
+  it('should render correct blockExplorerAddr data', () => {
+    const blockExplorerAddr = '100000000';
     wrapper.setData({ blockExplorerAddr });
-    expect(
-      wrapper.vm.$el.querySelectorAll(
-        '.content-block .input-block-container input'
-      )[5].value
-    ).toEqual(String(blockExplorerAddr));
+    const inputBlockExplorerAddr = wrapper.vm.$el.querySelectorAll(
+      '.content-block .input-block-container input'
+    )[5];
+    expect(inputBlockExplorerAddr.value).toEqual(String(blockExplorerAddr));
   });
 
   describe('InterfaceNetworkModal.vue Methods', () => {
-    xit('[Failing] should remove  custom network when button click', () => {
+    it('should remove  custom network when button click', () => {
       for (let i = 0; i < 2; i++) wrapper.find('.save-button').trigger('click');
       const customNetworkElements = wrapper.findAll(
         '.network-list .content-block .grid-3 div.switch-network i'
@@ -165,16 +151,22 @@ describe('InterfaceNetworkModal.vue', () => {
       expect(wrapper.vm.$data.customNetworks.length).toBe(0);
     });
 
-    xit('[Failing] should reset state when button click', () => {
-      wrapper.setData({ selectedNetwork: wrapper.vm.network });
+    it('should reset state when button click', () => {
       wrapper.find('.save-button').trigger('click');
-      expect(wrapper.vm.$data.chainID).toEqual('');
-      expect(wrapper.vm.$data.username).toEqual('');
-      expect(wrapper.vm.$data.password).toEqual('');
-      expect(wrapper.vm.$data.name).toEqual('');
-      expect(wrapper.vm.$data.port).toEqual('');
-      expect(wrapper.vm.$data.blockExplorerAddr).toEqual('');
-      expect(wrapper.vm.$data.blockExplorerTX).toEqual('');
+      const {
+        username,
+        password,
+        name,
+        port,
+        blockExplorerAddr,
+        blockExplorerTX
+      } = wrapper.vm.$data;
+      expect(username).toEqual('');
+      expect(password).toEqual('');
+      expect(name).toEqual('');
+      expect(port).toEqual(443);
+      expect(blockExplorerAddr).toEqual('');
+      expect(blockExplorerTX).toEqual('');
     });
   });
 });

@@ -89,8 +89,10 @@
   }
 } // @media all and (min-width: calc(#{$tablet-width} + 1px))
 
-.modal-icon {
+.qr-code-container {
+  align-items: center;
   display: flex;
+  flex-direction: column;
   justify-content: center;
 }
 
@@ -102,6 +104,75 @@
   }
 }
 
+.instructions-container {
+  margin-top: 30px;
+  p,
+  div {
+    color: $light-blue-1;
+    font-weight: 600;
+
+    span {
+      color: $dark-blue-2;
+      font-weight: 400;
+    }
+  }
+}
+
 .download-now {
-  margin-top: 20px;
+  color: $mew-green;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.modal-title-block {
+  color: $dark-blue-2;
+  margin-bottom: 30px;
+
+  h3 {
+    font-size: 23px;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+}
+
+.seperation-bar {
+  margin-top: 30px;
+  position: relative;
+  text-align: center;
+  .bar {
+    top: 9px;
+    z-index: 0;
+    position: absolute;
+    border-bottom: 1px solid $light-grey-21;
+    width: 100%;
+  }
+  .text {
+    padding: 0 20px;
+    z-index: 1;
+    position: relative;
+    background-color: white;
+    display: inline-block;
+    color: $light-grey-21;
+  }
+}
+
+.buttons {
+  display: flex;
+  margin: 0 -8px;
+  margin-top: 30px;
+  user-select: none;
+
+  > div {
+    img {
+      margin-right: 5px;
+    }
+
+    cursor: pointer;
+    margin: 0 8px;
+    flex: 1;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px 15px;
+    font-weight: 600;
+  }
 }

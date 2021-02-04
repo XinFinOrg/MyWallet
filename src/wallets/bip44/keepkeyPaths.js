@@ -19,7 +19,14 @@ import {
   atheios,
   tomoChain,
   mixBlockchain,
-  iolite
+  iolite,
+  thundercore,
+  solidum,
+  dexon,
+  lightstreamsNetwork,
+  rskMainnet,
+  rskTestnet,
+  ethercore
 } from './paths';
 export default [
   keepkeyEthereum,
@@ -42,5 +49,12 @@ export default [
   atheios,
   tomoChain,
   mixBlockchain,
-  iolite
+  iolite,
+  thundercore,
+  solidum,
+  dexon,
+  lightstreamsNetwork,
+  rskMainnet,
+  rskTestnet,
+  ethercore
 ];

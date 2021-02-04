@@ -1,19 +1,22 @@
-import ethTx from 'ethereumjs-tx';
-import { hashPersonalMessage, toBuffer } from 'ethereumjs-util';
+import { Transaction } from 'ethereumjs-tx';
+import { hashPersonalMessage } from 'ethereumjs-util';
 import DigitalBitboxUsb from './digitalBitboxUsb';
 import DigitalBitboxEth from './digitalBitboxEth';
 import { BITBOX as bitboxType } from '../../bip44/walletTypes';
 import bip44Paths from '../../bip44';
 import HDWalletInterface from '@/wallets/HDWalletInterface';
-import { Toast } from '@/helpers';
+import { Toast, Misc } from '@/helpers';
 import errorHandler from './errorHandler';
 import * as HDKey from 'hdkey';
+import store from '@/store';
 import {
   getSignTransactionObject,
   sanitizeHex,
   getBufferFromHex,
   calculateChainIdFromV
 } from '../../utils';
+import commonGenerator from '@/helpers/commonGenerator';
+import Vue from 'vue';
 
 const NEED_PASSWORD = true;
 
@@ -37,8 +40,10 @@ class BitBoxWallet {
   getAccount(idx) {
     const derivedKey = this.hdKey.derive('m/' + idx);
     const txSigner = async tx => {
-      tx = new ethTx(tx);
-      const networkId = tx._chainId;
+      tx = new Transaction(tx, {
+        common: commonGenerator(store.state.main.network)
+      });
+      const networkId = tx.getChainId();
       const result = await this.bitbox.signTransaction(
         this.basePath + '/' + idx,
         tx
@@ -50,10 +55,10 @@ class BitBoxWallet {
       if (signedChainId !== networkId)
         Toast.responseHandler(
           new Error(
-            'Invalid networkId signature returned. Expected: ' +
-              networkId +
-              ', Got: ' +
-              signedChainId,
+            Vue.$i18n.t('errorsGlobal.invalid-network-id-sig', {
+              got: signedChainId,
+              expected: networkId
+            }),
             'InvalidNetworkId'
           ),
           false
@@ -61,7 +66,7 @@ class BitBoxWallet {
       return getSignTransactionObject(tx);
     };
     const msgSigner = async msg => {
-      const msgHash = hashPersonalMessage(toBuffer(msg));
+      const msgHash = hashPersonalMessage(Misc.toBuffer(msg));
       const result = await this.bitbox.signMessage(
         this.basePath + '/' + idx,
         msgHash
@@ -79,7 +84,8 @@ class BitBoxWallet {
       this.identifier,
       errorHandler,
       txSigner,
-      msgSigner
+      msgSigner,
+      null
     );
   }
   getCurrentPath() {
@@ -91,7 +97,7 @@ class BitBoxWallet {
 }
 const getRootPubKey = (_bitbox, _path) => {
   return new Promise((resolve, reject) => {
-    _bitbox.getAddress(_path, (result, error) => {
+    _bitbox.getStarted(_path, (result, error) => {
       if (error) return reject(error);
       resolve({
         publicKey: result.publicKey,

@@ -84,6 +84,7 @@
   audio,
   video {
     font-family: 'Montserrat', sans-serif;
+    font-display: block;
     font-size: 14px;
     margin: 0;
     padding: 0;
@@ -231,6 +232,7 @@
   p {
     color: $text-base-color;
     line-height: 21px;
+    margin-bottom: 0 !important;
   }
 
   h1 {
@@ -597,12 +599,6 @@
     }
   }
 
-  .dropdown-toggle::after {
-    position: absolute !important;
-    right: 13px !important;
-    top: 16px !important;
-  }
-
   // *********************************************************************
   // [Bootstrap] Dropdown language menu style
   // *********************************************************************
@@ -615,7 +611,7 @@
   .dropdown-item:active {
     background-color: $background-color-white;
     color: $text-color-6;
-    font-weight: 600 !important;
+    //font-weight: 600 !important;
   }
 
   .nav-link-custom span {
@@ -1024,7 +1020,7 @@
 
     // On mouse-over, add a grey background color
     &:hover input ~ .checkmark {
-      $check-box-hover-color: $light-grey-12;
+      $check-box-hover-color: $dark-grey-11;
 
       background-color: $check-box-hover-color;
     }
@@ -1104,6 +1100,7 @@
       border: solid 1px $button--border-color-2;
       color: $text-color-6;
       font-family: Arial, sans-serif;
+      font-display: block;
       min-width: 180px;
       padding: 8px 15px;
       text-align: left;
@@ -1132,6 +1129,7 @@
       border: solid 1px $button--border-color-2;
       color: $text-color-6;
       font-family: Arial, sans-serif;
+      font-display: block;
       min-width: 180px;
       padding: 8px 15px;
       text-align: left;
@@ -1218,6 +1216,14 @@
     }
   }
 
+  .clear-all-btn {
+    color: $mew-green;
+    cursor: pointer;
+    margin-top: 5px;
+    padding: 5px 8px;
+    text-align: center;
+  }
+
   // *********************************************************************
   // Custom Input
   // *********************************************************************
@@ -1259,10 +1265,12 @@
   }
 
   .disabled {
-    background-color: $light-grey-12;
+    background-color: $dark-grey-11;
     pointer-events: none;
   }
-} //@media all and ( min-width: calc(#{$tablet-width} + 1px) )
+}
+
+//@media all and ( min-width: calc(#{$tablet-width} + 1px) )
 
 // **********************************************************************************************************
 // Global elements for all sizes (Desktop, Tablet, Mobile)
@@ -1369,6 +1377,18 @@
     color: $white !important;
     font-size: 20px !important;
   }
+
+  .custom-toast-container {
+    height: 100% !important;
+    width: 100% !important;
+  }
+}
+
+// Limit maximum 5 notifications to show
+.toasted-container {
+  .toasted:nth-last-child(n + 6) {
+    display: none !important;
+  }
 }
 
 .toast-success {
@@ -1380,7 +1400,7 @@
 .toast-warn {
   @extend %toast;
 
-  background-color: $light-yellow !important;
+  background-color: $light-yellow-1 !important;
 }
 
 .toast-error {
@@ -1393,4 +1413,240 @@
   @extend %toast;
 
   background-color: $light-blue-4 !important;
+}
+
+// *********************************************************************
+// No margin to remove margins from elements
+// *********************************************************************
+.no-margin {
+  margin: 0 !important;
+  margin-top: 0 !important;
+  margin-right: 0 !important;
+  margin-bottom: 0 !important;
+  margin-left: 0 !important;
+}
+
+// *********************************************************************
+// Settings dropdown menu position fix
+// *********************************************************************
+.settings-menu {
+  .dropdown-menu {
+    transform: translate3d(-73px, 50px, 0) !important;
+  }
+}
+
+.tx-history-menu {
+  .dropdown-menu {
+    transform: translate3d(12px, 48px, 0) !important;
+  }
+}
+
+// *********************************************************************
+// Monospace font
+// *********************************************************************
+.monospace {
+  font-family: 'Inconsolata', monospace;
+  font-display: block;
+}
+
+//*********************************************************************
+// Global Interface styles
+//*********************************************************************
+.interface__block-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 23px;
+  color: $dark-blue-2;
+  margin-bottom: 10px;
+  padding: 0 5px;
+}
+
+.rotate-90 {
+  transform: rotate(90deg);
+}
+
+.dropdown-button-3 {
+  > button {
+    background-color: $background-color-white;
+    border: solid 1px $light-grey-3;
+    color: $text-color-6;
+    display: flex;
+    justify-content: space-between;
+    min-width: 235px;
+    padding: 13px 20px;
+    text-align: left;
+  }
+
+  i {
+    font-size: 15px;
+    margin-top: 2px;
+    margin-left: 5px;
+  }
+}
+
+.cx-token-modal {
+  .modal-dialog {
+    margin: 0;
+    min-width: 400px;
+    position: absolute;
+    right: 0;
+  }
+
+  .modal-content {
+    border-radius: 0;
+    height: 100vh;
+  }
+}
+
+.custom-progress {
+  border-radius: 0 !important;
+  height: 0.5rem !important;
+
+  .bg-success {
+    background-color: $mew-green !important;
+  }
+}
+
+.cx-password-modal {
+  .modal-dialog {
+    bottom: 0;
+    margin: 0;
+    position: absolute;
+    width: 100%;
+  }
+
+  .modal-content {
+    border: none;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+  }
+
+  .modal-body {
+    padding: 1rem !important;
+  }
+}
+
+.margin--top--auto {
+  margin-top: auto;
+}
+
+.margin--right--auto {
+  margin-right: auto;
+}
+
+.margin--bottom--auto {
+  margin-bottom: auto;
+}
+
+.margin--left--auto {
+  margin-left: auto;
+}
+
+.flex--row--align-center {
+  display: flex;
+  flex-direction: row;
+  flex-grow: initial;
+  align-items: center;
+
+  &.justify--center {
+    justify-content: center;
+  }
+}
+
+.flex--row--align-start {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+
+  &.justify--center {
+    justify-content: center;
+  }
+}
+
+.flex--row--align-stretch {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.flex--grow-1 {
+  flex-grow: 1;
+}
+
+.flex--column--space-between {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.user-select--none {
+  user-select: none;
+}
+
+//*********************************************************************
+// [GLOBAL] INTERFACE BLOCK STYLE
+//*********************************************************************
+.global__interface-block {
+  border-radius: 5px;
+  background-color: $white;
+  padding: 20px;
+}
+
+.global__interface-block__margin-top {
+  margin-top: 15px;
+}
+
+.cx-dropdown {
+  .btn {
+    padding: 0 !important;
+  }
+
+  .btn-secondary {
+    background-color: transparent !important;
+    border: none !important;
+  }
+}
+
+.aave-container {
+  .btn-secondary {
+    background-color: transparent !important;
+    border: none !important;
+  }
+}
+
+.height--full {
+  height: 100%;
+}
+
+.overflow--hidden {
+  overflow: hidden;
+}
+
+.font-reset {
+  font-family: sans-serif;
+}
+
+.gas-price-warning {
+  background-color: $red-8;
+  border: 1px solid $red-1;
+  padding: 20px;
+  text-align: center;
+  font-weight: bold;
+  color: $red-3;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+
+.contract-addr-resolved {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid $light-orange-2;
+  background: $light-orange-3;
+  text-align: center;
+  font-weight: bold;
 }

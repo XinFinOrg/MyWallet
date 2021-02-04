@@ -1,15 +1,21 @@
 <template>
   <b-modal
     ref="mnemonicPhrase"
-    :title="$t('accessWallet.accessByMnemonicPhrase')"
+    :title="$t('accessWallet.mnemonic.modal.title')"
     hide-footer
-    class="bootstrap-modal padding-20 modal-metamask"
+    class="bootstrap-modal modal-metamask nopadding"
     centered
+    static
+    lazy
     @shown="focusInput"
+    @hide="clearInputs"
   >
+    <div class="warning">
+      <warning-message />
+    </div>
     <div class="contents">
       <p class="instruction">
-        {{ $t('accessWallet.pleaseTypeInMnemonicPhrase') }}
+        {{ $t('accessWallet.mnemonic.modal.text') }}
       </p>
       <div class="tools">
         <div class="value-switch noselect">
@@ -28,7 +34,7 @@
             </div>
           </div>
           <span class="text__base link switch-label">{{
-            $t('createWallet.byMnemonicValue')
+            $t('accessWallet.mnemonic.value')
           }}</span>
         </div>
       </div>
@@ -38,51 +44,84 @@
             <li v-for="index in mnemonicSize" :key="index">
               <span>{{ index }}.</span>
               <input
-                v-model="mnemonicPhrase[index - 1]"
                 :ref="`mnemonicInput${index - 1}`"
+                v-model="mnemonicPhrase[index - 1]"
                 type="text"
                 name=""
               />
             </li>
           </ul>
         </div>
-        <!-- <div class="not-recommended">
-          {{ $t('accessWallet.notARecommendedWay') }}
-        </div> -->
-        <div class="button-container">
-          <b-btn
-            class="mid-round-button-green-filled close-button"
-            type="submit"
-            @click.prevent="openPasswordModal"
+        <div class="option-container-block">
+          <expanding-option
+            :title="$t('createWallet.mnemonic.do-you-extra-word')"
+            :popover="
+              $t('createWallet.mnemonic.access-wallet-extra-word-popover')
+            "
+            :button-text="$t('common.no')"
+            :show-enable="true"
+            @expanded="passwordInputViewChange"
           >
-            {{ $t('common.continue') }}
-          </b-btn>
+            <div class="option-container">
+              <create-wallet-input
+                v-model="password"
+                :show-button="false"
+                :full-width="true"
+                :placeholder-text="$t('createWallet.mnemonic.type-in')"
+              />
+            </div>
+          </expanding-option>
+        </div>
+        <p v-show="error !== ''" class="error">{{ error }}</p>
+        <div class="button-container-block">
+          <standard-button
+            :options="{
+              title: $t('common.continue'),
+              buttonStyle: 'green',
+              noMinWidth: true,
+              fullWidth: true
+            }"
+            :spinner="spinner"
+            :click-function="unlockWallet"
+          />
         </div>
       </form>
+      <customer-support />
     </div>
-
-    <customer-support />
   </b-modal>
 </template>
 
 <script>
 import CustomerSupport from '@/components/CustomerSupport';
+import WarningMessage from '@/components/WarningMessage';
+import StandardButton from '@/components/Buttons/StandardButton';
+import CreateWalletInput from './components/CreateWalletInput';
+import ExpandingOption from '@/components/ExpandingOption';
+import { MnemonicWallet } from '@/wallets';
+import { Toast } from '@/helpers';
 
 export default {
   components: {
-    'customer-support': CustomerSupport
+    'customer-support': CustomerSupport,
+    'warning-message': WarningMessage,
+    'standard-button': StandardButton,
+    'create-wallet-input': CreateWalletInput,
+    'expanding-option': ExpandingOption
   },
   props: {
-    mnemonicPhrasePasswordModalOpen: {
+    hardwareWalletOpen: {
       type: Function,
-      default: function() {}
+      default: function () {}
     }
   },
   data() {
     return {
+      spinner: false,
+      error: '',
       mnemonicPhrase: new Array(this.mnemonicSize).fill(''),
       mnemonic24: false,
-      mnemonicSize: 12
+      mnemonicSize: 12,
+      password: ''
     };
   },
   watch: {
@@ -100,6 +139,30 @@ export default {
     }
   },
   methods: {
+    passwordInputViewChange() {
+      this.password = '';
+    },
+    unlockWallet(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.spinner = true;
+      MnemonicWallet(this.mnemonicPhrase.join(' '), this.password)
+        .then(wallet => {
+          this.password = '';
+          this.spinner = false;
+          this.$refs.mnemonicPhrase.hide();
+          this.hardwareWalletOpen(wallet);
+        })
+        .catch(e => {
+          this.password = '';
+          this.spinner = false;
+          this.error = e;
+          Toast.responseHandler(e, Toast.ERROR);
+        });
+    },
+    clearInputs() {
+      this.mnemonicPhrase = new Array(this.mnemonicSize).fill('');
+    },
     mnemonicValueBitSizeChange() {
       this.mnemonic24 = !this.mnemonic24;
       this.mnemonic24 ? (this.mnemonicSize = 24) : (this.mnemonicSize = 12);

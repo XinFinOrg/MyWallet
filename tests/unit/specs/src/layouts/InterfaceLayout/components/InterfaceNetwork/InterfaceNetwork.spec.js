@@ -1,12 +1,10 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
 import { shallowMount } from '@vue/test-utils';
 import InterfaceNetwork from '@/layouts/InterfaceLayout/components/InterfaceNetwork/InterfaceNetwork.vue';
 import InterfaceNetworkModal from '@/layouts/InterfaceLayout/components/InterfaceNetworkModal/InterfaceNetworkModal.vue';
 import InterfaceBalance from '@/layouts/InterfaceLayout/components/InterfaceBalance/InterfaceBalance.vue';
 import sinon from 'sinon';
 import { Tooling } from '@@/helpers';
-import { state, getters } from '@@/helpers/mockStore';
 
 const showModal = sinon.stub();
 
@@ -19,7 +17,6 @@ const BModalStub = {
   }
 };
 
-//xdescribe
 describe('InterfaceNetwork.vue', () => {
   let localVue, i18n, wrapper, store;
 
@@ -29,14 +26,7 @@ describe('InterfaceNetwork.vue', () => {
     i18n = baseSetup.i18n;
     store = baseSetup.store;
 
-    store = new Vuex.Store({
-      getters,
-      state
-    });
-
-    Vue.config.errorHandler = () => {};
     Vue.config.warnHandler = () => {};
-    Vue.config.silent = true;
   });
 
   beforeEach(() => {
@@ -52,8 +42,13 @@ describe('InterfaceNetwork.vue', () => {
     });
   });
 
+  afterEach(() => {
+    wrapper.destroy();
+    wrapper = null;
+  });
+
   xit('[Failing] should render correct blockNumber props', () => {
-    const blockNumber = 100;
+    const blockNumber = 10000000000;
     wrapper.setProps({ blockNumber });
     expect(wrapper.find('.information-container span').text()).toEqual(
       String(blockNumber)

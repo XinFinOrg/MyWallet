@@ -7,6 +7,15 @@ function buildPath() {
   return swapApiEndpoints.base + swapApiEndpoints.changelly;
 }
 
+function checkAndChange(value) {
+  if (value === 'USDT') {
+    return 'usdt';
+  }
+  if (value === 'USDT Omni') {
+    return 'usdt20';
+  }
+  return value;
+}
 const getCurrencies = async network => {
   try {
     if (changellyMethods[network]) {
@@ -32,9 +41,39 @@ const getRate = async (fromCurrency, toCurrency, fromValue, network) => {
     if (changellyMethods[network]) {
       const results = await post(
         buildPath(),
+        utils.buildPayload(changellyMethods[network].rate, [
+          {
+            from: checkAndChange(fromCurrency),
+            to: checkAndChange(toCurrency),
+            amount: fromValue
+          }
+        ])
+      );
+
+      if (results.error) {
+        throw Error(results.error.message);
+      }
+      return results.result;
+    }
+    return Promise.resolve(-1);
+  } catch (e) {
+    utils.handleOrThrow(e);
+  }
+};
+
+const getResultAmount = async (
+  fromCurrency,
+  toCurrency,
+  fromValue,
+  network
+) => {
+  try {
+    if (changellyMethods[network]) {
+      const results = await post(
+        buildPath(),
         utils.buildPayload(changellyMethods[network].rate, {
-          from: fromCurrency,
-          to: toCurrency,
+          from: checkAndChange(fromCurrency),
+          to: checkAndChange(toCurrency),
           amount: fromValue
         })
       );
@@ -56,8 +95,8 @@ const getMin = async (fromCurrency, toCurrency, fromValue, network) => {
       const results = await post(
         buildPath(),
         utils.buildPayload(changellyMethods[network].min, {
-          from: fromCurrency,
-          to: toCurrency
+          from: checkAndChange(fromCurrency),
+          to: checkAndChange(toCurrency)
         })
       );
 
@@ -142,12 +181,62 @@ const login = () => {
   return Promise.resolve({});
 };
 
+const getFixRate = async (fromCurrency, toCurrency, fromValue, network) => {
+  try {
+    if (changellyMethods[network]) {
+      const results = await post(
+        buildPath(),
+        utils.buildPayload(changellyMethods[network].getFixRate, [
+          {
+            from: checkAndChange(fromCurrency),
+            to: checkAndChange(toCurrency)
+          }
+        ])
+      );
+
+      if (results.error) {
+        throw Error(results.error.message);
+      }
+      return results.result;
+    }
+    return Promise.resolve(-1);
+  } catch (e) {
+    utils.handleOrThrow(e);
+  }
+};
+
+const createFixTransaction = async (transactionParams, network) => {
+  try {
+    if (changellyMethods[network]) {
+      const results = await post(
+        buildPath(),
+        utils.buildPayload(
+          changellyMethods[network].createFixTransaction,
+          transactionParams
+        )
+      );
+
+      if (results.error) {
+        throw Error(results.error.message);
+      }
+
+      return results.result;
+    }
+    return Promise.resolve(-1);
+  } catch (e) {
+    utils.handleOrThrow(e);
+  }
+};
+
 export default {
   getCurrencies,
   getRate,
+  getResultAmount,
   getMin,
   validateAddress,
   createTransaction,
   getStatus,
-  login
+  login,
+  getFixRate,
+  createFixTransaction
 };

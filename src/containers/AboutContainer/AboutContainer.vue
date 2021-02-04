@@ -2,29 +2,84 @@
   <div class="about-mew">
     <div class="wrap">
       <div class="top-section">
-        <div class="circle"><img src="~@/assets/images/home/circle.png" /></div>
+        <div class="circle">
+          <img src="~@/assets/images/home/circle.png" alt />
+        </div>
         <div id="about-mew" class="star-background">
           <div class="page-container">
             <div class="flex-col-1-1-vertical-center content">
-              <!-- <div class="text-content">
-                <h2>{{ $t('home.aboutTitle') }}</h2>
-                <p class="color-white">{{ $t('home.aboutSubheading') }}</p>
-              </div> -->
-              <!-- <div class="image-content">
+              <div class="text-content">
+                <h2>{{ $t('home.about-mew.title') }}</h2>
+                <p class="color-white">{{ $t('home.about-mew.text') }}</p>
+              </div>
+              <div class="image-content">
                 <img
-                  class="spaceman"
-                  src="~@/assets/images/home/spaceman.png"
-                />
-                <img
+                  :alt="$t('common.mew-icon')"
                   class="mew-icon"
                   src="~@/assets/images/home/mew-icon.png"
                 />
-              </div> -->
+              </div>
+              <div class="animation-content">
+                <img
+                  :alt="$t('common.spaceman')"
+                  class="spaceman"
+                  src="~@/assets/images/home/xdc_network.gif"
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
-
+      <div class="bottom-section">
+        <div class="page-container">
+          <div class="grid-col-2 mew-features">
+            <dir class="content">
+              <div class="image">
+                <img src="~@/assets/images/home/icon-wallet.svg" alt />
+              </div>
+              <div class="text">
+                <h3>{{ $t('home.join-mew.title') }}</h3>
+                <p>{{ $t('home.join-mew.text') }}</p>
+              </div>
+            </dir>
+            <dir class="content">
+              <div class="image">
+                <img src="~@/assets/images/home/icon-hardware.svg" alt />
+              </div>
+              <div class="text">
+                <h3>{{ $t('home.hardware-support.title') }}</h3>
+                <p>{{ $t('home.hardware-support.text') }}</p>
+              </div>
+            </dir>
+            <dir class="content">
+              <div class="image">
+                <img src="~@/assets/images/home/icon-swap.svg" alt />
+              </div>
+              <div class="text">
+                <h3>{{ $t('common.swap') }}</h3>
+                <p>{{ $t('home.swap.text') }}</p>
+              </div>
+            </dir>
+            <dir class="content">
+              <div class="image">
+                <img src="~@/assets/images/home/icon-mew-connect.svg" alt />
+              </div>
+              <div class="text">
+                <h3>{{ $t('common.mew-wallet.string') }}</h3>
+                <i18n tag="p" path="common.mew-wallet.desc">
+                  <a
+                    slot="learn-more"
+                    target="_blank"
+                    href="https://www.mewwallet.com/"
+                  >
+                    {{ $t('common.learn-more') }}...
+                  </a>
+                </i18n>
+              </div>
+            </dir>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

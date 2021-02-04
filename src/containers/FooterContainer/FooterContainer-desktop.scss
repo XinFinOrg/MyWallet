@@ -1,5 +1,6 @@
 @import '~@/scss/GlobalVariables';
-@media all and (min-width: calc(#{$tablet-width} - 200px)) {
+//@media all and (min-width: $tablet-width) {
+@media all and (min-width: calc(#{$tablet-width} + 1px)) {
   a,
   a:link,
   a:visited,
@@ -42,6 +43,14 @@
         max-height: 600px;
         overflow: hidden;
         transition: all 0.3s ease;
+        padding-right: 10px;
+
+        .content {
+          margin-bottom: 15px;
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
 
         .sub-title {
           color: $text-color-1;
@@ -64,9 +73,17 @@
       }
 
       .crypto-link {
+        align-items: center;
         color: $link-text-color-2;
+        display: flex;
         overflow: hidden;
         text-overflow: ellipsis;
+        padding-top: 15px;
+
+        img {
+          height: 30px;
+          vertical-align: top;
+        }
       }
 
       p {
@@ -77,15 +94,6 @@
       i {
         border: 1px solid $text--footer-link-color;
         border-radius: 100px;
-      }
-
-      h3 {
-        img {
-          height: 30px;
-          margin-top: -8px;
-          vertical-align: top;
-          margin-left: -9px;
-        }
       }
     }
   } // .footer-contents
@@ -131,6 +139,8 @@
     }
 
     .social {
+      min-width: 290px;
+
       i {
         color: $text--footer-link-color;
         font-size: 19px;

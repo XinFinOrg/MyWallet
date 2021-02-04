@@ -4,16 +4,13 @@ import xdc from '@/assets/images/networks/xdc.svg';
 
 export default {
   name: 'XDC Apothem',
-  name_long: 'XDC Apothem',
-  homePage: 'https://xinfin.org/',
-  blockExplorerAddr: 'https://explorer.apothem.network/addr/[[address]]',
+  name_long: 'Apothem.Network',
+  homePage: 'https://apothem.Network/',
   blockExplorerTX: 'https://explorer.apothem.network/tx/[[txHash]]',
+  blockExplorerAddr: 'https://explorer.apothem.network/addr/[[address]]',
   chainID: 51,
   tokens: tokens,
   contracts: contracts,
-  ens: {
-    registry: '0x41ab1b6fcbb2fa9dced81acbdec13ea6315f2bf2',
-    registrarTLD: 'xdc'
-  },
-  icon: xdc
+  icon: xdc,
+  currencyName: 'XDC'
 };

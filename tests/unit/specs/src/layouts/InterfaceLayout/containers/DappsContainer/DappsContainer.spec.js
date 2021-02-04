@@ -1,10 +1,12 @@
 import Vue from 'vue';
+import Vuex from 'vuex';
 import { shallowMount } from '@vue/test-utils';
 import DappsContainer from '@/layouts/InterfaceLayout/containers/DappsContainer/DappsContainer.vue';
 import DappButtons from '@/layouts/InterfaceLayout/components/DappButtons/DappButtons.vue';
 import languages from '@/translations';
 import { Tooling } from '@@/helpers';
-
+import { state, getters } from '@@/helpers/mockStore';
+import InterfaceContainerTitle from '@/layouts/InterfaceLayout/components/InterfaceContainerTitle';
 const RouterLinkStub = {
   name: 'router-link',
   template:
@@ -15,10 +17,11 @@ const RouterLinkStub = {
 function translate(lang) {
   const arrLang = lang.split('.');
   let langObj = languages.en_US;
-  for (let i = 0; i < arrLang.length; i++) {
-    langObj = langObj[arrLang[i]];
+  for (const language of arrLang) {
+    langObj = langObj[language];
   }
-  return langObj;
+  if (langObj) return langObj;
+  return lang;
 }
 
 describe('DappsContainer.vue', () => {
@@ -28,7 +31,15 @@ describe('DappsContainer.vue', () => {
     const baseSetup = Tooling.createLocalVueInstance();
     localVue = baseSetup.localVue;
     i18n = baseSetup.i18n;
-    store = baseSetup.store;
+    store = new Vuex.Store({
+      modules: {
+        main: {
+          namespaced: true,
+          state,
+          getters
+        }
+      }
+    });
 
     Vue.config.warnHandler = () => {};
   });
@@ -43,49 +54,26 @@ describe('DappsContainer.vue', () => {
         address: address
       },
       stubs: {
+        'interface-container-title': InterfaceContainerTitle,
         'dapp-buttons': DappButtons,
         'router-link': RouterLinkStub
       }
     });
   });
 
-  xit('[01/30/19] should render correct registerDomain title', () => {
-    const dappsButtons = wrapper.vm.$el.querySelectorAll('.dapps-button');
-    expect(dappsButtons[1].querySelector('h4').textContent.trim()).toEqual(
-      translate(wrapper.vm.$data.localDapps.registerDomain.title)
-    );
+  afterEach(() => {
+    wrapper.destroy();
+    wrapper = null;
   });
 
-  xit('[01/30/19] should render correct registerDomain description', () => {
-    const dappsButtons = wrapper.vm.$el.querySelectorAll('.dapps-button');
-    expect(dappsButtons[1].querySelector('p').textContent.trim()).toEqual(
-      translate(wrapper.vm.$data.localDapps.registerDomain.desc)
-    );
-  });
-
-  xit('[01/30/19] should render correct domainSale title', () => {
-    const dappsButtons = wrapper.vm.$el.querySelectorAll('.dapps-button');
-    expect(dappsButtons[2].querySelector('h4').textContent.trim()).toEqual(
-      translate(wrapper.vm.$data.localDapps.domainSale.title)
-    );
-  });
-
-  xit('[01/30/19] should render correct domainSale description', () => {
-    const dappsButtons = wrapper.vm.$el.querySelectorAll('.dapps-button');
-    expect(dappsButtons[2].querySelector('p').textContent.trim()).toEqual(
-      translate(wrapper.vm.$data.localDapps.domainSale.desc)
-    );
-  });
-
-  xit('[01/30/19] should render correct registerDomain route', () => {
-    expect(
-      wrapper.vm.$el.querySelectorAll('.param')[1].textContent.trim()
-    ).toEqual(wrapper.vm.$data.localDapps.registerDomain.route);
-  });
-
-  xit('[01/30/19] should render correct domainSale route', () => {
-    expect(
-      wrapper.vm.$el.querySelectorAll('.param')[2].textContent.trim()
-    ).toEqual(wrapper.vm.$data.localDapps.domainSale.route);
+  it('should render correct localDapps data', () => {
+    for (const [i, sortedObject] of wrapper.vm.sortedObject.entries()) {
+      const dappsButtonTitle = wrapper.vm.$el.querySelectorAll(
+        '.dapps-button h4'
+      )[i];
+      expect(translate(sortedObject.title)).toEqual(
+        dappsButtonTitle.textContent.trim()
+      );
+    }
   });
 });

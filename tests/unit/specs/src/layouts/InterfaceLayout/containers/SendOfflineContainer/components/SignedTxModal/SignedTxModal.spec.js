@@ -3,7 +3,6 @@ import SignedTxModal from '@/layouts/InterfaceLayout/containers/SendOfflineConta
 import sinon from 'sinon';
 import { Tooling } from '@@/helpers';
 
-//xdescribe
 describe('SignedTxModal.vue', () => {
   let localVue, i18n, wrapper, store;
 
@@ -32,6 +31,11 @@ describe('SignedTxModal.vue', () => {
     wrapper.setData({
       showRaw: true
     });
+  });
+
+  afterEach(() => {
+    wrapper.destroy();
+    wrapper = null;
   });
 
   xit('[Failing] should render correct content', () => {

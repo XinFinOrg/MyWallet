@@ -5,9 +5,8 @@ import SendCurrencyContainer from '@/layouts/InterfaceLayout/containers/SendCurr
 import InterfaceContainerTitle from '@/layouts/InterfaceLayout/components/InterfaceContainerTitle/InterfaceContainerTitle.vue';
 import PopOver from '@/components/PopOver/PopOver.vue';
 import CurrencyPicker from '@/layouts/InterfaceLayout/components/CurrencyPicker/CurrencyPicker.vue';
-import { state, getters } from '@@/helpers/mockStore';
-
 import { Tooling } from '@@/helpers';
+import { state, getters } from '@@/helpers/mockStore';
 
 describe('SendCurrencyContainer.vue', () => {
   let localVue, i18n, wrapper, store;
@@ -21,24 +20,15 @@ describe('SendCurrencyContainer.vue', () => {
     const baseSetup = Tooling.createLocalVueInstance();
     localVue = baseSetup.localVue;
     i18n = baseSetup.i18n;
-    store = baseSetup.store;
+    store = new VueX.Store({
+      modules: { main: { namespaced: true, state, getters } }
+    });
     Vue.config.warnHandler = () => {};
-    Vue.config.errorHandler = () => {};
   });
 
-  afterAll(() => setTimeout(() => process.exit(), 1000));
+  afterEach(() => setTimeout(() => process.exit(), 1000));
 
   beforeEach(() => {
-    const actions = {
-      setGasPrice: jest.fn()
-    };
-
-    store = new VueX.Store({
-      getters,
-      actions,
-      state
-    });
-
     wrapper = shallowMount(SendCurrencyContainer, {
       localVue,
       i18n,
@@ -53,21 +43,32 @@ describe('SendCurrencyContainer.vue', () => {
     });
   });
 
-  it('should render correct isValidAddress data', () => {
-    const address = '0xDECAF9CD2367cdbb726E904cD6397eDFcAe6068D';
-    wrapper.setData({ address });
-    wrapper.vm.$nextTick(() => {
-      expect(wrapper.vm.$data.isValidAddress).toBe(true);
-    });
+  afterEach(() => {
+    wrapper.destroy();
   });
 
-  it('should render correct amount data', () => {
+  it('should be a vue instance', () => {
+    expect(wrapper.isVueInstance).toBeTruthy();
+  });
+
+  it('should set the correct data', () => {
+    const data = {
+      address: 'address',
+      valid: true
+    };
+
+    wrapper.vm.getToAddress(data);
+    expect(wrapper.vm.$data.address).toBe('address');
+    expect(wrapper.vm.$data.isValidAddress).toBe(true);
+  });
+
+  xit('should render correct amount data', () => {
     expect(wrapper.vm.$el.querySelector('.amount-number input').value).toEqual(
       String(wrapper.vm.$data.value)
     );
   });
 
-  it('should render correct "data" data', () => {
+  xit('should render correct "data" data', () => {
     wrapper.setData({ advancedExpand: true });
     expect(wrapper.vm.$el.querySelector('.user-input input').value).toEqual(
       wrapper.vm.$data.data
@@ -82,14 +83,6 @@ describe('SendCurrencyContainer.vue', () => {
   });
 
   describe('SendCurrencyContainer.vue Methods', () => {
-    it('should render correct verifyAddr method', () => {
-      const address = '0xDECAF9CD2367cdbb726E904cD6397eDFcAe6068D';
-      wrapper.setData({ address });
-      wrapper.vm.$nextTick(() => {
-        expect(wrapper.vm.verifyAddr()).toBe(true);
-      });
-    });
-
     xit('should render correct selectedCurrency data', () => {
       const currencyElements = wrapper.findAll(
         '.currency-picker-container .item-container div'
@@ -98,9 +91,9 @@ describe('SendCurrencyContainer.vue', () => {
         const currencyElement = currencyElements.at(i);
         currencyElement.trigger('click');
         const selectedCurrency = wrapper.vm.$data.selectedCurrency;
-        expect(selectedCurrency.symbol + ' - ' + selectedCurrency.name).toEqual(
-          currencyElement.find('p').text()
-        );
+        expect(
+          currencyElement.find('p').text().trim().indexOf(selectedCurrency.name)
+        ).toBeGreaterThan(-1);
       }
     });
 
@@ -110,6 +103,34 @@ describe('SendCurrencyContainer.vue', () => {
       wrapper.find('.submit-button-container .submit-button').trigger('click');
       expect(window.pageXOffset).toBe(0);
       expect(window.pageYOffset).toBe(0);
+    });
+  });
+
+  it('should clear the form', () => {
+    wrapper.setData({
+      toData: '0xDECAF9CD2367cdbb726E904cD6397eDFcAe6068D',
+      toValue: '5',
+      hexAddress: '0xDECAF9CD2367cdbb726E904cD6397eDFcAe6068D',
+      address: '0xDECAF9CD2367cdbb726E904cD6397eDFcAe6068D',
+      isValidAddress: true,
+      gasLimit: '3000',
+      advancedExpand: true,
+      selectedCurrency: {
+        name: 'Bitcoin',
+        symobl: 'ETH'
+      }
+    });
+    wrapper.find('.clear-all-btn').trigger('click');
+    expect(wrapper.vm.$data.toData).toEqual('');
+    expect(wrapper.vm.$data.toValue).toEqual('0');
+    expect(wrapper.vm.$data.hexAddress).toEqual('');
+    expect(wrapper.vm.$data.address).toEqual('');
+    expect(wrapper.vm.$data.gasLimit).toEqual('21000');
+    expect(wrapper.vm.$data.isValidAddress).toEqual(false);
+    expect(wrapper.vm.$data.advancedExpand).toEqual(false);
+    expect(wrapper.vm.$data.selectedCurrency).toEqual({
+      name: 'Ethereum',
+      symbol: 'ETH'
     });
   });
 });

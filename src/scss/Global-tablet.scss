@@ -84,6 +84,7 @@
   audio,
   video {
     font-family: 'Montserrat', sans-serif;
+    font-display: block;
     font-size: 14px;
     margin: 0;
     padding: 0;
@@ -226,6 +227,7 @@
   p {
     color: $text-base-color;
     line-height: 21px;
+    margin-bottom: 0 !important;
   }
 
   h1 {
@@ -1046,7 +1048,7 @@
 
     // On mouse-over, add a grey background color
     &:hover input ~ .checkmark {
-      $check-box-hover-color: $light-grey-12;
+      $check-box-hover-color: $dark-grey-11;
 
       background-color: $check-box-hover-color;
     }
@@ -1126,6 +1128,7 @@
       border: solid 1px $button--border-color-2;
       color: $text-color-6;
       font-family: Arial, sans-serif;
+      font-display: block;
       min-width: 180px;
       padding: 8px 15px;
       text-align: left;
@@ -1154,6 +1157,7 @@
       border: solid 1px $button--border-color-2;
       color: $text-color-6;
       font-family: Arial, sans-serif;
+      font-display: block;
       min-width: 180px;
       padding: 8px 15px;
       text-align: left;
@@ -1238,6 +1242,14 @@
     }
   }
 
+  .clear-all-btn {
+    color: $mew-green;
+    cursor: pointer;
+    margin-top: 5px;
+    padding: 5px 8px;
+    text-align: center;
+  }
+
   // *********************************************************************
   // Custom Input
   // *********************************************************************
@@ -1279,7 +1291,7 @@
   }
 
   .disabled {
-    background-color: $light-grey-12;
+    background-color: $dark-grey-11;
     pointer-events: none;
   }
 } // @media ----------------------------------------------------------------------------------------

@@ -2,140 +2,43 @@
   <div class="modal-container">
     <b-modal
       ref="print"
-      title="Print Preview"
+      :title="$t('createWallet.mnemonic.print.print-title')"
       hide-footer
       centered
       class="nopadding print-mod"
       size="lg"
+      static
+      lazy
     >
-      <div id="printContainer" class="print-modal">
-        <div class="top-container">
-          <div class="left-section">
-            <div class="blockie-contianer">
-              <div>
-                <blockie :address="newAddress" class="blockie" width="50px" height="50px"/>
-              </div>
-              <div class="text-container">
-                <h3>{{ header }}</h3>
-                <span>{{ subheader }}</span>
-              </div>
-            </div>
-            <div>
-              <h4 class="left-text">
-                {{ content.text1 }}
-                <span>{{ content.red1 }}</span>
-                {{ content.text2 }}
-                <span>{{ content.red2 }}</span>
-                {{ content.text3 }}
-              </h4>
-            </div>
-            <div class="link-container">
-              <p>
-                <img height="15px" src="~@/assets/images/icons/support.svg">
-                {{ link1 }}
-              </p>
-              <p>
-                <img height="15px" src="~@/assets/images/icons/web-solution-white.svg">
-                {{ link2 }}
-              </p>
-            </div>
-          </div>
-          <div class="right-section">
-            <div class="header-text">
-              <b>
-                <img src="~@/assets/images/logo-small.png" height="30px">
-                {{ mew }}
-              </b>
-              <span class="header-line"/>
-              <span>{{ paper }}</span>
-            </div>
-
-            <div class="qr-code-container">
-              <qrcode :value="newAddress" :options="{ size: 100 }"/>
-              <div class="text-container">
-                <h4>{{ myAddress }}</h4>
-                <span>
-                  {{ newAddress.slice(0, 21) }}
-                  <br>
-                  {{ newAddress.slice(21, 43) }}
-                </span>
-              </div>
-            </div>
-          </div>
-          <img src="~@/assets/images/background/404bg.jpg" width="100%" class="floating-img">
-        </div>
-        <div class="between">
-          <div class="text">
-            <img height="15px" src="~@/assets/images/icons/scissor.svg"> Cut
-            Here
-          </div>
-          <div class="dash"></div>
-        </div>
-        <div class="bottom-container">
-          <div class="header-container">
-            <blockie :address="newAddress" width="55px" height="55px"/>
-            <div class="header-content">
-              <h3>{{ myAddress }}</h3>
-              <p>{{ subheader }}</p>
-            </div>
-          </div>
-          <div class="body-container">
-            <h3>
-              {{ content.text1 }}
-              <span>{{ content.red1 }}</span>
-              {{ content.text2 }}
-              <span>{{ content.red2 }}</span>
-              {{ content.text3 }}
-            </h3>
-          </div>
-          <div class="my-address-container">
-            <div class="text-container">
-              <h3>{{ myAddress }}</h3>
-              <p>{{ newAddress }}</p>
-            </div>
-            <qrcode :value="newAddress" :options="{ size: 120 }"/>
-          </div>
-          <div v-if="!wallet.isPubOnly" class="my-priv-container">
-            <div class="text-container">
-              <h3>{{ myPriv }}</h3>
-              <p>{{ wallet.privateKey.toString('hex') }}</p>
-            </div>
-            <qrcode :value="wallet.privateKey.toString('hex')" :options="{ size: 120 }"/>
+      <div class="modal-content-container">
+        <div ref="printContainer" class="print-modal">
+          <div class="to-print">
+            <account-content-to-print :address="address" />
           </div>
         </div>
-        <div class="footer-container">
-          <div class="link-container">
-            <p>
-              <img height="17px" src="~@/assets/images/icons/support.svg">
-              {{ link1 }}
-            </p>
-            <p>
-              <img height="15px" src="~@/assets/images/icons/web-solution.svg">
-              {{ link2 }}
-            </p>
-          </div>
-          <div class="logo-container">
-            <img src="~@/assets/images/logo.png" height="25px">
-            <p class="border-line"></p>
-            <p>{{ paper }}</p>
+        <div class="to-display">
+          <account-content-to-display :address="address" />
+        </div>
+        <div class="button-container">
+          <div class="print-button" @click="print">
+            {{ $t('popover.print') }}
           </div>
         </div>
-      </div>
-      <div class="button-container">
-        <div class="print-button" @click="print">Print</div>
       </div>
     </b-modal>
   </div>
 </template>
 <script>
-import Blockie from '@/components/Blockie';
 import printJS from 'print-js';
 import html2canvas from 'html2canvas';
-import { mapGetters } from 'vuex';
+import AccountContentToDisplay from './components/AccountContentToDisplay';
+import AccountContentToPrint from './components/AccountContentToPrint';
+import { Toast } from '@/helpers';
 
 export default {
   components: {
-    blockie: Blockie
+    'account-content-to-display': AccountContentToDisplay,
+    'account-content-to-print': AccountContentToPrint
   },
   props: {
     address: {
@@ -144,44 +47,37 @@ export default {
     }
   },
   data() {
-    return {
-      header: 'MY XinFin ADDRESS ICON',
-      subheader: 'Always look for this icon when sending to this wallet',
-      mew: 'XDC Wallet',
-      paper: 'Paper Wallet',
-      link1: 'support@xinfin.org',
-      link2: 'https://XinFin.Network/#webWallet',
-      myAddress: 'MY ADDRESS',
-      myPriv: 'MY PRIVATE KEY',
-      newAddress: 'xdc' + this.$props.address.substring(2),
-      content: {
-        text1: 'Please Keep Your Paper Wallet at a',
-        text2: 'Place! Please',
-        text3: 'Share Your Private Key With Anyone!',
-        red1: 'SAFE',
-        red2: 'DO NOT'
-      }
-    };
-  },
-  computed: {
-    ...mapGetters({
-      wallet: 'wallet'
-    })
+    return {};
   },
   methods: {
     async print() {
-      const element = document.getElementById('printContainer');
-      const screen = await html2canvas(element, {
-        async: true,
-        logging: false
-      }).then(canvas => {
-        return canvas;
-      });
-
-      printJS({
-        printable: screen.toDataURL('image/png'),
-        type: 'image'
-      });
+      try {
+        const element = this.$refs.printContainer;
+        const screen = await html2canvas(element, {
+          async: true,
+          logging: false
+        }).then(canvas => {
+          return canvas;
+        });
+        if (screen && screen.toDataURL !== '') {
+          printJS({
+            printable: screen.toDataURL('image/png'),
+            type: 'image'
+          }).onError(() => {
+            Toast.responseHandler(
+              this.$t('errorsGlobal.print-support-error'),
+              Toast.ERROR
+            );
+          });
+        } else {
+          Toast.responseHandler(
+            this.$t('errorsGlobal.print-support-error'),
+            Toast.ERROR
+          );
+        }
+      } catch (e) {
+        Toast.responseHandler(e, Toast.ERROR);
+      }
     }
   }
 };

@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
+import { Toast } from '@/helpers';
 
 import {
   INVESTIGATE_FAILURE_KEY,
@@ -57,31 +58,52 @@ const updateStatusBasedOnReciept = status => {
 };
 
 const formatTransactionHash = (val, network) => {
-  return {
-    id: uuid(),
-    title: 'Transaction',
-    read: false,
-    timestamp: Date.now(),
-    type: notificationType.TRANSACTION,
-    status: val[txIndexes.response]
-      ? notificationStatuses.PENDING
-      : notificationStatuses.FAILED,
-    hash: val[txIndexes.response].hasOwnProperty('transactionHash')
-      ? val[txIndexes.response].transactionHash
-      : val[txIndexes.response],
-    network: network,
-    body: {
-      error: false,
-      errorMessage: '',
-      hash: val[txIndexes.response],
-      to: val[txIndexes.txDetails].to,
-      amount: new BigNumber(val[txIndexes.txDetails].value).toString(),
-      nonce: new BigNumber(val[txIndexes.txDetails].nonce).toString(),
-      gasPrice: new BigNumber(val[txIndexes.txDetails].gasPrice).toString(),
-      gasLimit: new BigNumber(val[txIndexes.txDetails].gas).toString()
-    },
-    expanded: false
-  };
+  try {
+    return {
+      id: uuid(),
+      title: 'Transaction',
+      read: false,
+      timestamp: Date.now(),
+      type: notificationType.TRANSACTION,
+      status: val[txIndexes.response]
+        ? notificationStatuses.PENDING
+        : notificationStatuses.FAILED,
+      hash: val[txIndexes.response].hasOwnProperty('transactionHash')
+        ? val[txIndexes.response].transactionHash
+        : val[txIndexes.response],
+      network: network,
+      body: {
+        error: false,
+        errorMessage: '',
+        hash: val[txIndexes.response],
+        to: val[txIndexes.txDetails] ? val[txIndexes.txDetails].to : '',
+        amount: val[txIndexes.txDetails]
+          ? new BigNumber(val[txIndexes.txDetails].value).toString()
+          : '0',
+        nonce: val[txIndexes.txDetails]
+          ? new BigNumber(val[txIndexes.txDetails].nonce).toString()
+          : '0',
+        gasPrice: val[txIndexes.txDetails]
+          ? new BigNumber(val[txIndexes.txDetails].gasPrice).toString()
+          : '0',
+        gasLimit: val[txIndexes.txDetails]
+          ? new BigNumber(val[txIndexes.txDetails].gas).toString()
+          : '0',
+        tokenTransferTo: val[txIndexes.txDetails]
+          ? val[txIndexes.txDetails].tokenTransferTo
+          : '',
+        tokenTransferVal: val[txIndexes.txDetails]
+          ? val[txIndexes.txDetails].tokenTransferVal
+          : '0',
+        tokenSymbol: val[txIndexes.txDetails]
+          ? val[txIndexes.txDetails].tokenSymbol
+          : ''
+      },
+      expanded: false
+    };
+  } catch (e) {
+    Toast.responseHandler('error-parsing-tx-details', 3);
+  }
 };
 
 const formatTransactionReciept = (entry, val) => {
@@ -189,9 +211,11 @@ const formatSwap = (val, network) => {
       toCurrency: val[swapIndexes.details].toCurrency,
       orderId: val[swapIndexes.details].parsed.orderId,
       statusId: val[swapIndexes.details].parsed.statusId,
-      timeRemaining: val[swapIndexes.details].parsed.validFor,
-      validFor: val[swapIndexes.details].parsed.validFor,
-      createdAt: val[swapIndexes.details].parsed.timestamp,
+      timeRemaining: val[swapIndexes.details].parsed.validFor || 600,
+      validFor: val[swapIndexes.details].parsed.validFor || 600,
+      createdAt:
+        val[swapIndexes.details].parsed.timestamp ||
+        new Date(Date.now()).toISOString(),
       rate: val[swapIndexes.details].rate,
       provider: val[swapIndexes.details].provider,
       special: val[swapIndexes.details].special,
@@ -219,6 +243,11 @@ const formatSwapReciept = async (entry, val) => {
       ? notificationStatuses.COMPLETE
       : notificationStatuses.FAILED;
     entry.body.timeRemaining = -1;
+    if (Number.isNaN(entry.body.gasLimit)) {
+      entry.body.gasLimit = new BigNumber(
+        val[swapIndexes.response].gasUsed
+      ).toString();
+    }
   }
   return entry;
 };

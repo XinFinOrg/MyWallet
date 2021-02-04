@@ -2,24 +2,24 @@
   <div class="social">
     <div class="wrap">
       <div class="page-container">
-        <div class="flex-col-vertical-center content">
+        <div class="content">
           <div class="title">
-            <h2>{{ $t('home.socialTitle') }}</h2>
-            <h5>{{ $t('home.socialSubheading') }}</h5>
+            <h2>{{ $t('home.social.title') }}</h2>
           </div>
           <div class="icons">
-            <a
-              v-for="(link, index) in links"
-              :href="link.to"
-              :key="link.name + index"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <div :class="link.name">
-                <img :src="link.img" />
-                <p>{{ link.name | capitalize }}</p>
-              </div>
-            </a>
+            <div v-for="(link, index) in links" :key="link.name + index">
+              <a
+                :href="link.to"
+                :aria-label="link.name"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <div :class="link.name">
+                  <img :src="link.img" alt />
+                  <p class="link-name">{{ link.name | capitalize }}</p>
+                </div>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -33,21 +33,17 @@ import reddit from '@/assets/images/icons/reddit.svg';
 import medium from '@/assets/images/icons/medium.png';
 import twitter from '@/assets/images/icons/twitter.jpg';
 import facebook from '@/assets/images/icons/facebook.png';
-//import slack from '@/assets/images/icons/slack.png';
-//import telegram from '@/assets/images/icons/telegram.png';
+import vkontakte from '@/assets/images/icons/vkontakte.png';
+import mewtopia from '@/assets/images/icons/mewtopia.png';
+import youtube from '@/assets/images/icons/youtube.png';
+import instagram from '@/assets/images/icons/instagram.png';
+import telegram from '@/assets/images/icons/telegram.svg';
 
 export default {
   data() {
     return {
       links: [
-        /*
-        {
-          img: slack,
-          to: 'https://www.google.com',
-          name: 'slack'
-        },
-        */
-        {
+       {
           img: facebook,
           to: 'https://www.facebook.com/XinFinHybridBlockchain/',
           name: 'Facebook'

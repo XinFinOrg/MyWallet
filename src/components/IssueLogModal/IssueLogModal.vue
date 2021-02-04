@@ -7,39 +7,54 @@
         hide-header
         centered
         class="bootstrap-modal nopadding"
+        static
+        lazy
       >
-        <div class="modal-contents">
-          <div class="modal-header-block">
-            <h2 class="title">Something went wrong.</h2>
-            <p class="sub-text">
-              Do you want to inform Team XinFin about this error?
-            </p>
+        <div class="new-issue-log">
+          <div class="large-header">{{ $t('common.issue-log.oops') }}</div>
+          <div class="sub-header">
+            {{ $t('common.issue-log.error-text') }}
           </div>
-          <div class="modal-user-input-block">
-            <code>
-              {{ JSON.stringify(error) }}
-            </code>
-          </div>
-          <div class="modal-button-block">
-            <standard-button
-              :options="cancelButtonOptions"
-              @click.native="sendError(false)"
-            />
-            <standard-button
-              :options="sendButtonOptions"
-              @click.native="sendError(true)"
-            />
-          </div>
-          <div v-if="showSkipper" class="button-block">
-            <div class="checkbox-container">
-              <label for="terms" @click="neverShow = !neverShow">
-                <span :class="[neverShow ? 'enable' : '', 'custom-marker']">
-                  <i v-if="neverShow" class="fa fa-check" />
-                </span>
-                <input name="terms" type="checkbox" /> Never Show again
-              </label>
+          <div class="buttons mt-5">
+            <div class="button-block-text">
+              {{ $t('common.issue-log.inform-error') }}
+            </div>
+            <div class="mt-3 d-flex">
+              <b-btn class="mr-1" @click="() => sendError(true)">{{
+                $t('common.issue-log.send-button')
+              }}</b-btn>
+              <b-btn
+                variant="outline-secondary"
+                @click="() => sendError(false)"
+                >{{ $t('common.issue-log.no-thanks') }}</b-btn
+              >
+            </div>
+
+            <div v-if="showSkipper" class="button-block mt-3">
+              <div class="checkbox-container">
+                <label for="terms" @click="neverShow = !neverShow">
+                  <span :class="[neverShow ? 'enable' : '', 'custom-marker']">
+                    <i v-if="neverShow" class="fa fa-check" />
+                  </span>
+                  <input name="terms" type="checkbox" />
+                  {{ $t('common.issue-log.hide-for-now') }}
+                </label>
+              </div>
+            </div>
+
+            <div
+              v-b-toggle.collapse-error-detail
+              class="mt-5 show-error-detail"
+            >
+              {{ $t('common.issue-log.show-error-details') }}
             </div>
           </div>
+
+          <b-collapse id="collapse-error-detail" class="mt-2">
+            <b-card>
+              <textarea v-model="errorDetails" class="error-detail"></textarea>
+            </b-card>
+          </b-collapse>
         </div>
 
         <!-- .modal-contents -->
@@ -51,14 +66,12 @@
 </template>
 
 <script>
-import StandardButton from '@/components/Buttons/StandardButton';
 import store from 'store';
+import { mapActions } from 'vuex';
 
 export default {
   name: 'IssueLogModal',
-  components: {
-    'standard-button': StandardButton
-  },
+  components: {},
   props: {
     error: {
       type: Object,
@@ -73,35 +86,30 @@ export default {
   },
   data() {
     return {
-      cancelButtonOptions: {
-        title: 'Cancel',
-        buttonStyle: 'green-border',
-        noMinWidth: true,
-        fullWidth: true
-      },
-      sendButtonOptions: {
-        title: 'Send',
-        buttonStyle: 'green',
-        noMinWidth: true
-      },
       errorCount: 0,
       showSkipper: false,
       neverShow: false
     };
   },
+  computed: {
+    errorDetails() {
+      return JSON.stringify(this.error, null, 2);
+    }
+  },
   watch: {
-    neverShow(newVal) {
-      store.set('neverReport', newVal);
+    neverShow() {
+      this.toggleTempHide();
     }
   },
   mounted() {
     const popUpCount = store.get('errorPop') || 0;
     this.errorCount = popUpCount;
-    if (this.errorCount >= 10) {
+    if (this.errorCount >= 5) {
       this.showSkipper = true;
     }
   },
   methods: {
+    ...mapActions('main', ['toggleTempHide']),
     sendError(bool) {
       this.resolver(bool);
       this.$refs.issuelog.hide();

@@ -1,5 +1,26 @@
 @import '~@/scss/GlobalVariables';
 
+$tablet-width: 1270px;
+.floating-buttons-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: fixed;
+  bottom: 60px;
+  right: 60px;
+  z-index: 9999;
+  justify-content: space-around;
+
+  a {
+    height: 50px;
+    margin-top: 30px;
+  }
+
+  .decision-tree-container {
+    height: 50px;
+  }
+}
+
 .vintage-header {
   background-color: $mew-green;
   color: $white;
@@ -11,8 +32,17 @@
     text-decoration: underline;
   }
 }
+
+@media all and (max-width: 1025px) {
+  .floating-buttons-container {
+    bottom: 175px;
+    height: 168px;
+    right: 16px;
+  }
+}
+
 .wrap {
-  padding-top: 99px;
+  padding-top: 85px;
 
   // Tablet
   @media all and (min-width: calc(#{$mobile-width} + 1px)) and (max-width: $tablet-width) {
@@ -84,12 +114,20 @@
     }
 
     .top-logo {
-      height: 45px;
-      transition: all 0.3s ease 0s;
+      line-height: 10px;
 
-      img {
+      .logo-large {
         height: 33px;
         transition: all 0.3s ease;
+      }
+
+      .logo-large-mewcx {
+        height: 55px;
+        transition: all 0.3s ease;
+      }
+
+      .logo-small-mewcx {
+        height: 33px;
       }
 
       .logo-small {
@@ -132,8 +170,34 @@
         }
       }
 
+      .buy-eth {
+        position: relative;
+        .buy-eth-icon {
+          position: absolute;
+          top: 19px;
+          left: -13px;
+          height: 24px;
+        }
+      }
+
       .language-menu-container {
         margin-left: 20px;
+        position: relative;
+
+        .down-arrow {
+          position: absolute;
+          right: 0;
+          top: 15px;
+          color: #05c0a5;
+          display: inline-block;
+          //margin-left: 0.255em;
+          vertical-align: 0.255em;
+          content: '';
+          border-top: 0.3em solid;
+          border-right: 0.3em solid transparent;
+          border-bottom: 0;
+          border-left: 0.3em solid transparent;
+        }
       }
 
       .language-menu {
@@ -230,6 +294,7 @@
   cursor: pointer;
   //animation: fadeOutFromBlock 0.5s ease-out;
   //animation-fill-mode: forwards;
+
   display: none;
   opacity: 0;
   overflow: hidden;
@@ -313,6 +378,14 @@
 .settings-container {
   display: flex;
   align-items: center;
+  position: relative;
+  padding-left: 20px;
+
+  .blockie-image {
+    position: absolute;
+    top: -9px;
+    right: 20px;
+  }
 
   i {
     color: $dark-blue-1;

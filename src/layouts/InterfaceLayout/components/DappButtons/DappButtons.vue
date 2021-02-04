@@ -1,17 +1,38 @@
 <template>
-  <div :class="['dapps-button', supported ? '' : 'disabled']">
-    <router-link :to="param" tag="div">
-      <img :src="supported ? icon : iconDisabled" />
-      <div>
-        <h4>{{ title }}</h4>
-        <p>{{ desc }}</p>
-      </div>
-    </router-link>
+  <div
+    :class="[
+      'dapps-button',
+      supported ? '' : 'disabled',
+      title === dappsTitle.aave || title === dappsTitle.lendMigrator
+        ? 'top-row'
+        : ''
+    ]"
+    @click="navigateTo"
+  >
+    <img
+      v-show="!isBeenTwoWeeks"
+      :src="require('@/assets/images/new-label.png')"
+      class="new-label"
+      alt
+    />
+    <img
+      :src="supported ? icon : iconDisabled"
+      :class="[
+        title === dappsTitle.ambrpay ? 'ambrpay-icon' : '',
+        'dapp-logo',
+        'dapps-icon'
+      ]"
+      alt
+    />
+    <div class="title-container">
+      <h4>{{ title }}</h4>
+      <p>{{ desc }}</p>
+    </div>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 
 export default {
   props: {
@@ -35,6 +56,10 @@ export default {
       type: String,
       default: ''
     },
+    releaseDate: {
+      type: String,
+      default: ''
+    },
     supportedNetworks: {
       type: Array,
       default: () => {
@@ -42,12 +67,43 @@ export default {
       }
     }
   },
+  data() {
+    return {
+      dappsTitle: {
+        ambrpay: 'Ambrpay',
+        aave: 'Aave',
+        lendMigrator: 'LEND Migrator',
+        unstoppableDomains: 'Unstoppable Domains'
+      }
+    };
+  },
   computed: {
-    ...mapGetters({
-      network: 'network'
-    }),
+    ...mapState('main', ['online', 'network']),
     supported() {
-      return this.supportedNetworks.includes(this.network.type.name);
+      if (this.online) {
+        return this.supportedNetworks.includes(this.network.type.name);
+      }
+      return null;
+    },
+    isBeenTwoWeeks() {
+      const today = new Date();
+      const releaseDate = new Date(this.releaseDate);
+      const diff = today.getTime() - releaseDate.getTime();
+      const MAX_WEEKS = 2;
+      return this.milliToWeeks(diff) > MAX_WEEKS;
+    }
+  },
+  methods: {
+    milliToWeeks(milli) {
+      const secs = milli / 1000;
+      const mins = secs / 60;
+      const hours = mins / 60;
+      const days = hours / 24;
+      const weeks = days / 7;
+      return weeks;
+    },
+    navigateTo() {
+      this.$router.push(this.param);
     }
   }
 };

@@ -6,26 +6,44 @@
         <div class="token-search">
           <div class="block-title">
             <div class="title-container">
-              <h4>{{ $t('interface.tokens') }}</h4>
+              <h4>{{ $tc('common.token', 2) }}</h4>
               <img
+                alt
                 src="~@/assets/images/icons/change.svg"
                 @click="fetchTokens"
               />
             </div>
-            <p @click="addTokenModal">+ {{ $t('interface.customToken') }}</p>
+            <p @click="addTokenModal">+ {{ $t('interface.tokens.custom') }}</p>
           </div>
           <div class="search-block">
             <input v-model="search" placeholder="Search" autocomplete="off" />
             <i class="fa fa-search" aria-hidden="true" />
           </div>
         </div>
+        <div v-show="!online" class="cant-load">
+          {{ $t('interface.tokens.warning-offline') }}
+        </div>
         <div ref="tokenTableContainer" class="token-table-container">
-          <table v-show="customTokens.length > 0 && receivedTokens">
+          <table
+            v-show="customTokens && customTokens.length > 0 && receivedTokens"
+          >
             <tr
               v-for="(token, index) in customTokens"
-              :key="token.name + index"
+              :key="token.symbol + index"
             >
-              <td>{{ token.name }}</td>
+              <td>
+                <a
+                  :href="
+                    network.type.blockExplorerAddr.replace(
+                      '[[address]]',
+                      token.address
+                    )
+                  "
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  >{{ token.symbol }}</a
+                >
+              </td>
               <td>
                 {{ token.balance }}
                 <i
@@ -37,12 +55,30 @@
           </table>
 
           <table v-show="localTokens.length > 0 && receivedTokens">
-            <tr v-for="(token, index) in localTokens" :key="token.name + index">
-              <td>{{ token.name }}</td>
+            <tr
+              v-for="(token, index) in localTokens"
+              :key="token.symbol + index"
+            >
+              <td class="name-and-icon-container">
+                <figure v-lazy-load class="token-icon">
+                  <img :data-url="iconFetch(token)" @error="iconFallback" />
+                </figure>
+                <a
+                  :href="
+                    network.type.blockExplorerAddr.replace(
+                      '[[address]]',
+                      token.address
+                    )
+                  "
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  >{{ token.symbol }}</a
+                >
+              </td>
               <td
-                v-if="token.balance === 'Load'"
+                v-if="token.balance === 'Load' && online"
                 class="load-token"
-                @click="getSpecificTokenBalance(token, index)"
+                @click="online ? getSpecificTokenBalance(token) : () => {}"
               >
                 {{ token.balance }}
               </td>
@@ -52,7 +88,10 @@
 
           <div
             v-show="
-              search === '' && localTokens.length === 0 && !receivedTokens
+              search === '' &&
+              localTokens &&
+              localTokens.length === 0 &&
+              !receivedTokens
             "
             class="spinner-container"
           >
@@ -61,16 +100,18 @@
           <div
             v-show="
               search !== '' &&
-                localTokens.length === 0 &&
-                customTokens.length === 0
+              localTokens &&
+              localTokens.length === 0 &&
+              customTokens &&
+              customTokens.length === 0
             "
             class="spinner-container"
           >
-            No tokens found :(
+            {{ $t('interface.tokens.no-tokens') }}
           </div>
         </div>
         <div
-          v-if="customTokens.length + localTokens.length > 15"
+          v-if="customTokens && customTokens.length + localTokens.length > 15"
           class="expend-bar"
           @click="tokenListExpend"
         >
@@ -82,32 +123,32 @@
           </p>
         </div>
       </div>
-      <!-- <div class="bottom-image-container">
-        <a href="https://mewconnect.myetherwallet.com/#/" target="_blank">
-          <img class="icon" src="~@/assets/images/etc/mewconnect.jpeg" />
-        </a>
-      </div> -->
+      <interface-ads></interface-ads>
     </div>
   </div>
 </template>
 
 <script>
 import store from 'store';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import { Toast } from '@/helpers';
+import { toChecksumAddress } from '@/helpers/addressUtils';
 import InterfaceTokensModal from '../InterfaceTokensModal';
+import InterfaceAds from '../InterfaceAds';
 import sortByBalance from '@/helpers/sortByBalance.js';
 import utils from 'web3-utils';
 import * as networkTypes from '@/networks/types';
+import masterFile from '@/_generated/master-file.json';
 
 export default {
   components: {
-    'interface-tokens-modal': InterfaceTokensModal
+    'interface-tokens-modal': InterfaceTokensModal,
+    'interface-ads': InterfaceAds
   },
   props: {
     tokens: {
       type: Array,
-      default: function() {
+      default: function () {
         return [];
       }
     },
@@ -117,11 +158,23 @@ export default {
     },
     getTokenBalance: {
       type: Function,
-      default: function() {}
+      default: function () {}
     },
     fetchTokens: {
       type: Function,
-      default: function() {}
+      default: function () {}
+    },
+    resetTokenSelection: {
+      type: Function,
+      default: function () {}
+    },
+    ads: {
+      type: Boolean,
+      default: true
+    },
+    address: {
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -134,10 +187,20 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      network: 'network',
-      web3: 'web3'
-    })
+    ...mapState('main', ['network', 'web3', 'online']),
+    networkTokens() {
+      const newTokenObj = {};
+      const matchedNetwork = masterFile.filter(item => {
+        return (
+          item.network.toLowerCase() === this.network.type.name.toLowerCase()
+        );
+      });
+      matchedNetwork.forEach(item => {
+        newTokenObj[toChecksumAddress(item.contract_address)] = item;
+      });
+
+      return newTokenObj;
+    }
   },
   watch: {
     receivedTokens() {
@@ -149,10 +212,28 @@ export default {
     },
     search(newVal) {
       this.assignTokens(this.tokens, newVal);
-      this.getCustomTokens();
     }
   },
   methods: {
+    iconFetch(tok) {
+      const token = this.networkTokens[toChecksumAddress(tok.address)];
+      if (token) {
+        const tokenSrc =
+          token.icon_png !== ''
+            ? `https://img.mewapi.io/?image=${token.icon_png}&width=50&height=50&fit=scale-down`
+            : token.icon !== ''
+            ? `https://img.mewapi.io/?image=${token.icon}&width=50&height=50&fit=scale-down`
+            : this.network.type.icon;
+        return tokenSrc;
+      } else if (tok.logo && tok.logo.src && tok.logo.src !== '') {
+        return `https://img.mewapi.io/?image=${tok.logo.src}&width=50&height=50&fit=scale-down`;
+      }
+
+      return this.network.type.icon;
+    },
+    iconFallback(evt) {
+      evt.target.src = this.network.type.icon;
+    },
     getV3Tokens() {
       const v3Tokens = store.get('localTokens');
       const v5CustomTokens = store.get('customTokens');
@@ -168,10 +249,11 @@ export default {
         };
         Object.keys(networkTypes).forEach(network => {
           if (
-            networkTypes[network].name.toLowerCase() ===
+            token.network &&
+            (networkTypes[network].name.toLowerCase() ===
               token.network.toLowerCase() ||
-            networkTypes[network].name_long.toLowerCase() ===
-              token.network.toLowerCase()
+              networkTypes[network].name_long.toLowerCase() ===
+                token.network.toLowerCase())
           ) {
             if (this.tokenError(newObj.address, newObj.symbol, '')) {
               v5CustomTokens[networkTypes[network].name].push(newObj);
@@ -186,70 +268,95 @@ export default {
       if (store.get('localTokens') !== undefined) {
         this.getV3Tokens();
       }
-      const storedTokens =
-        store.get('customTokens')[this.network.type.name] || [];
-      this.customTokens = storedTokens;
+      const storedTokens = store.get('customTokens') || {};
+      this.customTokens = storedTokens.hasOwnProperty(this.network.type.name)
+        ? storedTokens[this.network.type.name]
+        : [];
+      this.localCustomTokens = storedTokens.hasOwnProperty(
+        this.network.type.name
+      )
+        ? storedTokens[this.network.type.name]
+        : [];
     },
-    async getSpecificTokenBalance(token, idx) {
-      this.tokens[idx].balance = await this.getTokenBalance(token);
+    async getSpecificTokenBalance(token) {
+      for (let i = 0; i < this.tokens.length; i++) {
+        if (
+          toChecksumAddress(this.tokens[i].address) ===
+          toChecksumAddress(token.address)
+        ) {
+          this.tokens[i].balance = await this.getTokenBalance(token);
+        }
+      }
       this.tokens.sort(sortByBalance);
+      this.resetTokenSelection();
     },
     addTokenModal() {
-      this.$refs.tokenModal.$refs.token.show();
+      this.$refs.tokenModal.$refs.tokenModal.show();
     },
     removeToken(idx) {
       const storedTokens = store.get('customTokens');
       this.customTokens.splice(idx, 1);
+      this.localCustomTokens = this.customTokens.splice();
       storedTokens[this.network.type.name] = this.customTokens;
       store.set('customTokens', storedTokens);
       this.fetchTokens();
     },
     searchBySymbol(symbol) {
-      const searchNetwork = this.localTokens.find(item => {
-        return item.symbol.toLowerCase() === symbol.toLowerCase();
-      });
+      try {
+        const searchNetwork = this.localTokens.find(item => {
+          return item.symbol.toLowerCase() === symbol.toLowerCase();
+        });
 
-      const searchCustom = this.customTokens.find(item => {
-        return item.symbol.toLowerCase() === symbol.toLowerCase();
-      });
+        const searchCustom = this.customTokens.find(item => {
+          return item.symbol.toLowerCase() === symbol.toLowerCase();
+        });
 
-      if (searchNetwork !== undefined || searchCustom !== undefined) {
-        return false;
+        if (searchNetwork !== undefined || searchCustom !== undefined) {
+          return false;
+        }
+        return true;
+      } catch (e) {
+        Toast.responseHandler('Search by symbol errored', Toast.ERROR);
+        return true;
       }
-      return true;
     },
     searchByAddr(addr) {
-      const searchNetwork = this.localTokens.find(item => {
-        return (
-          utils.toChecksumAddress(item.address) ===
-          utils.toChecksumAddress(addr)
-        );
-      });
+      try {
+        const searchNetwork = this.localTokens.find(item => {
+          return (
+            utils.toChecksumAddress(item.address) ===
+            utils.toChecksumAddress(addr)
+          );
+        });
 
-      const searchCustom = this.customTokens.find(item => {
-        return (
-          utils.toChecksumAddress(item.address) ===
-          utils.toChecksumAddress(addr)
-        );
-      });
+        const searchCustom = this.customTokens.find(item => {
+          return (
+            utils.toChecksumAddress(item.address) ===
+            utils.toChecksumAddress(addr)
+          );
+        });
 
-      if (searchNetwork !== undefined || searchCustom !== undefined) {
-        return false;
+        if (searchNetwork !== undefined || searchCustom !== undefined) {
+          return false;
+        }
+        return true;
+      } catch (e) {
+        Toast.responseHandler('Search by address errored', Toast.ERROR);
+        return true;
       }
-      return true;
     },
     tokenError(address, symbol, addType) {
       const findTokenBySymbol = this.searchBySymbol(symbol);
       const findTokenByAddr = this.searchByAddr(address);
       if (!findTokenByAddr && addType !== '') {
-        this.$refs.tokenModal.$refs.token.hide();
+        this.$refs.tokenModal.$refs.tokenModal.hide();
         Toast.responseHandler(
           'A default or custom token with this contract address already exists!',
           Toast.ERROR
         );
         return false;
       } else if (!findTokenBySymbol && addType !== '') {
-        this.$refs.tokenModal.$refs.token.hide();
+        this.$refs.tokenModal.$refs.tokenModal.hide();
         Toast.responseHandler(
           "A default or custom token with this symbol already exists! The token in our list may have the same symbol but a different contract address, try adding it again with a '2' after the symbol!",
           Toast.ERROR
@@ -269,22 +376,21 @@ export default {
           website: '',
           type: 'custom'
         };
+
+        token['balance'] = await this.getTokenBalance(token);
         const currentCustomToken = store.get('customTokens');
         this.customTokens =
           this.customTokens.length > 0 ? this.customTokens : [];
-        token['balance'] = await this.getTokenBalance(token);
-        if (token['balance'] === undefined) {
-          Toast.responseHandler(
-            new Error('Token Balance Returned Undefined'),
-            Toast.ERROR
-          );
-        }
         this.customTokens.push(token);
+        this.localCustomTokens = this.customTokens.splice();
         currentCustomToken[this.network.type.name] = this.customTokens;
         store.set('customTokens', currentCustomToken);
-        this.$refs.tokenModal.$refs.token.hide();
-        Toast.responseHandler('Successfully added token!', Toast.SUCCESS);
-        this.fetchTokens();
+        this.$refs.tokenModal.$refs.tokenModal.hide();
+        await this.fetchTokens();
+        Toast.responseHandler(
+          this.$t('interface.tokens.token-added-success'),
+          Toast.SUCCESS
+        );
       }
     },
     tokenListExpend() {
@@ -293,24 +399,26 @@ export default {
       this.$refs.expendUp.classList.toggle('hidden');
     },
     async assignTokens(arr, query) {
-      const oldArray = this.customTokens ? this.customTokens.slice() : [];
+      const localCustomTok =
+        this.customTokens.length > 0 ? this.customTokens.slice() : [];
       if (query !== '') {
-        this.customTokens = oldArray
+        this.customTokens = localCustomTok
           .filter(token => {
-            if (token.name.toLowerCase().includes(query.toLowerCase())) {
+            if (token.symbol.toLowerCase().includes(query.toLowerCase())) {
               return token;
             }
           })
           .sort(sortByBalance);
         this.localTokens = this.tokens
           .filter(token => {
-            if (token.name.toLowerCase().includes(query.toLowerCase())) {
+            if (token.symbol.toLowerCase().includes(query.toLowerCase())) {
               return token;
             }
           })
           .sort(sortByBalance);
       } else {
         this.localTokens = arr;
+        this.customTokens = this.localCustomTokens;
       }
     }
   }

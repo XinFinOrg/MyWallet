@@ -2,13 +2,13 @@ import BigNumber from 'bignumber.js';
 
 import { networkSymbols } from '../partnersConfig';
 import { Toast } from '@/helpers';
+
 import {
   notificationStatuses,
   ChangellyCurrencies,
   statuses,
   TIME_SWAP_VALID,
-  PROVIDER_NAME,
-  FEE_RATE
+  PROVIDER_NAME
 } from './config';
 import changellyCalls from './changelly-calls';
 import changellyApi from './changelly-api';
@@ -17,21 +17,48 @@ import debug from 'debug';
 
 const errorLogger = debug('v5:partners-changelly');
 
+const disabled = [];
+
+function checkAndChange(value) {
+  if (!value) return value;
+  if (value === 'USDT Omni') {
+    return 'usdt';
+  }
+  if (value === 'USDT') {
+    return 'usdt20';
+  }
+  if (value.toLowerCase() === 'repv2') {
+    return 'rep';
+  }
+  if (value.toLowerCase() === 'rep') {
+    return 'REPV2';
+  }
+  return value;
+}
+
 export default class Changelly {
   constructor(props = {}) {
     this.name = Changelly.getName();
     this.network = props.network || networkSymbols.ETH;
+    this.tokenUpdate = props.tokenUpdate;
     this.getRateForUnit =
       typeof props.getRateForUnit === 'boolean' ? props.getRateForUnit : false;
     this.hasRates = 0;
     this.currencyDetails = props.currencies || ChangellyCurrencies;
+    this.useFixed = true;
     this.tokenDetails = {};
-    this.rateDetails = {};
     this.getSupportedCurrencies(this.network);
   }
 
   static getName() {
     return PROVIDER_NAME;
+  }
+
+  getApiConnector(type) {
+    if (type === 'api') {
+      return changellyApi;
+    }
+    return changellyCalls;
   }
 
   static isDex() {
@@ -46,11 +73,16 @@ export default class Changelly {
       } = await changellyApi.getSupportedCurrencies(this.network);
       this.currencyDetails = currencyDetails;
       this.tokenDetails = tokenDetails;
+      this.tokenUpdate(tokenDetails);
       this.hasRates =
         Object.keys(this.tokenDetails).length > 0 ? this.hasRates + 1 : 0;
     } catch (e) {
       errorLogger(e);
     }
+  }
+
+  get ratesRetrieved() {
+    return Object.keys(this.tokenDetails).length > 0 && this.hasRates > 0;
   }
 
   get isValidNetwork() {
@@ -69,61 +101,131 @@ export default class Changelly {
   }
 
   validSwap(fromCurrency, toCurrency) {
+    if (disabled.includes(fromCurrency) || disabled.includes(toCurrency)) {
+      return false;
+    }
     if (this.isValidNetwork) {
       return this.currencies[fromCurrency] && this.currencies[toCurrency];
     }
     return false;
   }
 
-  calculateTrueRate(topRate) {
-    return new BigNumber(topRate)
-      .minus(new BigNumber(topRate).times(new BigNumber(FEE_RATE)))
-      .toNumber();
+  fixedEnabled(currency) {
+    return (
+      typeof this.currencies[currency].fixRateEnabled === 'boolean' &&
+      this.currencies[currency].fixRateEnabled
+    );
   }
 
   async getRate(fromCurrency, toCurrency, fromValue) {
-    if (
-      this.rateDetails[`${fromCurrency}/${toCurrency}`] &&
-      this.getRateForUnit
-    ) {
+    if (this.useFixed && this.currencies[toCurrency]) {
+      if (this.fixedEnabled(toCurrency) && this.fixedEnabled(fromCurrency)) {
+        return this.getFixedRate(fromCurrency, toCurrency, fromValue);
+      }
+      return this.getMarketRate(fromCurrency, toCurrency, fromValue);
+    }
+    return this.getMarketRate(fromCurrency, toCurrency, fromValue);
+  }
+
+  async getRateUpdate(fromCurrency, toCurrency, fromValue, toValue, isFiat) {
+    return this.getRate(fromCurrency, toCurrency, fromValue, toValue, isFiat);
+  }
+
+  getFixedRate(fromCurrency, toCurrency, fromValue) {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async resolve => {
+      try {
+        const timeout = setTimeout(() => {
+          resolve({
+            fromCurrency,
+            toCurrency,
+            minValue: -1,
+            maxValue: -1,
+            provider: this.name,
+            rate: 0
+          });
+        }, 20000);
+
+        const changellyDetails = await changellyCalls.getFixRate(
+          checkAndChange(fromCurrency).toLowerCase(),
+          checkAndChange(toCurrency).toLowerCase(),
+          fromValue,
+          this.network
+        );
+        clearTimeout(timeout);
+
+        if (!Array.isArray(changellyDetails)) {
+          return {
+            fromCurrency,
+            toCurrency,
+            provider: this.name,
+            rate: 0
+          };
+        }
+
+        resolve({
+          fromCurrency,
+          toCurrency,
+          provider: this.name,
+          minValue: changellyDetails[0].min,
+          maxValue: changellyDetails[0].max,
+          rate: changellyDetails[0].result,
+          rateId: changellyDetails[0].id
+        });
+      } catch (e) {
+        return {
+          fromCurrency,
+          toCurrency,
+          provider: this.name,
+          rate: 0
+        };
+      }
+    });
+  }
+
+  calculateRate(inVal, outVal) {
+    return new BigNumber(outVal).div(inVal);
+  }
+
+  async getMarketRate(fromCurrency, toCurrency, fromValue) {
+    try {
+      const changellyDetails = await Promise.all([
+        changellyCalls.getMin(
+          checkAndChange(fromCurrency).toLowerCase(),
+          checkAndChange(toCurrency).toLowerCase(),
+          fromValue,
+          this.network
+        ),
+        changellyCalls.getRate(
+          checkAndChange(fromCurrency).toLowerCase(),
+          checkAndChange(toCurrency).toLowerCase(),
+          fromValue,
+          this.network
+        )
+      ]);
+
+      const minAmount = new BigNumber(changellyDetails[0])
+        .times(0.001)
+        .plus(new BigNumber(changellyDetails[0]))
+        .toFixed();
+
+      const estValueResponse = changellyDetails[1][0];
+
       return {
         fromCurrency,
         toCurrency,
         provider: this.name,
-        minValue: this.rateDetails[`${fromCurrency}/${toCurrency}`].minAmount,
-        rate: this.calculateTrueRate(
-          this.rateDetails[`${fromCurrency}/${toCurrency}`].rate
-        )
+        minValue: minAmount,
+        rate: estValueResponse.rate
       };
-    }
-
-    const changellyDetails = await Promise.all([
-      changellyCalls.getMin(fromCurrency, toCurrency, fromValue, this.network),
-      changellyCalls.getRate(
+    } catch (e) {
+      return {
         fromCurrency,
         toCurrency,
-        this.getRateForUnit ? 1 : fromValue,
-        this.network
-      )
-    ]);
-
-    const minAmount = new BigNumber(changellyDetails[0])
-      .times(0.001)
-      .plus(new BigNumber(changellyDetails[0]))
-      .toFixed();
-
-    this.rateDetails[`${fromCurrency}/${toCurrency}`] = {
-      minAmount: minAmount,
-      rate: changellyDetails[1]
-    };
-
-    return {
-      fromCurrency,
-      toCurrency,
-      provider: this.name,
-      minValue: minAmount,
-      rate: this.calculateTrueRate(changellyDetails[1])
-    };
+        provider: this.name,
+        rate: 0
+      };
+    }
   }
 
   getInitialCurrencyEntries(collectMapFrom, collectMapTo) {
@@ -143,13 +245,11 @@ export default class Changelly {
   getUpdatedFromCurrencyEntries(value, collectMap) {
     if (this.currencies[value.symbol]) {
       for (const prop in this.currencies) {
-        // if (prop !== value.symbol) {
         if (this.currencies[prop])
           collectMap.set(prop, {
             symbol: prop,
             name: this.currencies[prop].name
           });
-        // }
       }
     }
   }
@@ -157,13 +257,11 @@ export default class Changelly {
   getUpdatedToCurrencyEntries(value, collectMap) {
     if (this.currencies[value.symbol]) {
       for (const prop in this.currencies) {
-        // if (prop !== value.symbol) {
         if (this.currencies[prop])
           collectMap.set(prop, {
             symbol: prop,
             name: this.currencies[prop].name
           });
-        // }
       }
     }
   }
@@ -177,13 +275,15 @@ export default class Changelly {
       swapDetails.providerReceives = details.amountExpectedFrom;
       swapDetails.providerSends = details.amountExpectedTo;
       swapDetails.parsed = Changelly.parseOrder(details);
+      swapDetails.providerSends = swapDetails.parsed.recValue;
       swapDetails.orderId = swapDetails.parsed.orderId;
       swapDetails.providerAddress = details.payinAddress;
       swapDetails.dataForInitialization = details;
       swapDetails.isDex = Changelly.isDex();
+      swapDetails.validFor = swapDetails.parsed.validFor;
       return swapDetails;
     }
-    return Error('From amount below changelly minimun for currency pair');
+    return Error('From amount below changelly minimum for currency pair');
   }
 
   async createTransaction({
@@ -194,9 +294,60 @@ export default class Changelly {
     fromValue,
     refundAddress
   }) {
+    const transactionDetails = {
+      fromCurrency,
+      toCurrency,
+      toAddress,
+      fromAddress,
+      fromValue,
+      refundAddress
+    };
+    if (this.useFixed && this.currencies[toCurrency]) {
+      if (this.fixedEnabled(toCurrency) && this.fixedEnabled(fromCurrency)) {
+        return this.createFixedTransaction(transactionDetails);
+      }
+      return this.createMarketTransaction(transactionDetails);
+    }
+    return this.createMarketTransaction(transactionDetails);
+  }
+
+  async createFixedTransaction({
+    fromCurrency,
+    toCurrency,
+    toAddress,
+    fromAddress,
+    fromValue,
+    refundAddress
+  }) {
+    const finalDetails = await this.getFixedRate(
+      fromCurrency,
+      toCurrency,
+      fromValue
+    );
     const swapParams = {
-      from: fromCurrency.toLowerCase(),
-      to: toCurrency.toLowerCase(),
+      from: checkAndChange(fromCurrency).toLowerCase(),
+      to: checkAndChange(toCurrency).toLowerCase(),
+      address: toAddress,
+      extraId: null,
+      amount: fromValue,
+      refundAddress: refundAddress === '' ? fromAddress : refundAddress,
+      refundExtraId: null,
+      rateId: finalDetails.rateId
+    };
+    return await changellyCalls.createFixTransaction(swapParams, this.network);
+  }
+
+  async createMarketTransaction({
+    fromCurrency,
+    toCurrency,
+    toAddress,
+    fromAddress,
+    fromValue,
+    refundAddress
+  }) {
+    const swapParams = {
+      from: checkAndChange(fromCurrency).toLowerCase(),
+      to: checkAndChange(toCurrency).toLowerCase(),
       address: toAddress,
       extraId: null,
       amount: fromValue,
@@ -215,7 +366,7 @@ export default class Changelly {
       sendValue: order.amountExpectedFrom,
       status: order.status,
       timestamp: order.createdAt,
-      validFor: TIME_SWAP_VALID // Rates provided are only an estimate, and
+      validFor: TIME_SWAP_VALID // Rates provided are only an estimate
     };
   }
 

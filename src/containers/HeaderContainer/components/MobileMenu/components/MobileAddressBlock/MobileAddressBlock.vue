@@ -11,18 +11,18 @@
       </div>
       <div class="data-block">
         <div class="top-title">
-          Address
+          {{ $t('common.addr') }}
         </div>
         <p class="the-address">{{ account.address }}</p>
         <div class="buttons-container">
           <button>
-            <img src="~@/assets/images/icons/printer-white.svg" />
+            <img alt src="~@/assets/images/icons/printer-white.svg" />
           </button>
           <button>
-            <img src="~@/assets/images/icons/copy.svg" />
+            <img alt src="~@/assets/images/icons/copy.svg" />
           </button>
           <button>
-            <img src="~@/assets/images/icons/change.svg" />
+            <img alt src="~@/assets/images/icons/change.svg" />
           </button>
         </div>
       </div>
@@ -32,7 +32,7 @@
 
 <script>
 import Blockie from '@/components/Blockie';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 
 export default {
   name: 'MobileAddressBlock2',
@@ -43,12 +43,7 @@ export default {
     return {};
   },
   computed: {
-    ...mapGetters({
-      wallet: 'wallet',
-      online: 'online',
-      web3: 'web3',
-      account: 'account'
-    })
+    ...mapState('main', ['wallet', 'online', 'web3', 'account'])
   },
   watch: {},
   mounted() {},

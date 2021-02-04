@@ -1,9 +1,9 @@
-import Vuex from 'vuex';
 import { shallowMount } from '@vue/test-utils';
 import InterfaceBalance from '@/layouts/InterfaceLayout/components/InterfaceBalance/InterfaceBalance.vue';
 import InterfaceBalanceModal from '@/layouts/InterfaceLayout/components/InterfaceBalanceModal/InterfaceBalanceModal.vue';
 import sinon from 'sinon';
 import { Tooling } from '@@/helpers';
+import VueX from 'vuex';
 import { state, getters } from '@@/helpers/mockStore';
 
 const showModal = sinon.stub();
@@ -16,7 +16,6 @@ const BModalStub = {
   }
 };
 
-// const $t = () => {};
 describe('InterfaceBalance.vue', () => {
   let localVue, i18n, wrapper, store;
   const balance = '100';
@@ -25,11 +24,14 @@ describe('InterfaceBalance.vue', () => {
     const baseSetup = Tooling.createLocalVueInstance();
     localVue = baseSetup.localVue;
     i18n = baseSetup.i18n;
-    store = baseSetup.store;
-
-    store = new Vuex.Store({
-      getters,
-      state
+    store = new VueX.Store({
+      modules: {
+        main: {
+          namespaced: true,
+          state,
+          getters
+        }
+      }
     });
   });
 
@@ -49,10 +51,27 @@ describe('InterfaceBalance.vue', () => {
     });
   });
 
+  afterEach(() => {
+    wrapper.destroy();
+    wrapper = null;
+  });
+
   it('should render correct balance data', () => {
     expect(
-      wrapper.vm.$el.querySelector('.balance-text p').textContent.trim()
-    ).toEqual(balance);
+      wrapper.vm.$el
+        .querySelector('.balance-text p')
+        .textContent.trim()
+        .indexOf(balance)
+    ).toBeGreaterThan(-1);
+
+    const getBalance = sinon.stub();
+    wrapper.setProps({ getBalance });
+  });
+
+  it('should render correct fetchingBalance data', () => {
+    expect(wrapper.vm.$data.fetchingBalance).toBe(false);
+    wrapper.vm.fetchBalance();
+    expect(wrapper.vm.$data.fetchingBalance).toBe(true);
   });
 
   describe('InterfaceBalance.vue Methods', () => {
@@ -63,6 +82,7 @@ describe('InterfaceBalance.vue', () => {
 
     it('should open balance modal when button clicked', () => {
       const divElements = wrapper.findAll('div');
+
       for (let i = 0; i < divElements.length; i++) {
         const divElement = divElements.at(i);
         if (divElement.classes().length == 0) {

@@ -1,16 +1,13 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import State from './state';
-import Getters from './getters';
-import Mutations from './mutations';
-import Actions from './actions';
+import main from './main';
+import aave from './dappsAave';
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
-  state: State,
-  mutations: Mutations,
-  getters: Getters,
-  actions: Actions,
-  strict: false
+  modules: {
+    main: main,
+    aave: aave
+  }
 });

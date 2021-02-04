@@ -1,9 +1,11 @@
 {
-  "txTotal": "Общая сумма транзакции",
-  "scanQrCode": "Сканировать QR-код, чтобы отправить/обменять мгновенно",
-  "signingAddr": "Адрес подписывающий транзакцию",
-  "confirmSigning": "Подтвердить подписание",
-  "approveOnDevice": "Please Approve on Hardware Wallet",
-  "success": "Успех",
-  "error": "Ошибка"
+  "tx-total": "Общая сумма транзакции",
+  "signing-addr": "Адрес подписывающий транзакцию",
+  "message-in-hex": "Сообщение в шестнадцатиричном значении",
+  "confirm-signing": "Подтвердить подпись",
+  "approve-on-device": "Пожалуйста, подтвердите на аппаратном кошельке",
+  "success": "Готово",
+  "error": "Ошибка",
+  "waiting-for-hash": "Ожидание хеша транзакции",
+  "confirm-transactions": "Подтверждение (Всего {unSignedArray} транзакций)`"
 }

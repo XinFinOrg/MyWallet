@@ -2,21 +2,23 @@ import { createLocalVue } from '@vue/test-utils';
 import VueI18n from 'vue-i18n';
 import BootstrapVue from 'bootstrap-vue';
 import veeValidate from 'vee-validate';
+// import languages from '@/translations';
 import VueX from 'vuex';
-
+import VueToast from 'vue-toasted';
 import ClickOutside from '@/directives/ClickOutside';
-import EnsResolver from '@/directives/EnsResolver';
+import AddrResolver from '@/directives/AddrResolver';
 import en_US from '@/translations/en_US';
-
+import { state, getters } from '@@/helpers/mockStore';
 function createLocalVueInstance() {
   const localVue = createLocalVue();
   localVue.use(VueI18n);
   localVue.use(BootstrapVue);
   localVue.use(VueX);
+  localVue.use(VueToast);
   localVue.directive('click-outside', ClickOutside);
-  localVue.directive('ens-resolver', EnsResolver);
+  localVue.directive('addr-resolver', AddrResolver);
   localVue.use(veeValidate);
-  localVue.filter('capitalize', function(value) {
+  localVue.filter('capitalize', function (value) {
     if (!value) return '';
     value = value.toString().toLowerCase();
     return value.charAt(0).toUpperCase() + value.slice(1);
@@ -28,13 +30,36 @@ function createLocalVueInstance() {
     silentTranslationWarn: true
   });
 
-  const store = new VueX.Store();
+  const actions = {
+    clearWallet: jest.fn(),
+    decryptWallet: jest.fn(),
+    setGasPrice: jest.fn(),
+    addSwapNotification: jest.fn()
+  };
+
+  const store = new VueX.Store({
+    actions,
+    getters,
+    state
+  });
+
   return {
     localVue,
     i18n,
     store
   };
 }
+
+const RouterLinkStub = {
+  name: 'router-link',
+  template: '<div class="routerlink"><slot></slot></div>',
+  props: ['to']
+};
+
+const RouterViewStub = {
+  name: 'router-view',
+  template: '<div class="routerView"><slot></slot></div>'
+};
 
 // likely will remove this function
 // function createShallowMountWrapper(component, suppliedOptions, baseOptions = {}){
@@ -44,7 +69,7 @@ function createLocalVueInstance() {
 //
 //   return shallowMount(component, {baseOptions, ...suppliedOptions});
 // }
-
+export { RouterLinkStub, RouterViewStub };
 export default {
   createLocalVueInstance
 };

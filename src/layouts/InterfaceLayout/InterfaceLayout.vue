@@ -3,11 +3,16 @@
     <!-- Modals ******************************************************** -->
     <!-- Modals ******************************************************** -->
     <!-- Modals ******************************************************** -->
-    <wallet-password-modal/>
-    <enter-pin-number-modal/>
+    <wallet-password-modal />
+    <enter-pin-number-modal />
+    <ledger-app-modal
+      ref="ledgerAppModal"
+      :networks="Networks"
+      @hardwareWalletOpen="toggleNetworkAddrModal"
+    />
     <mnemonic-modal
       ref="mnemonicPhraseModal"
-      :mnemonic-phrase-password-modal-open="mnemonicphrasePasswordModalOpen"
+      :hardware-wallet-open="toggleNetworkAddrModal"
     />
 
     <mnemonic-password-modal
@@ -15,64 +20,101 @@
       :hardware-wallet-open="toggleNetworkAddrModal"
       :phrase="phrase"
     />
-    <network-and-address-modal ref="networkAddress" :hardware-wallet="hwInstance"/>
+    <network-and-address-modal
+      ref="networkAddress"
+      :hardware-wallet="hwInstance"
+    />
     <hardware-password-modal
       ref="hardwareModal"
       :wallet-constructor="walletConstructor"
       :hardware-brand="hardwareBrand"
       @hardwareWalletOpen="toggleNetworkAddrModal"
     />
-    <print-modal ref="printModal" :priv-key="!wallet.isPubOnly" :address="account.address"/>
-    <address-qrcode-modal
-      ref="addressQrcodeModal"
+    <print-modal
+      ref="printModal"
+      :priv-key="!wallet"
       :address="  'xdc' + account.address.substring(2)"
     />
+    <expired-names-modal ref="expiredNames" />
+    <bcvault-address-modal
+      ref="bcvault"
+      :addresses="bcVaultWallets"
+      :callback-fn="bcVaultCb"
+    />
+    <address-qrcode-modal ref="addressQrcodeModal" :address="  'xdc' + account.address.substring(2)" />
     <!-- Modals ******************************************************** -->
     <!-- Modals ******************************************************** -->
     <!-- Modals ******************************************************** -->
-    <div class="mobile-interface-address-block">
-      <mobile-interface-address :address="address" :print="print" :switch-addr="switchAddress"/>
-    </div>
 
+    <div class="mobile-interface-address-block">
+      <mobile-interface-address
+        :address="address"
+        :print="print"
+        :switch-addr="switchAddress"
+      />
+      <mobile-interface-balance
+        :balance="balance"
+        :get-balance="getBalance"
+        class="mt-2"
+      />
+      <mobile-interface-network :block-number="blockNumber" class="mt-2" />
+    </div>
     <div class="wrap">
       <div class="sidemenu">
         <div
           :class="isSidemenuOpen && 'side-nav-open'"
           class="side-nav-background"
-          @click="toggleSideMenu;"
+          @click="startToggleSideMenu;"
         />
         <div :class="isSidemenuOpen && 'side-nav-open'" class="side-nav">
-          <interface-side-menu/>
+          <interface-side-menu />
         </div>
       </div>
       <div class="contents">
         <div class="tx-contents">
           <div class="content-container mobile-hide">
             <interface-address
+              v-if="wallet"
               :address="address"
               :print="print"
               :switch-addr="switchAddress"
+              :display-addr="wallet.displayAddress"
               :qrcode="openAddressQrcode"
             />
           </div>
           <div class="content-container mobile-hide">
-            <interface-balance :balance="balance" :get-balance="getBalance"/>
+            <interface-balance :balance="balance" :get-balance="getBalance" />
           </div>
           <div class="content-container mobile-hide">
-            <interface-network :block-number="blockNumber"/>
+            <interface-network :block-number="blockNumber" />
           </div>
           <router-view
             :tokens-with-balance="tokensWithBalance"
             :get-balance="getBalance"
             :tokens="tokens"
             :highest-gas="highestGas"
+            :nonce="nonce"
+            :value="value"
+            :data="data"
+            :to="to"
+            :gaslimit="gaslimit"
+            :gas="gas"
+            :tokensymbol="tokensymbol"
+            :is-prefilled="prefilled"
+            :clear-prefilled="clearPrefilled"
+            :check-prefilled="checkPrefilled"
           />
-          <div v-if="online" class="tokens">
+          <div class="tokens">
             <interface-tokens
+              v-if="$route.fullPath !== '/interface/dapps/aave/action'"
               :fetch-tokens="setTokens"
               :get-token-balance="getTokenBalance"
               :tokens="tokens"
               :received-tokens="receivedTokens"
+              :reset-token-selection="setTokensWithBalance"
+            />
+            <token-overview
+              v-if="$route.fullPath === '/interface/dapps/aave/action'"
             />
           </div>
         </div>
@@ -82,20 +124,26 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 import ENS from 'ethereum-ens';
+import TokenOverview from '@/dapps/Aave/components/TokenOverview';
 import WalletPasswordModal from '@/components/WalletPasswordModal';
 import EnterPinNumberModal from '@/components/EnterPinNumberModal';
 import NetworkAndAddressModal from '@/layouts/AccessWalletLayout/components/NetworkAndAddressModal';
+import BcVaultAddressModal from '@/layouts/AccessWalletLayout/components/BcVaultAddressModal';
 import HardwarePasswordModal from '@/layouts/AccessWalletLayout/components/HardwarePasswordModal';
 import MnemonicPasswordModal from '@/layouts/AccessWalletLayout/components/MnemonicPasswordModal';
 import MnemonicModal from '@/layouts/AccessWalletLayout/components/MnemonicModal';
+import LedgerAppModal from '@/layouts/AccessWalletLayout/components/LedgerAppModal';
 import InterfaceAddress from './components/InterfaceAddress';
 import InterfaceBalance from './components/InterfaceBalance';
 import InterfaceNetwork from './components/InterfaceNetwork';
 import InterfaceSideMenu from './components/InterfaceSideMenu';
 import InterfaceTokens from './components/InterfaceTokens';
 import MobileInterfaceAddress from './components/MobileInterfaceAddress';
+import MobileInterfaceBalance from './components/MobileInterfaceBalance';
+import MobileInterfaceNetwork from './components/MobileInterfaceNetwork';
+import ExpiredNamesModal from './components/ExpiredNamesModal';
 import PrintModal from './components/PrintModal';
 import { Web3Wallet } from '@/wallets/software';
 import { Toast } from '@/helpers';
@@ -107,24 +155,42 @@ import TokenBalance from '@myetherwallet/eth-token-balance';
 import sortByBalance from '@/helpers/sortByBalance.js';
 import AddressQrcodeModal from '@/components/AddressQrcodeModal';
 import web3Utils from 'web3-utils';
+import { isAddress } from '@/helpers/addressUtils';
+import { ETH } from '@/networks/types';
 import {
   LedgerWallet,
   TrezorWallet,
   BitBoxWallet,
+  BitBox02Wallet,
   SecalotWallet,
-  KeepkeyWallet
+  KeepkeyWallet,
+  BCVaultWallet
 } from '@/wallets';
 import {
   WEB3_WALLET as WEB3_TYPE,
   LEDGER as LEDGER_TYPE,
   TREZOR as TREZOR_TYPE,
   BITBOX as BITBOX_TYPE,
+  BITBOX02 as BITBOX02_TYPE,
   SECALOT as SECALOT_TYPE,
   KEEPKEY as KEEPKEY_TYPE,
-  MNEMONIC as MNEMONIC_TYPE
+  MNEMONIC as MNEMONIC_TYPE,
+  BCVAULT as BC_VAULT
 } from '@/wallets/bip44/walletTypes';
+import {
+  getGasBasedOnType,
+  getOther,
+  getEconomy
+} from '@/helpers/gasMultiplier.js';
+import ExpiryAbi from './expiryAbi.js';
+
+const ENS_TOKEN_ADDRESS = '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85';
+const EXPIRY_CHECK_CONTRACT = '0x78e21d038fcbb6d56f825dc1e8d8acd965744adb';
+
 export default {
+  name: 'Interface',
   components: {
+    'bcvault-address-modal': BcVaultAddressModal,
     'interface-side-menu': InterfaceSideMenu,
     'interface-address': InterfaceAddress,
     'interface-balance': InterfaceBalance,
@@ -138,7 +204,12 @@ export default {
     'mnemonic-password-modal': MnemonicPasswordModal,
     'enter-pin-number-modal': EnterPinNumberModal,
     'mobile-interface-address': MobileInterfaceAddress,
-    'address-qrcode-modal': AddressQrcodeModal
+    'mobile-interface-balance': MobileInterfaceBalance,
+    'mobile-interface-network': MobileInterfaceNetwork,
+    'address-qrcode-modal': AddressQrcodeModal,
+    'ledger-app-modal': LedgerAppModal,
+    'token-overview': TokenOverview,
+    'expired-names-modal': ExpiredNamesModal
   },
   data() {
     return {
@@ -147,10 +218,10 @@ export default {
       tokens: [],
       receivedTokens: false,
       tokensWithBalance: [],
-      pollNetwork: () => {},
       pollBlock: () => {},
-      pollAddress: () => {},
-      highestGas: 0,
+      pollNetwork: () => {},
+      pollddress: () => {},
+      highestGas: '0',
       alert: {
         show: false,
         msg: ''
@@ -164,7 +235,16 @@ export default {
       hwInstance: {},
       walletConstructor: () => {},
       hardwareBrand: '',
-      phrase: ''
+      phrase: '',
+      nonce: '0',
+      value: '0',
+      data: '',
+      to: '',
+      gaslimit: '21000',
+      gas: 0,
+      tokensymbol: '',
+      prefilled: false,
+      bcVaultWallets: []
     };
   },
   computed: {
@@ -175,22 +255,28 @@ export default {
       if (this.wallet !== null) {
         return toChecksumAddress(this.account.address);
       }
+      return null;
     },
-    ...mapGetters({
-      network: 'network',
-      account: 'account',
-      online: 'online',
-      web3: 'web3',
-      Networks: 'Networks',
-      sidemenuOpen: 'sidemenuOpen',
-      wallet: 'wallet'
-    })
+    ...mapState('main', [
+      'network',
+      'account',
+      'online',
+      'web3',
+      'Networks',
+      'sidemenuOpen',
+      'wallet',
+      'linkQuery'
+    ])
   },
   watch: {
     web3() {
       this.setupOnlineEnvironment();
     },
-    address() {
+    address(val) {
+      if (val) this.setupOnlineEnvironment();
+    },
+    network() {
+      this.clearIntervals();
       this.setupOnlineEnvironment();
     }
   },
@@ -201,6 +287,63 @@ export default {
     this.clearIntervals();
   },
   methods: {
+    ...mapActions('main', [
+      'switchNetwork',
+      'setWeb3Instance',
+      'saveQueryVal',
+      'updateBlockNumber',
+      'setAccountBalance',
+      'setENS',
+      'decryptWallet',
+      'toggleSideMenu',
+      'setGasPrice',
+      'setEthGasPrice'
+    ]),
+    checkPrefilled() {
+      const _self = this;
+      const hasLinkQuery = Object.keys(_self.linkQuery).length;
+      if (hasLinkQuery > 0) {
+        _self.prefilled = true;
+        const {
+          value,
+          data,
+          to,
+          gaslimit,
+          gas,
+          tokensymbol,
+          network
+        } = _self.linkQuery;
+        _self.value =
+          value && new BigNumber(value).gt(0)
+            ? new BigNumber(value).toFixed()
+            : '0';
+        _self.data = data && web3Utils.isHexStrict(data) ? data : '';
+        _self.to = to && isAddress(to) ? to : '';
+        _self.gaslimit =
+          gaslimit && new BigNumber(gaslimit).gt(0) ? gaslimit : '21000';
+        _self.gas = gas && new BigNumber(gas).gt(0) ? new BigNumber(gas) : 0;
+        _self.tokensymbol = tokensymbol ? tokensymbol : '';
+        if (network) {
+          const foundNetwork = _self.Networks[network.toUpperCase()];
+          // eslint-disable-next-line
+          if (!!foundNetwork) {
+            _self.switchNetwork(foundNetwork[0]).then(() => {
+              _self.setWeb3Instance();
+            });
+          }
+        }
+        _self.saveQueryVal({});
+      }
+    },
+    clearPrefilled() {
+      this.value = '0';
+      this.data = '';
+      this.to = '';
+      this.gaslimit = '21000';
+      this.gas = 0;
+      this.tokensymbol = '';
+      this.prefilled = false;
+    },
     openAddressQrcode() {
       this.$refs.addressQrcodeModal.$refs.addressQrcode.show();
     },
@@ -220,15 +363,13 @@ export default {
       this.hardwareBrand = brand;
       this.$refs.hardwareModal.$refs.password.show();
     },
-
+    ledgerAppModalOpen() {
+      this.$refs.ledgerAppModal.$refs.ledgerApp.show();
+    },
     switchAddress() {
       switch (this.account.identifier) {
         case LEDGER_TYPE:
-          LedgerWallet()
-            .then(_newWallet => {
-              this.toggleNetworkAddrModal(_newWallet);
-            })
-            .catch(LedgerWallet.errorHandler);
+          this.ledgerAppModalOpen();
           break;
         case TREZOR_TYPE:
           TrezorWallet()
@@ -238,7 +379,27 @@ export default {
             .catch(TrezorWallet.errorHandler);
           break;
         case BITBOX_TYPE:
-          this.togglePasswordModal(BitBoxWallet, 'DigitalBitbox');
+          this.togglePasswordModal(BitBoxWallet, 'BitBox');
+          break;
+        case BITBOX02_TYPE:
+          // eslint-disable-next-line no-case-declarations
+          let bb02;
+          BitBox02Wallet()
+            .then(_newWallet => {
+              bb02 = _newWallet;
+              this.$emit('bitbox02Open', bb02);
+              bb02
+                .init('')
+                .then(() => {
+                  this.toggleNetworkAddrModal(bb02);
+                })
+                .catch(e => {
+                  BitBox02Wallet.errorHandler(e);
+                });
+            })
+            .catch(e => {
+              BitBox02Wallet.errorHandler(e);
+            });
           break;
         case SECALOT_TYPE:
           this.togglePasswordModal(SecalotWallet, 'Secalot');
@@ -253,6 +414,22 @@ export default {
             })
             .catch(KeepkeyWallet.errorHandler);
           break;
+        case BC_VAULT:
+          // eslint-disable-next-line
+          const BCVaultWalletInstance = BCVaultWallet();
+          BCVaultWalletInstance.init()
+            .then(res => {
+              if (res.length > 1) {
+                this.bcVaultWallets = res;
+                this.$refs.bcvault.$refs.bcvaultAddress.show();
+              } else {
+                BCVaultWallet.erroHandler({ jsError: 'mew1' });
+              }
+            })
+            .catch(e => {
+              BCVaultWallet.errorHandler(e);
+            });
+          break;
         default:
           Toast.responseHandler(
             new Error(
@@ -262,23 +439,112 @@ export default {
           );
       }
     },
+    bcVaultCb(address) {
+      const BCVaultWalletInstance = BCVaultWallet();
+      const walletInstance = BCVaultWalletInstance.getAccount(address);
+      this.decryptWallet([walletInstance]).then(() => {
+        this.$refs.bcvault.$refs.bcvaultAddress.hide();
+      });
+    },
     print() {
       this.$refs.printModal.$refs.print.show();
     },
-    toggleSideMenu() {
-      this.$store.commit('TOGGLE_SIDEMENU');
+    startToggleSideMenu() {
+      this.toggleSideMenu();
+    },
+    fetchNames() {
+      const fetchName = fetch(
+        `https://nft2.mewapi.io/tokens?owner=${this.account.address}&chain=mainnet`
+      )
+        .then(response => {
+          return response.json();
+        })
+        .catch(() => {
+          Toast.responseHandler('Something went wrong!', Toast.ERROR);
+        });
+      fetchName.then(response => {
+        this.setExpiry(response);
+      });
+    },
+    async setExpiry(param) {
+      const names =
+        param && param.hasOwnProperty(ENS_TOKEN_ADDRESS)
+          ? param[ENS_TOKEN_ADDRESS].tokens
+          : [];
+      if (names.length > 0) {
+        const hashes = names.map(item => {
+          return item.id;
+        });
+        const contract = new this.web3.eth.Contract(
+          ExpiryAbi,
+          EXPIRY_CHECK_CONTRACT
+        );
+        const expiry = contract.methods
+          .getExpirationDates(ENS_TOKEN_ADDRESS, hashes)
+          .call()
+          .then(response => {
+            return response;
+          })
+          .catch(() => {
+            Toast.responseHandler('Something went wrong!', Toast.ERROR);
+          });
+        expiry.then(response => {
+          if (!response) return;
+          response.forEach((item, idx) => {
+            const expiryDate = item * 1000;
+            const isExpired = expiryDate < new Date().getTime();
+            const expiryDateFormat = new Date(expiryDate);
+            names[idx].expired = isExpired;
+            names[
+              idx
+            ].expiration = `${expiryDateFormat.toLocaleDateString()} ${expiryDateFormat.toLocaleTimeString()}`;
+            names['registrant'] = this.account.address;
+          });
+
+          const found = names.find(item => {
+            if (item.expired) return item;
+          });
+
+          if (found) this.notifyExpiredNames();
+        });
+      }
+    },
+    notifyExpiredNames() {
+      this.$refs.expiredNames.$refs.expiredNames.show();
     },
     async fetchTokens() {
       this.receivedTokens = false;
       let tokens = [];
-      if (this.network.type.chainID === 1 || this.network.type.chainID === 3) {
+      if (
+        (this.network.type.chainID === 1 || this.network.type.chainID === 3) &&
+        !this.network.url.includes('infura')
+      ) {
         const tb = new TokenBalance(this.web3.currentProvider);
         try {
-          tokens = await tb.getBalance(this.account.address);
+          tokens = await tb.getBalance(this.account.address, true, true, true, {
+            gas: '0x11e1a300'
+          });
           tokens = tokens.map(token => {
             token.address = token.addr;
             delete token.addr;
             return token;
+          });
+
+          const filteredNetwork = this.network.type.tokens.filter(token => {
+            const found = tokens.find(item => {
+              return (
+                this.web3.utils.toChecksumAddress(item.address) ===
+                this.web3.utils.toChecksumAddress(token.address)
+              );
+            });
+
+            if (!found) return token;
+          });
+          tokens = tokens.concat(filteredNetwork).map(item => {
+            if (!item.hasOwnProperty('balance')) {
+              item.balance = 'Load';
+            }
+            return item;
           });
         } catch (e) {
           tokens = this.network.type.tokens.map(token => {
@@ -292,6 +558,7 @@ export default {
           return token;
         });
       }
+      this.receivedTokens = true;
       return tokens;
     },
     async setNonce() {
@@ -299,45 +566,54 @@ export default {
         nonce: '0x00',
         timestamp: 0
       });
-      await this.web3.eth.getTransactionCount(this.account.address);
+      const fetchedNonce = await this.web3.eth
+        .getTransactionCount(this.account.address)
+        .catch(e => {
+          Toast.responseHandler(e, Toast.ERROR);
+        });
+      this.nonce = new BigNumber(fetchedNonce).toString();
     },
     async getTokenBalance(token) {
-      const web3 = this.web3;
-      const contractAbi = [
-        {
-          name: 'balanceOf',
-          type: 'function',
-          constant: true,
-          inputs: [{ name: 'address', type: 'address' }],
-          outputs: [{ name: 'out', type: 'uint256' }]
-        }
-      ];
-      const contract = new web3.eth.Contract(contractAbi);
-      const data = contract.methods.balanceOf(this.account.address).encodeABI();
-      const balance = await web3.eth
-        .call({
-          to: token.address,
-          data: data
-        })
-        .then(res => {
-          let tokenBalance;
-          if (Number(res) === 0 || res === '0x') {
-            tokenBalance = 0;
-          } else {
-            const denominator = web3.utils
-              .toBN(10)
-              .pow(web3.utils.toBN(token.decimals));
-            tokenBalance = web3.utils
-              .toBN(res)
-              .div(denominator)
-              .toString(10);
+      try {
+        const web3 = this.web3;
+        const contractAbi = [
+          {
+            name: 'balanceOf',
+            type: 'function',
+            constant: true,
+            inputs: [{ name: 'address', type: 'address' }],
+            outputs: [{ name: 'out', type: 'uint256' }]
           }
-          return tokenBalance;
-        })
-        .catch(e => {
-          Toast.responseHandler(e, false);
-        });
-      return balance;
+        ];
+        const contract = new web3.eth.Contract(contractAbi);
+        if (this.account.address && this.account.address !== '') {
+          const data = contract.methods
+            .balanceOf(this.account.address)
+            .encodeABI();
+          const balance = await web3.eth
+            .call({
+              to: token.address,
+              data: data
+            })
+            .then(res => {
+              let tokenBalance;
+              if (Number(res) === 0 || res === '0x') {
+                tokenBalance = '0';
+              } else {
+                const denominator = new BigNumber(10).pow(token.decimals);
+                tokenBalance = new BigNumber(res).div(denominator).toString();
+              }
+              return tokenBalance;
+            })
+            .catch(e => {
+              Toast.responseHandler(e, false);
+            });
+
+          return balance;
+        }
+      } catch (e) {
+        Toast.responseHandler(e, Toast.ERROR);
+      }
     },
     setCustomTokenStore() {
       const customTokenStore = store.get('customTokens');
@@ -349,7 +625,6 @@ export default {
       store.set('customTokens', customTokenStore);
     },
     async setTokens() {
-      const customStore = store.get('customTokens');
       this.tokens = [];
       let tokens = await this.fetchTokens();
       tokens = tokens
@@ -375,11 +650,31 @@ export default {
             symbol: token.symbol,
             website: token.website
           };
+
+          if (token.hasOwnProperty('logo')) {
+            convertedToken['logo'] = token.logo;
+          }
           return convertedToken;
         });
-
-      this.tokens = tokens.sort(sortByBalance);
-
+      this.tokens = tokens
+        .sort((a, b) => {
+          const a1 = typeof a.balance,
+            b1 = typeof b.balance;
+          return a1 > b1
+            ? -1
+            : a1 < b1
+            ? 1
+            : a.balance < b.balance
+            ? -1
+            : a.balance > b.balance
+            ? 1
+            : 0;
+        })
+        .sort(sortByBalance);
+      this.setTokensWithBalance();
+    },
+    setTokensWithBalance() {
+      const customStore = store.get('customTokens');
       if (
         customStore !== undefined &&
         customStore[this.network.type.name] !== undefined &&
@@ -397,13 +692,17 @@ export default {
             store.set('customTokens', customStore);
             resolve(res);
           });
-        }).then(res => {
-          const allTokens = this.tokens
-            .filter(token => token.balance > 0)
-            .concat(res.filter(token => token.balance > 0));
-          this.tokensWithBalance = allTokens;
-          this.receivedTokens = true;
-        });
+        })
+          .then(res => {
+            const allTokens = this.tokens
+              .filter(token => token.balance > 0)
+              .concat(res.filter(token => token.balance > 0));
+            this.tokensWithBalance = allTokens;
+            this.receivedTokens = true;
+          })
+          .catch(e => {
+            Toast.responseHandler(e, Toast.ERROR);
+          });
       } else {
         this.receivedTokens = true;
         this.tokensWithBalance = this.tokens.filter(token => token.balance > 0);
@@ -414,7 +713,7 @@ export default {
         .getBlockNumber()
         .then(res => {
           this.blockNumber = res;
-          this.$store.dispatch('updateBlockNumber', res);
+          this.updateBlockNumber(res);
         })
         .catch(e => {
           Toast.responseHandler(e, Toast.ERROR);
@@ -422,53 +721,162 @@ export default {
     },
     getBalance() {
       const web3 = this.web3;
-      web3.eth
-        .getBalance(this.address.toLowerCase())
-        .then(res => {
-          this.balance = web3.utils.fromWei(res, 'ether');
-          this.$store.dispatch('setAccountBalance', res);
-        })
-        .catch(e => {
-          Toast.responseHandler(e, false);
-        });
+      if (this.address) {
+        web3.eth
+          .getBalance(this.address.toLowerCase())
+          .then(res => {
+            this.balance = web3.utils.fromWei(res, 'ether');
+            this.setAccountBalance(res);
+          })
+          .catch(e => {
+            Toast.responseHandler(e, Toast.ERROR);
+          });
+      }
     },
     checkWeb3WalletAddrChange() {
-      this.pollAddress = setInterval(() => {
-        window.web3.eth.getAccounts((err, accounts) => {
-          if (err) {
-            return Toast.responseHandler(err, false);
-          }
-          if (!accounts.length) {
-            return Toast.responseHandler(
-              new Error('Please unlock metamask'),
-              Toast.ERROR
-            );
-          }
-          const address = accounts[0];
-          if (
-            this.account.address !== null &&
-            address.toLowerCase() !== this.account.address.toLowerCase()
-          ) {
-            const wallet = new Web3Wallet(address);
-            this.$store.dispatch('decryptWallet', [
-              wallet,
-              window.web3.currentProvider
-            ]);
-            clearInterval(this.pollAddress);
+      const web3 = this.web3;
+      try {
+        window.ethereum.on('accountsChanged', account => {
+          if (account.length > 1) {
+            const wallet = new Web3Wallet(account[0]);
+            this.decryptWallet([wallet, web3]);
           }
         });
-      }, 500);
+      } catch (e) {
+        Toast.responseHandler(e, Toast.ERROR);
+      }
+    },
+    checkAndSetNetwork(id) {
+      if (this.network.type.chainID.toString() !== `${id}`) {
+        Object.keys(networkTypes).some(net => {
+          if (
+            networkTypes[net].chainID.toString() === `${id}` &&
+            this.Networks[net]
+          ) {
+            this.switchNetwork(this.Networks[net][0]);
+            return true;
+          }
+        });
+      }
     },
     matchWeb3WalletNetwork() {
+      this.web3.eth.net.getId().then(id => {
+        this.checkAndSetNetwork(id);
+      });
+      window.ethereum.on('networkChanged', netId => {
+        this.setupOnlineEnvironment();
+        this.checkAndSetNetwork(netId);
+      });
+    },
+    setupOnlineEnvironment: web3Utils._.debounce(function () {
+      this.clearIntervals();
+      if (store.get('customTokens') === undefined) {
+        store.set('customTokens', {});
+        this.setCustomTokenStore();
+      } else {
+        this.setCustomTokenStore();
+      }
+      if (this.online) {
+        if (this.account.address !== null) {
+          if (this.account.identifier === WEB3_TYPE) {
+            if (window.ethereum.isMetaMask || window.ethereum.isMew) {
+              this.checkWeb3WalletAddrChange();
+              this.matchWeb3WalletNetwork();
+            } else {
+              this.web3WalletPollNetwork();
+              this.web3WalletPollAddress();
+            }
+          }
+          this.callSetENS();
+          if (this.network.type.name === ETH.name) this.fetchNames();
+          this.getBlock();
+          this.getBalance();
+          this.setTokens();
+          this.setNonce();
+          this.getHighestGas();
+          this.getBlockUpdater().then(_sub => {
+            this.pollBlock = _sub;
+          });
+        }
+      } else {
+        this.receivedTokens = true;
+        this.tokens = this.network.type.tokens;
+      }
+    }),
+    async getBlockUpdater() {
+      return new Promise(resolve => {
+        let subscription = this.web3.eth
+          .subscribe('newBlockHeaders', err => {
+            if (err) {
+              subscription = setInterval(this.getBlock, 14000);
+            }
+            resolve(subscription);
+          })
+          .on('data', headers => {
+            this.blockNumber = headers.number;
+          });
+      });
+    },
+    getHighestGas() {
+      const gasType = store.get('gasPriceType') || 'economy';
+      const getCustomGas = getOther();
+      this.web3.eth
+        .getGasPrice()
+        .then(res => {
+          const parsedGas = getEconomy(
+            this.web3.utils.fromWei(res, 'gwei')
+          ).toString();
+          if (gasType === 'economy') {
+            this.setGasPrice(parsedGas);
+          } else if (gasType === 'other' && getCustomGas) {
+            this.setGasPrice(getCustomGas);
+          } else {
+            this.setGasPrice(getGasBasedOnType(parsedGas));
+          }
+          this.highestGas = parsedGas;
+          this.setEthGasPrice(this.highestGas);
+        })
+        .catch(e => {
+          Toast.responseHandler(e, Toast.ERROR);
+        });
+    },
+    callSetENS() {
+      if (this.network.type.ens) {
+        const newEns = new ENS(
+          this.web3.currentProvider,
+          this.network.type.ens.registry
+        );
+        this.setENS(newEns);
+      } else {
+        this.setENS(null);
+      }
+    },
+    clearIntervals() {
+      if (this.pollBlock.unsubscribe) this.pollBlock.unsubscribe();
+      else clearInterval(this.pollBlock);
+      clearInterval(this.pollNetwork);
+      clearInterval(this.pollAddress);
+    },
+    web3WalletPollNetwork() {
+      if (!window.web3.eth) {
+        Toast.responseHandler(
+          new Error(this.$t('interface.web3-not-found')),
+          Toast.ERROR
+        );
+      }
+      if (
+        !window.web3.eth.net ||
+        typeof window.web3.eth.net.getId !== 'function'
+      )
+        return;
       this.pollNetwork = setInterval(() => {
-        if (!window.web3.eth.net) return;
         window.web3.eth.net
           .getId()
-          .then(netId => {
-            if (this.network.type.chainID.toString() !== netId) {
+          .then(id => {
+            if (this.network.type.chainID.toString() !== id) {
               Object.keys(networkTypes).some(net => {
-                if (networkTypes[net].chainID === netId && this.Networks[net]) {
-                  this.$store.dispatch('switchNetwork', this.Networks[net][0]);
+                if (networkTypes[net].chainID === id && this.Networks[net]) {
+                  this.switchNetwork(this.Networks[net]);
                   clearInterval(this.pollNetwork);
                   return true;
                 }
@@ -480,56 +888,40 @@ export default {
           });
       }, 500);
     },
-    clearIntervals() {
-      clearInterval(this.pollNetwork);
-      clearInterval(this.pollBlock);
-      clearInterval(this.pollAddress);
-    },
-    setupOnlineEnvironment: web3Utils._.debounce(function() {
-      this.clearIntervals();
-      if (store.get('customTokens') === undefined) {
-        store.set('customTokens', {});
-        this.setCustomTokenStore();
-      } else {
-        this.setCustomTokenStore();
-      }
-      if (this.online === true) {
-        if (this.account.address !== null) {
-          if (this.account.identifier === WEB3_TYPE) {
-            this.checkWeb3WalletAddrChange();
-            this.matchWeb3WalletNetwork();
-          }
-          this.setENS();
-          this.getBlock();
-          this.getBalance();
-          this.pollBlock = setInterval(this.getBlock, 14000);
-          this.setTokens();
-          this.setNonce();
-          this.getHighestGas();
+    web3WalletPollAddress() {
+      this.pollAddress = setInterval(() => {
+        if (!window.web3.eth) {
+          Toast.responseHandler(
+            new Error(this.$t('interface.web3-not-found')),
+            Toast.ERROR
+          );
+          clearInterval(this.pollAddress);
         }
-      }
-    }),
-    getHighestGas() {
-      this.web3.eth
-        .getGasPrice()
-        .then(res => {
-          this.highestGas = new BigNumber(
-            this.web3.utils.fromWei(res, 'gwei')
-          ).toNumber();
-        })
-        .catch(e => {
-          Toast.responseHandler(e, true);
+
+        window.web3.eth.getAccounts((err, accounts) => {
+          if (err) {
+            Toast.responseHandler(err, false);
+            clearInterval(this.pollAddress);
+          }
+          if (!accounts.length) {
+            Toast.responseHandler(
+              new Error('Please make sure that your Web3 Wallet is unlocked'),
+              Toast.ERROR
+            );
+            clearInterval(this.pollAddress);
+          }
+          const address = accounts[0];
+
+          if (
+            this.account.address !== null &&
+            address.toLowerCase() !== this.account.address.toLowerCase()
+          ) {
+            const wallet = new Web3Wallet(address);
+            this.decryptWallet([wallet, window.web3.currentProvider]);
+            clearInterval(this.pollAddress);
+          }
         });
-    },
-    setENS() {
-      if (this.network.type.ens) {
-        this.$store.dispatch(
-          'setENS',
-          new ENS(this.web3.currentProvider, this.network.type.ens.registry)
-        );
-      } else {
-        this.$store.dispatch('setENS', null);
-      }
+      }, 500);
     }
   }
 };

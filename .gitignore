@@ -8,7 +8,6 @@ selenium-debug.log
 
 # Editor directories and files
 .idea
-.vscode
 *.suo
 *.ntvs*
 *.njsproj
@@ -17,6 +16,7 @@ selenium-debug.log
 .config
 /tests/unit/coverage/
 release
+chrome-extension
 
 # Generated files
-/src/darklist/
+src/_generated

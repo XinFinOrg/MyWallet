@@ -2,25 +2,37 @@
   <div>
     <b-modal
       ref="confirmCollection"
-      :title="`Confirmation (Total of ${unSignedArray.length} transactions)`"
+      :title="
+        $t('confirmation.confirm-transactions', {
+          unSignedArray: unSignedArray.length
+        })
+      "
       hide-footer
       centered
       class="bootstrap-modal-wide confirmation-modal nopadding"
+      static
+      lazy
     >
       <div class="modal-content">
         <div class="network-info-container">
           <p>
-            <span>{{ $t('interface.network') }}</span>
-            {{ network.type.name }} by {{ network.service }}
+            <span>{{ $t('common.network') }}</span>
+            {{ network.type.name }} {{ $t('common.by') }} {{ network.service }}
           </p>
           <div>
             <div class="line" />
           </div>
           <p>
-            <span>{{ $t('confirmation.txTotal') }}:</span>
+            <span>{{ $t('confirmation.tx-total') }}:</span>
             {{ txTotal }}
-            {{ network.type.name }}
+            {{ network.type.currencyName }}
           </p>
+        </div>
+        <div v-if="showGasWarning" class="gas-price-warning">
+          {{ $t('errorsGlobal.high-gas-limit-warning') }}
+        </div>
+        <div v-else-if="showCollectionLowGasWarning" class="gas-price-warning">
+          {{ $t('errorsGlobal.low-gas-price') }}
         </div>
         <div class="modal-content-body">
           <div
@@ -30,14 +42,14 @@
           >
             <div v-b-toggle.prevent="`accordion${idx}`" class="header">
               <div class="header-item">
-                <img :src="network.type.icon ? network.type.icon : ''" />
+                <img :src="network.type.icon ? network.type.icon : ''" alt />
                 <div>
                   <p>
                     - {{ web3.utils.hexToNumberString(item.value) }}
-                    <span>{{ network.type.name }}</span>
+                    <span>{{ network.type.currencyName }}</span>
                   </p>
                   <div>
-                    <span>{{ $t('common.from') }}</span>
+                    <span>{{ $t('swap.from') }}</span>
                     {{ account.address | concatAddr }}
                   </div>
                 </div>
@@ -46,14 +58,14 @@
                 v-show="item.to !== '' && item.to !== undefined"
                 class="direction"
               >
-                <img src="~@/assets/images/icons/right-arrow.svg" />
+                <img alt src="~@/assets/images/icons/right-arrow.svg" />
               </div>
               <div class="header-item">
-                <img :src="network.type.icon ? network.type.icon : ''" />
+                <img :src="network.type.icon ? network.type.icon : ''" alt />
                 <div>
                   <p>
                     + {{ web3.utils.hexToNumberString(item.value) }}
-                    <span>{{ network.type.name }}</span>
+                    <span>{{ network.type.currencyName }}</span>
                   </p>
                   <div>
                     <span>{{ $t('common.to') }}</span>
@@ -68,26 +80,22 @@
             </div>
             <b-collapse :id="`accordion${idx}`" class="body">
               <div class="body-item">
-                <span class="item-title">{{ $t('common.gasLimit') }}t</span>
+                <span class="item-title">{{ $t('common.gas.limit') }}t</span>
                 <span>{{ web3.utils.hexToNumberString(item.gas) }}</span>
               </div>
               <div class="body-item">
-                <span class="item-title">{{ $t('common.gasPrice') }}</span>
+                <span class="item-title">{{ $t('common.gas.price') }}</span>
                 <span>
-                  {{
-                    web3.utils.hexToNumberString(
-                      web3.utils.fromWei(item.gasPrice, 'gwei')
-                    )
-                  }}
-                  Gwei
+                  {{ web3.utils.fromWei(item.gasPrice, 'gwei') }}
+                  {{ $t('common.gas.gwei') }}
                 </span>
               </div>
               <div class="body-item">
-                <span class="item-title">Nonce</span>
+                <span class="item-title">{{ $t('sendTx.nonce') }}</span>
                 <span>{{ web3.utils.hexToNumberString(item.nonce) }}</span>
               </div>
               <div class="body-item">
-                <span class="item-title">{{ $t('common.data') }}</span>
+                <span class="item-title">{{ $t('sendTx.data') }}</span>
                 <span class="data-string">{{ item.input || item.data }}</span>
               </div>
             </b-collapse>
@@ -106,49 +114,34 @@
               ]"
               @click="sendBatchTransactions"
             >
-              {{ buttonText }}
+              {{ $t(buttonText) }}
             </div>
             <div
               v-show="sending"
               class="submit-button large-round-button-green-filled clickable disabled"
             >
-              {{ $t('common.waitingForHash') }}
+              {{ $t('confirmation.waiting-for-hash') }}
               <i class="fa fa-spinner fa-spin" />
-            </div>
-            <div class="tooltip-box-2">
-              <b-btn id="exPopover9">
-                <img class="icon" src="~@/assets/images/icons/qr-code.svg" />
-              </b-btn>
-              <b-popover
-                target="exPopover9"
-                triggers="hover focus"
-                placement="top"
-              >
-                <div class="qrcode-contents">
-                  <p class="qrcode-title">
-                    {{ $t('confirmation.scanQrCode') }}
-                  </p>
-                  <div class="qrcode-block">
-                    <qrcode :options="{ size: 100 }" value="Hello, World!" />
-                  </div>
-                  <p class="qrcode-helper">What is that?</p>
-                </div>
-              </b-popover>
             </div>
           </div>
         </div>
+        <p class="learn-more">
+          {{ $t('common.have-issues') }}
+          <a
+            href="https://howto.xinfin.org/XinFinWallet/features/"
+            target="_blank"
+            rel="noopener noreferrer"
+            >{{ $t('common.learn-more') }}</a
+          >
+        </p>
       </div>
     </b-modal>
   </div>
 </template>
 <script>
-import AddressBlock from '../AddressBlock';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 
 export default {
-  components: {
-    'address-block': AddressBlock
-  },
   props: {
     unSignedArray: {
       type: Array,
@@ -169,19 +162,23 @@ export default {
     isHardwareWallet: {
       type: Boolean,
       default: false
+    },
+    showGasWarning: {
+      type: Boolean,
+      default: false
+    },
+    showCollectionLowGasWarning: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
-    ...mapGetters({
-      web3: 'web3',
-      network: 'network',
-      account: 'account'
-    }),
+    ...mapState('main', ['web3', 'network', 'account']),
     buttonText() {
       if (!this.allSigned && this.isHardwareWallet) {
-        return this.$t('confirmation.approveOnDevice');
+        return 'confirmation.approve-on-device';
       }
-      return this.$t('common.confirmAndSend');
+      return 'sendTx.confirmation.button';
     },
     allSigned() {
       if (this.signedArray.length === 0) return false;

@@ -1,35 +1,44 @@
 <template>
   <b-modal
     ref="signedTx"
-    :title="$t('interface.signedTx')"
+    :title="$t('sendTx.signed.tx')"
     hide-footer
     class="bootstrap-modal signed-tx-modal"
+    static
+    lazy
   >
     <div class="d-block">
       <div class="title-block">
-        <h4 class="block-title">{{ $t('interface.signedTx') }}</h4>
+        <h4 class="block-title">{{ $t('sendTx.signed.tx') }}</h4>
       </div>
       <div class="signed-tx-container">
         <code>{{ JSON.parse(signedTx).rawTransaction }}</code>
         <input
           ref="signedTxInput"
-          :value="signedTx"
-          style="position: absolute; top: 0; opacity: 0;"
+          :value="JSON.parse(signedTx).rawTransaction"
+          style="position: absolute; top: 0; opacity: 0"
           autocomplete="off"
         />
       </div>
       <div class="scan-download-container">
-        <h4 class="block-title">Scan QR code</h4>
+        <h4 class="block-title">{{ $t('sendTx.signed.scan') }}</h4>
         <div v-if="signedTx !== ''" class="scan-download-items">
           <qrcode
             :value="JSON.parse(signedTx).rawTransaction"
             :options="{ size: 200 }"
-          />or <a :href="jsonFile" :download="jsonFileName">Download JSON</a>
+            head
+          />{{ $t('sendTx.signed.or') }}
+          <a
+            :href="jsonFile"
+            :download="jsonFileName"
+            rel="noopener noreferrer"
+            >{{ $t('sendTx.signed.download') }}</a
+          >
         </div>
       </div>
       <div class="raw">
         <div class="title-block">
-          <h4 class="block-title">{{ $t('interface.raw') }}</h4>
+          <h4 class="block-title">{{ $t('sendTx.signed.raw') }}</h4>
           <div class="sliding-switch-white">
             <label class="switch">
               <input type="checkbox" @click="showRaw = !showRaw" />
@@ -46,7 +55,7 @@
       <b-btn
         class="mid-round-button-green-filled close-button"
         @click="copyAndContinue"
-        >{{ $t('interface.copyAndCont') }}</b-btn
+        >{{ $t('sendTx.signed.button-copy-cont') }}</b-btn
       >
     </div>
   </b-modal>
@@ -62,13 +71,13 @@ export default {
     },
     rawTx: {
       type: Object,
-      default: function() {
+      default: function () {
         return {};
       }
     },
     pathUpdate: {
       type: Function,
-      default: function() {}
+      default: function () {}
     }
   },
   data() {
@@ -82,6 +91,7 @@ export default {
     signedTx(newVal) {
       const parsedVal = JSON.parse(newVal);
       const rawTx = this.rawTx;
+      console.log(rawTx,"rawTx")
       delete rawTx['generateOnly'];
       const txObj = Object.assign({}, parsedVal.tx, rawTx);
       delete parsedVal['tx'];

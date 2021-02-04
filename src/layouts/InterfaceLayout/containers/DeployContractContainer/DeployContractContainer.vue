@@ -1,11 +1,11 @@
 <template>
   <div class="deploy-contract-container">
-    <interface-container-title :title="$t('common.depContract')" />
+    <interface-container-title :title="$t('contract.deploy')" />
     <div class="content-container">
       <div class="send-form">
         <div class="title-container">
           <div class="title">
-            <h4>{{ $t('interface.byteCode') }}</h4>
+            <h4>{{ $t('contract.byte-code') }}</h4>
             <div class="copy-buttons">
               <button class="title-button" @click="deleteInput('bytecode')">
                 {{ $t('common.clear') }}
@@ -35,7 +35,7 @@
       <div class="send-form">
         <div class="title-container">
           <div class="title">
-            <h4>{{ $t('interface.abiJsonInt') }}</h4>
+            <h4>{{ $t('contract.abi-json-int') }}</h4>
             <div class="copy-buttons">
               <button class="title-button" @click="deleteInput('abi')">
                 {{ $t('common.clear') }}
@@ -62,7 +62,7 @@
         <div class="title-container">
           <div class="title">
             <h4>
-              {{ $t('interface.constructor') }}
+              {{ $t('contract.constructor') }}
               {{ abiConstructor ? 'Inputs' : 'Input' }}:
             </h4>
           </div>
@@ -79,8 +79,8 @@
           <div class="the-form contract-name">
             <input
               v-if="getType(input.type).type !== 'radio'"
-              :type="getType(input.type).type"
               v-model="inputs[input.name]"
+              :type="getType(input.type).type"
             />
             <div
               v-if="getType(input.type).type === 'radio'"
@@ -93,7 +93,7 @@
                   :name="input.name"
                   type="radio"
                 />
-                <label :for="input.name">True</label>
+                <label :for="input.name">{{ $t('contract.true') }}</label>
               </div>
               <div>
                 <input
@@ -103,7 +103,7 @@
                   type="radio"
                   checked
                 />
-                <label :for="input.name">False</label>
+                <label :for="input.name">{{ $t('contract.false') }}</label>
               </div>
             </div>
             <i
@@ -128,24 +128,29 @@
       >
         <div class="title-container">
           <div class="title">
-            <h4>Value in XDC:</h4>
+            <h4>{{ $t('contract.value-in-eth') }}:</h4>
           </div>
         </div>
         <div class="the-form contract-name">
-          <input ref="value" v-model="value" placeholder="Value in XDC" />
+          <input
+            ref="value"
+            v-model="value"
+            :placeholder="$t('contract.value-in-eth')"
+            step="any"
+          />
         </div>
       </div>
       <div class="send-form">
         <div class="title-container">
           <div class="title">
-            <h4>{{ $t('interface.contractName') }}</h4>
+            <h4>{{ $t('contract.name') }}</h4>
           </div>
         </div>
         <div class="the-form contract-name">
           <input
             ref="contractName"
             v-model="contractName"
-            placeholder="Name for the contract"
+            :placeholder="$t('contract.name-for-contract')"
           />
         </div>
       </div>
@@ -159,35 +164,30 @@
             ]"
             @click="confirmationModalOpen"
           >
-            {{ $t('common.signTx') }}
+            {{ $t('contract.sign-tx') }}
           </div>
         </div>
-        <interface-bottom-text
-          :link-text="$t('interface.helpCenter')"
-          :question="$t('interface.haveIssues')"
-          link="https://xinfin.network"
-        />
+        <div class="clear-all-btn" @click="clear()">
+          {{ $t('common.clear-all') }}
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import InterfaceBottomText from '@/components/InterfaceBottomText';
 import InterfaceContainerTitle from '../../components/InterfaceContainerTitle';
 import { Misc, Toast } from '@/helpers';
-import { isAddress } from '@/helpers/addressUtils';
 import ethUnit from 'ethjs-unit';
-import EthTx from 'ethereumjs-tx';
+import { Transaction } from 'ethereumjs-tx';
 import BigNumber from 'bignumber.js';
 import store from 'store';
-import { generateAddress, bufferToHex } from 'ethereumjs-util';
-import { mapGetters } from 'vuex';
+import { generateAddress, bufferToHex, toBuffer } from 'ethereumjs-util';
+import { mapState } from 'vuex';
 
 export default {
   name: 'DeployContract',
   components: {
-    'interface-bottom-text': InterfaceBottomText,
     'interface-container-title': InterfaceContainerTitle
   },
   data() {
@@ -202,13 +202,12 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      gasPrice: 'gasPrice',
-      web3: 'web3',
-      network: 'network'
-    }),
+    ...mapState('main', ['gasPrice', 'web3', 'network']),
     isValidAbi() {
-      return Misc.isJson(this.abi);
+      return Misc.isJson(this.abi) && Array.isArray(JSON.parse(this.abi));
+    },
+    txValue() {
+      return Misc.sanitizeHex(ethUnit.toWei(this.value, 'ether').toString(16));
     },
     abiConstructor() {
       let _constructor = null;
@@ -231,37 +230,60 @@ export default {
       }
       return _constructor;
     },
+    rawByteCode() {
+      try {
+        const remixBytecode = JSON.parse(this.bytecode);
+        if (
+          remixBytecode.object &&
+          Misc.validateHexString(remixBytecode.object)
+        )
+          return '0x' + remixBytecode.object;
+      } catch (err) {
+        return this.bytecode;
+      }
+      return null;
+    },
     isValidByte() {
       return (
-        this.bytecode &&
-        this.bytecode.substr(0, 2) === '0x' &&
-        Misc.validateHexString(this.bytecode)
+        this.rawByteCode &&
+        this.rawByteCode.substr(0, 2) === '0x' &&
+        Misc.validateHexString(this.rawByteCode)
       );
     },
     txByteCode() {
-      return Misc.sanitizeHex(this.bytecode);
+      return Misc.sanitizeHex(this.rawByteCode);
     },
     deployArgs() {
       const _deployArgs = [];
       if (this.abiConstructor) {
         this.abiConstructor.inputs.forEach(item => {
-          _deployArgs.push(this.inputs[item.name]);
+          if (item.type.includes('[') && item.type.includes(']')) {
+            const inputs = this.inputs.hasOwnProperty(item.name)
+              ? this.inputs[item.name].replace(/\s/g, '')
+              : '';
+            const arr = inputs.split(',');
+            _deployArgs.push(arr);
+          } else {
+            _deployArgs.push(this.inputs[item.name]);
+          }
         });
       }
       return _deployArgs;
     },
     txData() {
-      return new this.web3.eth.Contract(JSON.parse(this.abi))
-        .deploy({ data: this.txByteCode, arguments: this.deployArgs })
-        .encodeABI();
+      return this.abi !== ''
+        ? new this.web3.eth.Contract(JSON.parse(this.abi))
+            .deploy({ data: this.txByteCode, arguments: this.deployArgs })
+            .encodeABI()
+        : '0x';
     },
     allValid() {
       let _allvalid = true;
       if (this.abiConstructor) {
-        this.abiConstructor.inputs.forEach(item => {
+        this.abiConstructor.inputs.forEach((item, idx) => {
           if (
             !this.isValidInput(
-              this.inputs[item.name],
+              this.deployArgs[idx],
               this.getType(item.type).solidityType
             )
           )
@@ -272,39 +294,39 @@ export default {
     }
   },
   methods: {
-    isValidInput(value, solidityType) {
-      if (!value) value = '';
-      if (solidityType === 'uint') return value != '' && !isNaN(value);
-      if (solidityType === 'address') return isAddress(value);
-      if (solidityType === 'string') return true;
-      if (solidityType === 'bytes')
-        return value.substr(0, 2) == '0x' && Misc.validateHexString(value);
-      if (solidityType === 'bool')
-        return typeof value == typeof true || value === '';
-      return false;
+    clear() {
+      this.bytecode = '';
+      this.abi = '';
+      this.contractName = '';
     },
+    isValidInput: Misc.isContractArgValid,
     getType: Misc.solidityType,
     async sendTransaction() {
       try {
+        await this.estimateGas();
         const web3 = this.web3;
         const coinbase = await web3.eth.getCoinbase();
         const nonce = await web3.eth.getTransactionCount(coinbase);
-        const _tx = new EthTx({
+        const _tx = new Transaction({
           nonce: nonce,
+          value: this.txValue,
           gasPrice: Misc.sanitizeHex(
             ethUnit.toWei(this.gasPrice, 'gwei').toString(16)
           ),
-          gasLimit: Misc.sanitizeHex(new BigNumber(4700000).toString(16)),
+          gasLimit: Misc.sanitizeHex(new BigNumber(this.gasLimit).toString(16)),
           data: this.txData
         });
         const json = _tx.toJSON(true);
         delete json.to;
         json.from = coinbase;
-        // console.log(coinbase,"JSON is", json);
-        this.web3.eth.sendTransaction(json);
-        const contractAddr = bufferToHex(generateAddress(coinbase, nonce));
-        // console.log("Contract address", contractAddr);
+        this.web3.eth.sendTransaction(json).catch(err => {
+          Toast.responseHandler(err, Toast.ERROR);
+        });
+        const contractAddr = bufferToHex(
+          generateAddress(toBuffer(coinbase), toBuffer(nonce))
+        );
         this.pushContractToStore(contractAddr);
+        this.clear();
       } catch (e) {
         Toast.responseHandler(e, false);
       }
@@ -340,7 +362,8 @@ export default {
       const coinbase = await this.web3.eth.getCoinbase();
       const params = {
         from: coinbase,
-        data: this.txData
+        data: this.txData,
+        value: this.txValue
       };
       this.gasLimit = await this.web3.eth.estimateGas(params).catch(err => {
         Toast.responseHandler(err, Toast.WARN);

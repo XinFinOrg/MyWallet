@@ -1,35 +1,33 @@
 <template>
   <div class="home">
     <top-banner />
-    <about />
     <social />
   </div>
 </template>
 
 <script>
 import AboutContainer from '@/containers/AboutContainer';
+import FaqsContainer from '@/containers/FaqsContainer';
 import Social from './components/Social';
 import TopBanner from './components/TopBanner';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 
 export default {
   name: 'HomeContainer',
   components: {
     'top-banner': TopBanner,
     about: AboutContainer,
+    faqs: FaqsContainer,
     social: Social
   },
   data() {
     return {
       address: '',
-      resolvedAddress: '',
-      message: 'pogchamp'
+      resolvedAddress: ''
     };
   },
   computed: {
-    ...mapGetters({
-      online: 'online'
-    })
+    ...mapState('main', ['online'])
   }
 };
 </script>

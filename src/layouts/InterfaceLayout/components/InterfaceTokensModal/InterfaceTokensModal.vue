@@ -1,43 +1,58 @@
 <template lang="html">
   <div>
     <b-modal
-      ref="token"
+      ref="tokenModal"
+      :title="$t('interface.tokens.modal.title')"
       hide-footer
       class="bootstrap-modal nopadding max-height-1"
       centered
-      title="Add Custom Token"
+      static
+      lazy
       @hidden="resetCompState"
     >
       <form class="tokens-modal-body" @keydown.enter.prevent>
         <div>
           <input
-            v-validate="'required'"
             v-model="tokenAddress"
+            v-validate="'required'"
+            :class="[
+              'custom-input-text-1',
+              tokenAddress !== '' && !validAddress ? 'invalid-address' : ''
+            ]"
+            :placeholder="$t('interface.tokens.modal.ph-contract-addr')"
             name="Address"
             type="text"
-            placeholder="Token Contract Address"
-            class="custom-input-text-1"
           />
+          <span
+            v-show="tokenAddress !== '' && !validAddress"
+            class="error-message"
+          >
+            {{ $t('interface.tokens.modal.error.addr') }}
+          </span>
           <input
-            v-validate="'required'"
             v-model="tokenSymbol"
+            :placeholder="$t('interface.tokens.modal.ph-symbol')"
             name="Symbol"
             type="text"
-            placeholder="Token Symbol"
             class="custom-input-text-1"
           />
           <input
-            v-validate="'required|numeric'"
             v-model="tokenDecimal"
+            :placeholder="$t('interface.tokens.modal.ph-decimals')"
             name="Decimal"
             type="number"
             min="0"
             max="18"
-            placeholder="Decimals"
             class="custom-input-text-1"
           />
+          <span
+            v-show="tokenDecimal < 0 || tokenDecimal > 18"
+            class="error-message"
+          >
+            {{ $t('interface.tokens.modal.error.decimals') }}
+          </span>
         </div>
-        <div>
+        <div class="button-block">
           <button
             :class="[
               allFieldsValid ? '' : 'disabled',
@@ -45,12 +60,12 @@
             ]"
             @click.prevent="addToken(tokenAddress, tokenSymbol, tokenDecimal)"
           >
-            {{ $t('interface.save') }}
+            {{ $t('common.save') }}
           </button>
           <interface-bottom-text
-            :link-text="$t('interface.helpCenter')"
-            :question="$t('interface.dontKnow')"
-            link="https://xinfin.network"
+            :link-text="$t('common.help-center')"
+            :question="$t('common.dont-know')"
+            link="https://howto.xinfin.org/XinFinWallet/features"
           />
         </div>
       </form>
@@ -60,7 +75,7 @@
 
 <script>
 import InterfaceBottomText from '@/components/InterfaceBottomText';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import { isAddress } from '@/helpers/addressUtils';
 
 export default {
@@ -70,7 +85,7 @@ export default {
   props: {
     addToken: {
       type: Function,
-      default: function() {}
+      default: function () {}
     }
   },
   data() {
@@ -82,12 +97,9 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({
-      web3: 'web3'
-    }),
+    ...mapState('main', ['web3']),
     allFieldsValid() {
-      if (!isAddress(this.tokenAddress) || this.tokenAddress === '')
-        return false;
+      if (!this.validAddress) return false;
       if (this.tokenSymbol === '') return false;
       if (
         this.tokenDecimal < 0 ||
@@ -106,12 +118,15 @@ export default {
   },
   watch: {
     tokenAddress(newVal) {
-      if (newVal !== '' && newVal.length !== 0 && isAddress(newVal)) {
-        this.validAddress = true;
-      } else {
-        this.validAddress = false;
-      }
-      this.toAddress = newVal;
+      const strippedWhitespace = newVal.toLowerCase().trim();
+      const regTest = new RegExp(/[a-zA-Z0-9]/g);
+      this.validAddress =
+        regTest.test(strippedWhitespace) && isAddress(strippedWhitespace);
+      this.toAddress = strippedWhitespace;
+      this.tokenAddress = strippedWhitespace;
+    },
+    tokenSymbol(newVal) {
+      this.tokenSymbol = newVal.substr(0, 7);
     }
   },
   methods: {

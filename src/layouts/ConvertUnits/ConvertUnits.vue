@@ -2,12 +2,22 @@
   <div class="convert-units">
     <div class="wrap">
       <div class="page-container">
-        <div class="page-title"><page-title :options="titleOptions" /></div>
+        <div class="page-title">
+          <page-title
+            :options="{
+              title: $t('convertUnits.page.title'),
+              boldSubTitle: '',
+              textContent: [$t('convertUnits.page.desc')]
+            }"
+          />
+        </div>
 
         <div><unit-input :options="options" /></div>
 
         <div class="ether-unit-reference-guide">
-          <div class="block-title"><h3>Ether Unit Reference Guide</h3></div>
+          <div class="block-title">
+            <h3>{{ $t('convertUnits.title-refference') }}</h3>
+          </div>
 
           <div class="unit-table">
             <table>
@@ -33,22 +43,15 @@
 
 <script>
 import UnitInput from './components/UnitInput';
-import TitleTextContentsLayout from '@/layouts/InformationPages/Components/TitleTextContentsLayout';
+import PageTitleComponent from '@/components/PageTitleComponent';
 
 export default {
   components: {
     'unit-input': UnitInput,
-    'page-title': TitleTextContentsLayout
+    'page-title': PageTitleComponent
   },
   data() {
     return {
-      titleOptions: {
-        title: 'Convert Units',
-        boldSubTitle: '',
-        textContent: [
-          'Our helpful conversion tool and ether unit reference allow you to calculate the total cost of your transactions.'
-        ]
-      },
       etherUnitRef: [
         {
           name: 'Wei',

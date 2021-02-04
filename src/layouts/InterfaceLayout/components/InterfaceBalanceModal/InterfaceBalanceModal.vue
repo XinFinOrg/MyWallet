@@ -2,23 +2,26 @@
   <div class="modal-container">
     <b-modal
       ref="balance"
-      :title="$t('interface.balance')"
+      :title="$t('common.balance.string')"
       hide-footer
       centered
       class="bootstrap-modal balance nopadding"
+      static
+      lazy
     >
       <div class="content-block total-balance">
         <div class="flex-container">
-          <h4 class="modal-title">{{ $t('common.totalBalance') }}</h4>
+          <h4 class="modal-title">{{ $t('common.balance.total') }}</h4>
           <div class="margin-left-auto total-balance-amount">
-            <span>{{ balance }}</span> {{ network.type.name }}
+            <span>{{ balance }}</span>
+            {{ network.type.currencyName }}
           </div>
         </div>
       </div>
 
       <div class="content-block">
         <h4 class="equivalent-values-title">
-          {{ $t('interface.equivalentValues') }}
+          {{ $t('interface.check-balance.equivalent') }}
         </h4>
         <ul class="equivalent-values">
           <li v-for="ev in equivalentValues" :key="ev.key">
@@ -26,8 +29,9 @@
               :src="
                 require(`@/assets/images/currency/${ev.name.toLowerCase()}.svg`)
               "
+              alt
             />
-            <p>{{ ev.name }}</p>
+            <p class="ev-name">{{ ev.name }}</p>
             <p class="ev-value">{{ ev.value }}</p>
           </li>
         </ul>
@@ -37,7 +41,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import BigNumber from 'bignumber.js';
 export default {
   props: {
@@ -51,38 +55,33 @@ export default {
       equivalentValues: [
         {
           name: 'BTC',
-          value: '102.22453'
+          value: ''
         },
         {
-          name: 'ETHER',
-          value: '0.0000050200'
+          name: 'REP',
+          value: ''
         },
         {
-          name: 'XRP',
-          value: '0.0040400000'
+          name: 'CHF',
+          value: ''
         },
         {
-          name: 'USDT'
+          name: 'USD',
+          value: ''
         },
         {
           name: 'EUR',
-          value: '12410.22'
-        },
-        {
-          name: 'BCHABC',
-          value: '12410.22'
+          value: ''
         },
         {
           name: 'GBP',
-          value: '687867.53'
+          value: ''
         }
       ]
     };
   },
   computed: {
-    ...mapGetters({
-      network: 'network'
-    })
+    ...mapState('main', ['network', 'online'])
   },
   watch: {
     balance() {
@@ -95,28 +94,30 @@ export default {
 
   methods: {
     async fetchBalanceData() {
-      const newArr = [];
-      const url = 'https://api2.alphaex.net/convert/XDC';
-      const fetchValues = await fetch(url);
-      const values = await fetchValues.json();
-      delete values['lastCalled'];
-      Object.keys(values).forEach(item => {
-        if (
-          this.equivalentValues.find(curr => {
-            return curr.name === item;
-          })
-        ) {
-          const objectRes = {
-            name: item,
-            value: new BigNumber(this.balance)
-              .multipliedBy(new BigNumber(values[item]))
-              .decimalPlaces(18)
-              .toFixed()
-          };
-          newArr.push(objectRes);
-        }
-      });
-      this.equivalentValues = newArr;
+      if (this.online) {
+        const newArr = [];
+        const url = 'https://cryptorates.mewapi.io/convert/ETH';
+        const fetchValues = await fetch(url);
+        const values = await fetchValues.json();
+        delete values['lastCalled'];
+        Object.keys(values).forEach(item => {
+          if (
+            this.equivalentValues.find(curr => {
+              return curr.name === item;
+            })
+          ) {
+            const objectRes = {
+              name: item,
+              value: new BigNumber(this.balance)
+                .multipliedBy(new BigNumber(values[item]))
+                .decimalPlaces(18)
+                .toFixed()
+            };
+            newArr.push(objectRes);
+          }
+        });
+        this.equivalentValues = newArr;
+      }
     }
   }
 };

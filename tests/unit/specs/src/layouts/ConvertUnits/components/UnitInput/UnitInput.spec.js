@@ -28,6 +28,11 @@ describe('UnitInput.vue', () => {
     });
   });
 
+  afterEach(() => {
+    wrapper.destroy();
+    wrapper = null;
+  });
+
   it('should render correct valueLeft data', () => {
     expect(wrapper.vm.$el.querySelector('.block-left input').value).toEqual(
       String(wrapper.vm.$data.valueLeft)
@@ -38,9 +43,5 @@ describe('UnitInput.vue', () => {
     expect(wrapper.vm.$el.querySelector('.block-right input').value).toEqual(
       String(wrapper.vm.$data.valueRight)
     );
-  });
-
-  it('should render correct options data', () => {
-    // console.log(wrapper.vm.$el.querySelector('.block-right .select-block .dropdown-list-box'));
   });
 });

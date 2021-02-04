@@ -1,70 +1,120 @@
 <template>
   <b-modal
     ref="mewConnect"
-    :title="$t('accessWallet.mewConnectTitle')"
+    :title="$t('accessWallet.mobile-app.modal.title')"
     hide-footer
     class="bootstrap-modal nopadding modal-mew-connect"
     centered
+    static
+    lazy
   >
     <div class="modal-container">
-      <div class="modal-icon">
-        <qrcode :value="QrCode" :options="{ size: 200 }" />
-      </div>
-      <div class="d-block content-container text-center">
-        <h3 class="modal-large-text">
-          {{ $t('accessWallet.mewConnectDesc1') }}
+      <ipad-modal ref="ipadModal" />
+      <div class="text-center modal-title-block">
+        <h3>
+          {{ $t('accessWallet.mewconnect.scan') }}
         </h3>
+        <div>
+          <p>{{ $t('accessWallet.mewconnect.option-text') }}</p>
+          <i18n path="accessWallet.mewconnect.modal.text2" tag="p">
+            <a
+              slot="action"
+              class="download-now"
+              @click="downloadMEWWalletApp()"
+              >{{ $t('accessWallet.mewconnect.modal.download-now') }}</a
+            >
+          </i18n>
+        </div>
       </div>
-      <div class="appstore-button-container">
-        <a
-          href="https://itunes.apple.com/us/app/mewconnect/id1391097156?mt=8"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="~@/assets/images/icons/appstore.svg" height="35" />
-        </a>
-        <a
-          href="http://play.google.com/store/apps/details?id=com.myetherwallet.mewconnect"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="~@/assets/images/icons/google-play.svg" height="35" />
-        </a>
-        <p class="download-now">{{ $t('accessWallet.mewConnectDesc2') }}</p>
+      <div class="qr-code-container">
+        <qrcode :value="QrCode" :options="{ size: 150 }" />
+        <div class="instructions-container">
+          <i18n path="accessWallet.mewconnect.instructions.step1" tag="p">
+            <span slot="first">{{
+              $t('accessWallet.mewconnect.instructions.first')
+            }}</span>
+          </i18n>
+          <i18n path="accessWallet.mewconnect.instructions.step2" tag="p">
+            <i18n
+              slot="second"
+              path="accessWallet.mewconnect.instructions.second"
+              tag="span"
+            >
+              <span slot="icon-pos">
+                <img
+                  height="20"
+                  src="@/assets/images/icons/scan.svg"
+                  alt="camera"
+                />
+                {{ $t('accessWallet.mewconnect.instructions.icon-pos') }}</span
+              >
+            </i18n>
+          </i18n>
+          <i18n path="accessWallet.mewconnect.instructions.step3" tag="p">
+            <span slot="third"
+              >{{ $t('accessWallet.mewconnect.instructions.third') }}
+            </span>
+          </i18n>
+        </div>
       </div>
-      <customer-support />
+      <div class="seperation-bar">
+        <div class="bar" />
+        <div class="text">{{ $t('accessWallet.or') }}</div>
+      </div>
+
+      <div class="buttons">
+        <div @click="openWalletConnect">
+          <img src="@/assets/images/icons/WalletConnect.svg" />
+          {{ $t('accessWallet.wallet-connect') }}
+        </div>
+        <div @click="openWalletLink">
+          <img src="@/assets/images/icons/WalletLink.svg" />
+          {{ $t('accessWallet.wallet-link') }}
+        </div>
+      </div>
     </div>
-    <!-- .modal-container -->
   </b-modal>
 </template>
 
 <script>
-import CustomerSupport from '@/components/CustomerSupport';
 import { MewConnectWallet } from '@/wallets';
-import { mapGetters } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 import { Toast } from '@/helpers';
+import IpadModal from '@/components/IpadModal';
+import { Misc } from '@/helpers';
+import mewWalletIcon from '@/assets/images/icons/mew-wallet-icon.png';
 
 export default {
   components: {
-    'customer-support': CustomerSupport
+    'ipad-modal': IpadModal
+  },
+  props: {
+    openWalletConnect: {
+      type: Function,
+      default: () => {}
+    },
+    openWalletLink: {
+      type: Function,
+      default: () => {}
+    }
   },
   data() {
+    const downloadMEWWalletApp = Misc.downloadMEWWalletApp;
     return {
-      QrCode: ''
+      QrCode: '',
+      downloadMEWWalletApp: downloadMEWWalletApp,
+      mewWalletIcon: mewWalletIcon
     };
   },
   computed: {
-    ...mapGetters({
-      path: 'path',
-      web3: 'web3'
-    })
+    ...mapState('main', ['path', 'web3'])
   },
   mounted() {
     this.$refs.mewConnect.$on('show', () => {
       new MewConnectWallet(this.codeDisplay)
         .then(wallet => {
-          if (!this.web3.eth) this.$store.dispatch('setWeb3Instance');
-          this.$store.dispatch('decryptWallet', [wallet]).then(() => {
+          if (!this.web3.eth) this.setWeb3Instance();
+          this.decryptWallet([wallet]).then(() => {
             this.$router.push({
               path: 'interface'
             });
@@ -79,8 +129,12 @@ export default {
     });
   },
   methods: {
+    ...mapActions('main', ['setWeb3Instance', 'decryptWallet']),
     codeDisplay(qrCode) {
       this.QrCode = qrCode;
+    },
+    openIpadModal() {
+      this.$refs.ipadModal.$refs.ipadModal.show();
     }
   }
 };

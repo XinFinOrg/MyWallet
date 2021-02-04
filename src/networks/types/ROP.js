@@ -1,6 +1,7 @@
-import tokens from '@/tokens/tokens-rop.json';
-import contracts from '@/contracts/contract-abi-rop.json';
+import tokens from '@/_generated/tokens/tokens-rop.json';
+import contracts from '@/_generated/contracts/contract-abi-rop.json';
 import rop from '@/assets/images/icons/network.svg';
+import { ROP } from '../tlds';
 
 export default {
   name: 'ROP',
@@ -12,9 +13,11 @@ export default {
   tokens: tokens,
   contracts: contracts,
   ens: {
-    registry: '0x112234455c3a32fd11230c42e7bccd4a84e02010',
+    registry: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
     registrarTLD: 'test',
-    registrarType: 'fifs'
+    registrarType: 'fifs',
+    supportedTld: ROP
   },
-  icon: rop
+  icon: rop,
+  currencyName: 'ROP'
 };

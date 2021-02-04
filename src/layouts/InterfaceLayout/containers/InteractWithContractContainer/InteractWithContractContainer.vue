@@ -1,18 +1,19 @@
 <template>
   <div class="interact-with-contract-container">
-    <interface-container-title :title="$t('common.interactWcontract')" />
+    <interface-container-title :title="$t('contract.interact')" />
     <div v-if="!interact" class="interact-div">
       <div class="send-form contract-address-container">
         <div class="title-container">
           <div class="title">
             <h4 class="contract-address-title">
-              {{ $t('interface.contractAddr') }}
+              {{ $t('contract.addr') }}
               {{newAdd}}
             </h4>
             <div class="select-contract no-border">
               <currency-picker
                 :currency="mergedContracts"
                 :token="false"
+                :clear-currency="clearCurrency"
                 page="interactWContract"
                 @selectedCurrency="selectedContract"
               />
@@ -21,11 +22,10 @@
         </div>
         <div class="the-form domain-name">
           <input
-            v-validate="'required'"
             v-model="address"
+            :placeholder="$t('contract.enter-addr')"
             type="text"
             name="nameAddr"
-            placeholder="Enter Contract Address"
           />
 
           <i
@@ -42,20 +42,20 @@
       <div class="send-form">
         <div class="title-container">
           <div class="title">
-            <h4>{{ $t('interface.abiJsonInt') }}</h4>
+            <h4>{{ $t('contract.abi-json-int') }}</h4>
             <div class="copy-buttons">
               <span @click="deleteInput('abi')">{{ $t('common.clear') }}</span>
-              <span @click="copyToClipboard('abi')">{{
-                $t('common.copy')
-              }}</span>
+              <span @click="copyToClipboard('abi')">
+                {{ $t('common.copy') }}
+              </span>
             </div>
           </div>
         </div>
         <div class="the-form domain-name">
           <textarea
-            v-validate="'required'"
             ref="abi"
             v-model="abi"
+            v-validate="'required'"
             class="custom-textarea-1"
             name="abiField"
           />
@@ -73,7 +73,8 @@
           :class="[
             isValidAbi &&
             isValidAddress &&
-            (!errors.has('nameAddr') && !errors.has('abiField'))
+            !errors.has('nameAddr') &&
+            !errors.has('abiField')
               ? ''
               : 'disabled',
             'submit-button large-round-button-green-filled clickable'
@@ -81,24 +82,23 @@
           @click="switchView('forward')"
         >
           {{ $t('common.continue') }}
-          <img src="~@/assets/images/icons/right-arrow.png" />
+          <img src="~@/assets/images/icons/right-arrow.png" alt />
         </div>
-        <interface-bottom-text
-          :link-text="$t('interface.helpCenter')"
-          :question="$t('interface.haveIssues')"
-          link="https://xinfin.network"
-        />
+        <div class="clear-all-btn" @click="resetDefaults()">
+          {{ $t('common.clear-all') }}
+        </div>
       </div>
     </div>
     <div v-else class="contract-methods-container">
-      <h4>Read/Write Contract</h4>
+      <h4>{{ $t('contract.read-write') }}</h4>
       <div class="contract-addr-container">
         <div class="contract-addr">
-          <p>Contract Address: {{ address }}</p>
+          <p>{{ $t('contract.addr') }}: {{ address }}</p>
         </div>
         <div class="picker-container">
           <currency-picker
             :currency="contractMethods"
+            :clear-currency="clearCurrency"
             :token="false"
             page="interactWContract"
             @selectedCurrency="selectedFunction"
@@ -123,9 +123,9 @@
           <div class="input-container">
             <input
               v-if="getType(input.type).type !== 'radio'"
+              v-model="inputs[input.name]"
               :disabled="noInput"
               :type="getType(input.type).type"
-              v-model="inputs[input.name]"
               class="non-bool-input"
             />
             <div
@@ -139,7 +139,7 @@
                   :name="input.name"
                   type="radio"
                 />
-                <label :for="input.name">True</label>
+                <label :for="input.name">{{ $t('contract.true') }}</label>
               </div>
               <div class="bool-items">
                 <input
@@ -149,7 +149,7 @@
                   type="radio"
                   checked
                 />
-                <label :for="input.name">False</label>
+                <label :for="input.name">{{ $t('contract.false') }}</label>
               </div>
             </div>
             <i
@@ -168,32 +168,33 @@
             />
           </div>
         </div>
-        <div v-show="selectedMethod.payable">
+        <div>
           <div class="title-container">
             <div class="title">
-              <h4>{{ $t('common.value') }} in XDC:</h4>
+              <h4>{{ $t('contract.value-in-eth') }}:</h4>
             </div>
           </div>
           <input
             v-model="value"
+            step="any"
             type="text"
             name
-            placeholder="XDC"
+            placeholder="ETH"
             class="non-bool-input"
           />
         </div>
-        <div v-if="selectedMethod.constant">
+        <div v-if="methodConstant(selectedMethod)">
           <div class="title-container">
             <div class="title">
-              <h4>Result:</h4>
+              <h4>{{ $t('contract.result') }}:</h4>
             </div>
           </div>
           <div class="result-inputs">
             <input
               v-if="
                 resType === 'string' ||
-                  resType === 'boolean' ||
-                  resType === 'number'
+                resType === 'boolean' ||
+                resType === 'number'
               "
               v-model="result"
               type="text"
@@ -211,9 +212,9 @@
                 :key="item.name + idx"
                 class="result-container"
               >
-                <label :name="item.name !== '' ? item.name : item.type + idx">{{
-                  item.name !== '' ? item.name : item.type | capitalize
-                }}</label>
+                <label :for="item.name !== '' ? item.name : item.type + idx">
+                  {{ item.name !== '' ? item.name : item.type | capitalize }}
+                </label>
                 <input
                   :name="item.name !== '' ? item.name : item.type + idx"
                   :value="result[idx]"
@@ -238,9 +239,9 @@
           <div
             v-if="
               selectedMethod.hasOwnProperty('inputs') &&
-                ((selectedMethod.constant &&
-                  selectedMethod.inputs.length > 0) ||
-                  !selectedMethod.constant)
+              ((methodConstant(selectedMethod) &&
+                selectedMethod.inputs.length > 0) ||
+                !methodConstant(selectedMethod))
             "
             :class="[
               allValid ? '' : 'disabled',
@@ -249,66 +250,60 @@
             ]"
             @click="write"
           >
-            <span v-show="!loading && !selectedMethod.constant">
-              {{ $t('interface.write') }}
+            <span v-show="!loading && !methodConstant(selectedMethod)">
+              {{ $t('contract.write') }}
             </span>
-            <span v-show="!loading && selectedMethod.constant">{{
-              $t('interface.read')
+            <span v-show="!loading && methodConstant(selectedMethod)">{{
+              $t('contract.read')
             }}</span>
             <i v-show="loading" class="fa fa-spinner fa-spin fa-lg" />
           </div>
         </div>
-        <interface-bottom-text
-          :link-text="$t('interface.helpCenter')"
-          :question="$t('interface.haveIssues')"
-          link="https://xinfin.network"
-        />
+        <div class="clear-all-btn" @click="resetDefaults()">
+          {{ $t('common.clear-all') }}
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import CurrencyPicker from '../../components/CurrencyPicker';
 import InterfaceContainerTitle from '../../components/InterfaceContainerTitle';
-import InterfaceBottomText from '@/components/InterfaceBottomText';
 import { Misc, Toast } from '@/helpers';
 import { isAddress } from '@/helpers/addressUtils';
-import { uint, address, string, bytes, bool } from '@/helpers/solidityTypes.js';
 import * as unit from 'ethjs-unit';
 import store from 'store';
+import BigNumber from 'bignumber.js';
 
 export default {
   components: {
     'interface-container-title': InterfaceContainerTitle,
-    'interface-bottom-text': InterfaceBottomText,
     'currency-picker': CurrencyPicker
   },
   data() {
     return {
       abi: '',
       address: '',
-      oldAddress: '',
       interact: false,
       contractMethods: [],
       selectedMethod: {},
       result: '',
       loading: false,
       value: 0,
-      inputs: {}
+      inputs: {},
+      clearCurrency: false
     };
   },
   computed: {
-    ...mapGetters({
-      network: 'network',
-      gasPrice: 'gasPrice',
-      account: 'account',
-      web3: 'web3'
-    }),
+    ...mapState('main', ['network', 'gasPrice', 'account', 'web3']),
     mergedContracts() {
       const customContracts = store.get('customContracts') || [];
-      return this.network.type.contracts.concat(customContracts);
+      const concatContracts = this.network.type.contracts.concat(
+        customContracts
+      );
+      return concatContracts;
     },
     isValidAbi() {
       return Misc.isJson(this.abi);
@@ -322,7 +317,8 @@ export default {
     },
     noInput() {
       return (
-        this.selectedMethod.constant && this.selectedMethod.inputs.length === 0
+        this.methodConstant(this.selectedMethod) &&
+        this.selectedMethod.inputs.length === 0
       );
     },
     resType() {
@@ -347,17 +343,23 @@ export default {
       const _contractArgs = [];
       if (this.selectedMethod) {
         this.selectedMethod.inputs.forEach(item => {
-          if (item.type === 'bytes32[]') {
+          if (item.type.includes('[]')) {
             const parsedItem = this.formatInput(this.inputs[item.name]);
             _contractArgs.push(parsedItem);
+          } else if (item.type === 'address') {
+            _contractArgs.push(this.inputs[item.name].toLowerCase().trim());
+          } else if (item.includes === 'uint') {
+            const number = new BigNumber(this.inputs[item.name].trim());
+            _contractArgs.push(number.toFixed());
           } else {
-          this.inputs[item.name] = this.getType(item.type).solidityType === 'address'? this.inputs[item.name].replace('xdc', '0x'): this.inputs[item.name];
             _contractArgs.push(this.inputs[item.name]);
-          this.inputs[item.name] = this.getType(item.type).solidityType === 'address'? this.inputs[item.name].replace('0x', 'xdc'): this.inputs[item.name];
           }
         });
       }
       return _contractArgs;
+    },
+    txValue() {
+      return Misc.sanitizeHex(unit.toWei(this.value, 'ether').toString(16));
     }
   },
   watch: {
@@ -381,39 +383,9 @@ export default {
       this.loading = false;
       this.value = 0;
       this.inputs = {};
+      this.clearCurrency = !this.clearCurrency;
     },
-    isValidInput(value, solidityType) {
-      if (!value) value = '';
-      if (solidityType.includes('[') && solidityType.includes(']')) {
-        const values = [];
-        if (value[0] === '[') {
-          const strToArr =
-            value[0] === '[' ? value.substr(0, value.length - 1) : value;
-          strToArr.split(',').forEach(item => {
-            if (solidityType.includes(uint)) {
-              values.push(value !== '' && !isNaN(value));
-            } else if (solidityType.includes(address)) {
-              values.push(isAddress(value));
-            } else if (solidityType.includes(string)) {
-              values.push(isAddress(true));
-            } else if (solidityType.includes(bool)) {
-              values.push(typeof value === typeof true || value === '');
-            } else if (solidityType.includes(bytes)) {
-              values.push(Misc.validateHexString(item));
-            }
-          });
-        }
-        return !values.includes(false);
-      }
-      if (solidityType === 'uint') return value != '' && !isNaN(value);
-      if (solidityType === 'address') return isAddress(value);
-      if (solidityType === 'string') return true;
-      if (solidityType === 'bytes')
-        return value.substr(0, 2) == '0x' && Misc.validateHexString(value);
-      if (solidityType === 'bool')
-        return typeof value == typeof true || value === '';
-      return false;
-    },
+    isValidInput: Misc.isContractArgValid,
     getType: Misc.solidityType,
     selectedContract(selected) {
       if (selected.abi === '') {
@@ -423,12 +395,26 @@ export default {
       }
       this.address = selected.address;
     },
+    methodConstant(methodAbi) {
+      if (methodAbi.constant) return methodAbi.constant;
+      if (methodAbi.stateMutability) {
+        return methodAbi.stateMutability === 'view';
+      }
+      return false;
+    },
     selectedFunction(method) {
-      if (!method.hasOwnProperty('constant')) return;
-      const contract = new this.web3.eth.Contract([method], this.address);
-      if (method.constant === true && method.inputs.length === 0) {
+      if (
+        !method.hasOwnProperty('constant') &&
+        !method.hasOwnProperty('stateMutability')
+      )
+        return;
+      const contract = new this.web3.eth.Contract(
+        [method],
+        this.address.toLowerCase()
+      );
+      if (this.methodConstant(method) && method.inputs.length === 0) {
         contract.methods[method.name]()
-          .call({ from: this.account.address })
+          .call({ from: this.account.address.toLowerCase() })
           .then(res => {
             this.result = res;
           })
@@ -448,13 +434,17 @@ export default {
       });
     },
     formatInput(str) {
-      if (str[0] === '[') {
-        return str;
+      try {
+        if (str[0] === '[') {
+          return JSON.parse(str);
+        }
+        const newArr = str.split(',');
+        return newArr.map(item => {
+          return item.replace(' ', '');
+        });
+      } catch (e) {
+        Toast.responseHandler(e, Toast.ERROR);
       }
-      const newArr = str.split(',');
-      return newArr.map(function(item) {
-        return item.replace(' ', '');
-      });
     },
     copyToClipboard(ref) {
       this.$refs[ref].select();
@@ -466,13 +456,24 @@ export default {
     switchView(direction) {
       switch (direction) {
         case 'forward':
-          JSON.parse(this.abi).forEach(item => {
-            if (item.type !== 'constructor' && item.constant !== undefined) {
-              this.contractMethods.push(item);
+          if (this.abi !== '') {
+            const jsonAbi = JSON.parse(this.abi) ? JSON.parse(this.abi) : [];
+            if (Array.isArray(jsonAbi)) {
+              this.contractMethods = jsonAbi.filter(item => {
+                if (
+                  item.type !== 'constructor' &&
+                  (item.constant !== undefined ||
+                    item.stateMutability !== undefined)
+                ) {
+                  return item;
+                }
+              });
+              this.interact = true;
+              this.loading = false;
+            } else {
+              this.resetDefaults();
             }
-          });
-          this.interact = true;
-          this.loading = false;
+          }
           break;
         default:
           this.resetDefaults();
@@ -482,14 +483,16 @@ export default {
       const web3 = this.web3;
       const contract = new web3.eth.Contract(
         [this.selectedMethod],
-        this.address
+        this.address.toLowerCase()
       );
       this.loading = true;
-      if (this.selectedMethod.constant === true) {
+      if (this.methodConstant(this.selectedMethod)) {
         contract.methods[this.selectedMethod.name](...this.contractArgs)
-          .call({ from: this.account.address })
+          .call({ from: this.account.address.toLowerCase() })
           .then(res => {
             this.result = res;
+            if (Array.isArray(res)) this.result = JSON.stringify(res);
+            else this.result = res;
             this.loading = false;
           })
           .catch(e => {
@@ -497,25 +500,41 @@ export default {
             Toast.responseHandler(e, false);
           });
       } else {
-        const nonce = await web3.eth.getTransactionCount(this.account.address);
-        const errored = false;
-        const gasLimit = 4700000;
+        const nonce = await web3.eth.getTransactionCount(
+          this.account.address.toLowerCase()
+        );
+        let errored = false;
+        const gasLimit = await contract.methods[this.selectedMethod.name](
+          ...this.contractArgs
+        )
+          .estimateGas({
+            from: this.account.address.toLowerCase(),
+            value: this.txValue
+          })
+          .then(res => {
+            return res;
+          })
+          .catch(e => {
+            this.loading = false;
+            Toast.responseHandler(e, Toast.ERROR);
+            errored = true;
+          });
         if (!errored) {
           const data = contract.methods[this.selectedMethod.name](
             ...this.contractArgs
           ).encodeABI();
 
           const raw = {
-            from: this.account.address,
+            from: this.account.address.toLowerCase(),
             gas: gasLimit,
             nonce: nonce,
             gasPrice: Number(unit.toWei(this.gasPrice, 'gwei')),
-            value: 0,
-            to: this.address,
+            value: this.txValue,
+            to: this.address.toLowerCase(),
             data: data
           };
+          this.loading = false;
           web3.eth.sendTransaction(raw).catch(err => {
-            this.loading = false;
             Toast.responseHandler(err, Toast.ERROR);
           });
         }
