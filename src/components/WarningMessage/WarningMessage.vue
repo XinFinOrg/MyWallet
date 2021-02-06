@@ -7,15 +7,6 @@
         {{ this.$tc('common.not-recommended.warning1', getString) }}
         {{ this.$tc('common.not-recommended.warning2') }}
       </p>
-      <div class="link">
-        > {{ $t('common.read') }}:
-        <a
-          href="https://howto.xinfin.org/XinFinWallet/features/posts/offline/using-mew-offline/"
-          target="_blank"
-          rel="noopener noreferrer"
-          >{{ this.$t('common.article.using-mew-offline') }}</a
-        >
-      </div>
     </div>
   </div>
 </template>

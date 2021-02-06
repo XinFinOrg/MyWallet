@@ -19,8 +19,19 @@
           {{ $t('common.copy') }}
         </button>
         <div class="to-address single-input-block">
-          <button class="title-button prevent-user-select" @click="openCam">
-            {{ $t('QRCode') }}
+          <button
+            v-if="this.camera == 'off'"
+            class="title-button prevent-user-select"
+            @click="openCam"
+          >
+            Open QR scan
+          </button>
+          <button
+            v-else
+            class="title-button prevent-user-select"
+            @click="closeCam"
+          >
+            Close QR scan
           </button>
           <div>
             <p class="error">{{ error }}</p>
@@ -270,9 +281,15 @@ export default {
       this.selectedAddress = address;
       this.$refs.addressInput.value = address;
     },
+
     openCam() {
       this.camera = 'auto';
     },
+
+    closeCam() {
+      this.camera = 'off';
+    },
+
     onDecode(result) {
       this.result = '0x' + result.slice(3);
       this.address = '0x' + result.slice(3);
