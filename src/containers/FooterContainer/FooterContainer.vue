@@ -199,9 +199,6 @@ export default {
   },
   mounted() {},
   methods: {
-    redirect(e) {
-      console.log('..............', e);
-    },
     openContent(element) {
       const openButton = document.querySelector('.' + element + ' .open');
       const closeButton = document.querySelector('.' + element + ' .close');
