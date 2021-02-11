@@ -104,12 +104,12 @@ const router = [
     component: HardwaresLayout,
     meta: { requiresAuth: false }
   },
-  {
-    path: '/send-offline-helper',
-    name: 'SendOfflineHelper',
-    component: SendOfflineHelper,
-    meta: { requiresAuth: false }
-  },
+  // {
+  //   path: '/send-offline-helper',
+  //   name: 'SendOfflineHelper',
+  //   component: SendOfflineHelper,
+  //   meta: { requiresAuth: false }
+  // },
   {
     path: '/dapp-submission',
     component: DappSubmission,

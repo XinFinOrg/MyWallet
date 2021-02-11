@@ -23,6 +23,11 @@
               </div>
               <div class="content-links">
                 <div class="content-links-animation-block">
+                  <div class="content">
+                    <a href="https://broadcast.xinfin.network/" target="_blank"
+                      ><p>Send Offline Helper</p></a
+                    >
+                  </div>
                   <div
                     v-for="(content, idx) in item.contents"
                     :key="content.text + idx"
@@ -53,7 +58,6 @@
                 </div>
               </div>
             </div>
-            
           </div>
           <div class="flex-space-between foot-note">
             <div class="links">
@@ -147,18 +151,16 @@ export default {
           class: 'e1',
           title: 'footer.title.discover',
           contents: [
-            {
-              text: 'footer.send-offline',
-              to: '/send-offline-helper'
-            },
+            // {
+            //   text: 'footer.send-offline',
+            //   to: '/send-offline-helper'
+            // },
             {
               text: 'verifyMessage.title',
               to: '/verify-message'
-            },
+            }
           ]
-        },
-        
-  
+        }
       ],
       links: [
         {
@@ -197,6 +199,9 @@ export default {
   },
   mounted() {},
   methods: {
+    redirect(e) {
+      console.log('..............', e);
+    },
     openContent(element) {
       const openButton = document.querySelector('.' + element + ' .open');
       const closeButton = document.querySelector('.' + element + ' .close');

@@ -109,7 +109,6 @@
         </div>
       </div>
     </div>
-    
   </div>
 </template>
 
@@ -185,18 +184,18 @@ export default {
       hardwareBrand: '',
       device: {},
       buttons: [
-        {
-          func: this.mewConnectModalOpen,
-          title: 'accessWallet.mobile-app.mew-wallet',
-          desc: 'accessWallet.mobile-app.examples',
-          showsOtherExamples: true,
-          recommend: '',
-          tooltip: '',
-          img: mewConnectImg,
-          imgDisabled: mewConnectImgDisabled,
-          disabled: false,
-          classname: 'button-mewconnect'
-        },
+        // {
+        //   func: this.mewConnectModalOpen,
+        //   title: 'accessWallet.mobile-app.mew-wallet',
+        //   desc: 'accessWallet.mobile-app.examples',
+        //   showsOtherExamples: true,
+        //   recommend: '',
+        //   tooltip: '',
+        //   img: mewConnectImg,
+        //   imgDisabled: mewConnectImgDisabled,
+        //   disabled: false,
+        //   classname: 'button-mewconnect'
+        // },
         {
           func: this.hardwareModalOpen,
           title: 'accessWallet.hardware.option-title',
@@ -208,18 +207,18 @@ export default {
           disabled: false,
           classname: 'button-hardware'
         },
-        {
-          func: this.web3WalletModal,
-          title: 'accessWallet.web3-wallet',
-          desc: 'accessWallet.web3-wallet-desc',
-          showsOtherExamples: true,
-          recommend: '',
-          tooltip: '',
-          img: web3Img,
-          imgDisabled: web3ImgDisabled,
-          disabled: false,
-          classname: 'button-metamask'
-        },
+        // {
+        //   func: this.web3WalletModal,
+        //   title: 'accessWallet.web3-wallet',
+        //   desc: 'accessWallet.web3-wallet-desc',
+        //   showsOtherExamples: true,
+        //   recommend: '',
+        //   tooltip: '',
+        //   img: web3Img,
+        //   imgDisabled: web3ImgDisabled,
+        //   disabled: false,
+        //   classname: 'button-metamask'
+        // },
         {
           func: this.softwareModalOpen,
           title: 'accessWallet.software.option-title',
@@ -299,8 +298,8 @@ export default {
     },
     isDisabled(className) {
       switch (className) {
-        case 'button-mewconnect':
-          return !(this.online && DetectRTC.isWebRTCSupported);
+        // case 'button-mewconnect':
+        //   return !(this.online && DetectRTC.isWebRTCSupported);
         case 'button-hardware':
           return !this.online;
         default:
