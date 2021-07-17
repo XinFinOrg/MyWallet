@@ -76,7 +76,8 @@ import {
   XWALLET as XWALLET_TYPE,
   FINNEY as FINNEY_TYPE,
   COOLWALLET as COOLWALLET_TYPE,
-  BCVAULT as BCVAULT_TYPE
+  BCVAULT as BCVAULT_TYPE,
+  BITFI_WALLET as BITFI_WALLET_TYPE
 } from '@/wallets/bip44/walletTypes';
 export default {
   components: {
@@ -97,6 +98,10 @@ export default {
       default: function () {}
     },
     ledgerAppOpen: {
+      type: Function,
+      default: () => {}
+    },
+    bitfiAppOpen: {
       type: Function,
       default: () => {}
     },
@@ -198,6 +203,21 @@ export default {
           disabled: false,
           msg: '',
           link: 'https://bc-vault.com/?wpam_id=53'
+        },
+        {
+          name: BITFI_WALLET_TYPE,
+          imgPath: bcvault,
+          text: 'BITFI Wallet',
+          disabled:
+            platform.name.toLowerCase() !== 'chrome' &&
+            platform.name.toLowerCase() !== 'firefox',
+          msg:
+            platform.name.toLowerCase() !== 'chrome' &&
+            platform.name.toLowerCase() !== 'firefox'
+              ? 'Browser not supported by Bitfi'
+              : '',
+          msg: '',
+          link: 'https://https://bitfi.com/'
         }
       ]
     };
@@ -265,6 +285,10 @@ export default {
         case LEDGER_TYPE:
           this.$refs.hardware.hide();
           this.ledgerAppOpen();
+          break;
+        case BITFI_WALLET_TYPE: 
+          this.$refs.hardware.hide();
+          this.bitfiAppOpen();
           break;
         case TREZOR_TYPE:
           TrezorWallet()

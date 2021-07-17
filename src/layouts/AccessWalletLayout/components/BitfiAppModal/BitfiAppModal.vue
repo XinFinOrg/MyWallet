@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-modal
-      ref="ledgerApp"
+      ref="bitfiApp"
       :title="$t('accessWallet.ledger.modal.title')"
       hide-footer
       class="bootstrap-modal"
@@ -124,7 +124,7 @@
 import apps from '@/wallets/hardware/ledger/appPaths.js';
 import cust from '@/assets/images/icons/network.svg';
 import { Toast, pathHelpers } from '@/helpers';
-import { LedgerWallet } from '@/wallets';
+import { BitfiWallet } from '@/wallets';
 import { mapState, mapActions } from 'vuex';
 import { ethereum } from '@/wallets/bip44/paths';
 export default {
@@ -272,14 +272,14 @@ export default {
       this.selectedPath = path;
     },
     next() {
+      this.$refs.bitfiApp.hide();
       console.log('HERE')
-      this.$refs.ledgerApp.hide();
-      LedgerWallet(this.selectedPath.path)
+      BitfiWallet(this.selectedPath.path)
         .then(_newWallet => {
           this.$emit('hardwareWalletOpen', _newWallet);
         })
         .catch(e => {
-          LedgerWallet.errorHandler(e);
+          BitfiWallet.errorHandler(e);
         });
     },
     reset() {
@@ -291,5 +291,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import 'LedgerAppModal.scss';
+@import 'BitfiAppModal.scss';
 </style>

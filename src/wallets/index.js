@@ -6,7 +6,8 @@ import {
   SecalotWallet,
   KeepkeyWallet,
   BCVaultWallet,
-  CoolWallet
+  CoolWallet,
+  BitfiWallet
 } from './hardware';
 import WalletInterface from './WalletInterface';
 import { MnemonicWallet } from './software';
@@ -17,6 +18,7 @@ import {
 } from './hybrid';
 
 export {
+  BitfiWallet,
   LedgerWallet,
   TrezorWallet,
   BitBoxWallet,
