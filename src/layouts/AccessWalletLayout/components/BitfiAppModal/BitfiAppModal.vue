@@ -11,7 +11,7 @@
       @hidden="reset"
     >
       <div class="ledger-app-selection-container">
-        <h4>{{ $t('accessWallet.ledger.modal.text') }}</h4>
+        <h4>Connecting to Bitfi wallet</h4>
         <div class="ledger-app-info">
           <div class="selected-app-icon">
             <img :src="selectedApp.network.icon" alt />
@@ -272,8 +272,8 @@ export default {
       this.selectedPath = path;
     },
     next() {
+      console.log('HEEEEERE')
       this.$refs.bitfiApp.hide();
-      console.log('HERE')
       BitfiWallet(this.selectedPath.path)
         .then(_newWallet => {
           this.$emit('hardwareWalletOpen', _newWallet);

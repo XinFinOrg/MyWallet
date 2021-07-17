@@ -2,11 +2,8 @@ import { Transaction } from 'ethereumjs-tx';
 import { COOLWALLET as coolWalletType } from '../../bip44/walletTypes';
 import HDWalletInterface from '@/wallets/HDWalletInterface';
 import errorHandler from './errorHandler';
-import cwsETH from '@coolwallets/eth';
-import cwsWallet, { generateKeyPair } from '@coolwallets/wallet';
 import bip44Paths from '../../bip44';
 import { bufferToHex } from 'ethereumjs-util';
-import cwsTransportLib from '@coolwallets/transport-web-ble';
 import Vue from 'vue';
 
 import store from '@/store';
@@ -17,6 +14,7 @@ import {
   calculateChainIdFromV
 } from '../../utils';
 import commonGenerator from '@/helpers/commonGenerator';
+import { connectBitfi } from './utils';
 
 const NEED_PASSWORD = true;
 const APP_NAME = 'MyEtherWalletV5';
@@ -29,50 +27,32 @@ class BitfiWallet {
     this.appPrivateKey = '';
     this.appPublicKey = '';
     this.transport = {};
+    this.bitfi = null
     this.deviceInstance = {};
     this.supportedPaths = bip44Paths[coolWalletType];
   }
-  init(password) {
-    const _this = this;
-    return new Promise((resolve, reject) => {
-      cwsTransportLib.listen((error, device) => {
-        if (error) reject(error);
-        if (device) {
-          cwsTransportLib.connect(device).then(_transport => {
-            _this.transport = _transport;
-            const {
-              publicKey: appPublicKey,
-              privateKey: appPrivateKey
-            } = generateKeyPair();
-            _this.appPrivateKey = appPrivateKey;
-            _this.appPublicKey = appPublicKey;
-            const coolWalletInstance = new cwsWallet(
-              _this.transport,
-              this.appPrivateKey
-            );
-            coolWalletInstance
-              .register(this.appPublicKey, password, APP_NAME)
-              .then(appId => {
-                _this.appId = appId;
-                coolWalletInstance.setAppId(appId);
-                _this.deviceInstance = new cwsETH(
-                  _this.transport,
-                  _this.appPrivateKey,
-                  _this.appId
-                );
-                resolve();
-              })
-              .catch(errorHandler);
-          });
-        } else {
-          reject(new Error('no device'));
-        }
-      });
+
+  init() {
+    return new Promise(async (resolve, reject) => {
+
+      this.bitfi = await connectBitfi()
+      console.log(this.bitfi)
+
+      if (!this.bitfi)
+        reject(new Error('Chrome extension is not detected'))
+      
+      this.account = await this.bitfi.getAccount()
+      console.log(this.account)
+      if (!this.account)
+        reject(new Error('Please, login to your extension'))
+
+      resolve()
     });
   }
 
+
   async getAccount(idx) {
-    const address = await this.deviceInstance.getAddress(idx);
+    const address = this.account.slice(3);
     const txSigner = async tx => {
       tx = new Transaction(tx, {
         common: commonGenerator(store.state.main.network)
@@ -88,10 +68,22 @@ class BitfiWallet {
       };
 
       const networkId = tx.getChainId();
-      const result = await this.deviceInstance
-        .signTransaction(cwTx, idx)
-        .catch(errorHandler);
 
+      const data = {
+        amount: BigInt(cwTx.value).toString(),
+        gasPrice: BigInt(cwTx.gasPrice).toString(),
+        gasLimit: BigInt(cwTx.gasLimit).toString(),
+        to: cwTx.to
+      }
+      console.log(data)
+      console.log(cwTx)
+      
+      const result = await this.bitfi.request(this.bitfi.subjects.SIGN_TX, {
+        timeoutMsec: 60 * 1000,
+        data
+      })
+      
+      /*
       if (result) {
         const resultTx = new Transaction(result);
         tx.v = getBufferFromHex(sanitizeHex(resultTx.v.toString('hex')));
@@ -108,22 +100,11 @@ class BitfiWallet {
           );
         return getSignTransactionObject(tx);
       }
+      */
       return result;
     };
     const msgSigner = async msg => {
-      const result = await this.deviceInstance.signMessage(msg, idx);
-      if (result) {
-        const signature = result.substr(2);
-        const r = '0x' + signature.slice(0, 64);
-        const s = '0x' + signature.slice(64, 128);
-        const v = '0x' + signature.slice(128, 130);
-        return Buffer.concat([
-          getBufferFromHex(sanitizeHex(r)),
-          getBufferFromHex(sanitizeHex(s)),
-          getBufferFromHex(sanitizeHex(v))
-        ]);
-      }
-      return result;
+      throw new Error('Not supported')
     };
     return new HDWalletInterface(
       null,
