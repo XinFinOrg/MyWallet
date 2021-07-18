@@ -1,5 +1,5 @@
 import { Transaction } from 'ethereumjs-tx';
-import { COOLWALLET as coolWalletType } from '../../bip44/walletTypes';
+import { BITFI_WALLET, COOLWALLET as coolWalletType } from '../../bip44/walletTypes';
 import HDWalletInterface from '@/wallets/HDWalletInterface';
 import errorHandler from './errorHandler';
 import bip44Paths from '../../bip44';
@@ -16,12 +16,12 @@ import {
 import commonGenerator from '@/helpers/commonGenerator';
 import { connectBitfi } from './utils';
 
-const NEED_PASSWORD = true;
+const NEED_PASSWORD = false;
 const APP_NAME = 'MyEtherWalletV5';
 
 class BitfiWallet {
   constructor() {
-    this.identifier = coolWalletType;
+    this.identifier = BITFI_WALLET;
     this.isHardware = true;
     this.needPassword = NEED_PASSWORD;
     this.appPrivateKey = '';
@@ -39,12 +39,12 @@ class BitfiWallet {
       console.log(this.bitfi)
 
       if (!this.bitfi)
-        reject(new Error('Chrome extension is not detected'))
+        reject(new Error('not-installed'))
       
       this.account = await this.bitfi.getAccount()
       console.log(this.account)
       if (!this.account)
-        reject(new Error('Please, login to your extension'))
+        reject(new Error('not-authenticated'))
 
       resolve()
     });
@@ -73,16 +73,25 @@ class BitfiWallet {
         amount: BigInt(cwTx.value).toString(),
         gasPrice: BigInt(cwTx.gasPrice).toString(),
         gasLimit: BigInt(cwTx.gasLimit).toString(),
-        to: cwTx.to
+        to: cwTx.to,
+        from: this.account,
+        networkId
       }
       console.log(data)
       console.log(cwTx)
       
-      const result = await this.bitfi.request(this.bitfi.subjects.SIGN_TX, {
+      let result = await this.bitfi.request(this.bitfi.subjects.SIGN_TX, {
         timeoutMsec: 60 * 1000,
         data
       })
       
+      result = "0x134134134"
+
+      return {
+        tx: {
+          hash: result
+        }
+      }
       /*
       if (result) {
         const resultTx = new Transaction(result);

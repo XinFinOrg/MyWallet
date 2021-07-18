@@ -88,7 +88,7 @@ import ErrorModal from './components/ErrorModal';
 import ConfirmSignModal from './components/ConfirmSignModal';
 import { mapState, mapActions } from 'vuex';
 import { type as noticeTypes } from '@/helpers/notificationFormatters';
-import { WEB3_WALLET, KEEPKEY } from '@/wallets/bip44/walletTypes';
+import { WEB3_WALLET, KEEPKEY, BITFI_WALLET } from '@/wallets/bip44/walletTypes';
 import { Toast, Misc } from '@/helpers';
 import locStore from 'store';
 import parseTokensData from '@/helpers/parseTokensData.js';
@@ -272,7 +272,14 @@ export default {
           }
         })
         .catch(this.wallet.errorHandler);
-      if (this.account.identifier === KEEPKEY) {
+
+      if (this.account.identifier === BITFI_WALLET) {
+        this.showSuccessModal(
+          'Please, open your BITFI chrome extension and approve the operation',
+          'Close'
+        )
+      }
+      else if (this.account.identifier === KEEPKEY) {
         signPromise.then(() => {
           this.confirmationModalOpen();
         });
