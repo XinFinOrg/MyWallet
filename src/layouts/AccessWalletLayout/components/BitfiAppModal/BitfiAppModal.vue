@@ -272,7 +272,6 @@ export default {
       this.selectedPath = path;
     },
     next() {
-      console.log('HEEEEERE')
       this.$refs.bitfiApp.hide();
       BitfiWallet(this.selectedPath.path)
         .then(_newWallet => {

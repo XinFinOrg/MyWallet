@@ -113,7 +113,7 @@ class BitfiWallet {
       return result;
     };
     const msgSigner = async msg => {
-      throw new Error('Not supported')
+      throw new Error('not-supported')
     };
     return new HDWalletInterface(
       null,

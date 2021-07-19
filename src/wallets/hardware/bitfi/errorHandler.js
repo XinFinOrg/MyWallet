@@ -2,7 +2,8 @@ import { Toast } from '@/helpers';
 import Vue from 'vue';
 const ERRORS = {
   'not-installed': 'bitfiError.not-installed',
-  'not-authenticated': 'bitfiError.not-authenticated'
+  'not-authenticated': 'bitfiError.not-authenticated',
+  'not-supported': 'bitfiError.not-supported'
 };
 const WARNING = {};
 export default err => {

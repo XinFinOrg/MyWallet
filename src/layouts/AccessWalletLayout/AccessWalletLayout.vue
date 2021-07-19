@@ -157,7 +157,7 @@ import { Toast } from '@/helpers';
 
 import DetectRTC from 'detectrtc';
 
-import { WalletConnectWallet, WalletLinkWallet } from '@/wallets';
+import { BitfiWallet, WalletConnectWallet, WalletLinkWallet } from '@/wallets';
 
 export default {
   name: 'AccessWalletLayout',
@@ -323,7 +323,23 @@ export default {
       this.$refs.ledgerAppModal.$refs.ledgerApp.show();
     },
     bitfiAppModalOpen() {
-      this.$refs.bitfiAppModal.$refs.bitfiApp.show();
+      
+      BitfiWallet("")
+        .then(_newWallet => {
+          console.log(_newWallet)
+          this.hardwareWalletOpen(_newWallet)
+          /*
+          this.decryptWallet([_newWallet]).then(() => {
+            this.$router.push({
+              path: 'interface'
+            });
+          });
+          */
+        })
+        .catch(e => {
+          console.log(e)
+          BitfiWallet.errorHandler(e);
+        })
     },
     networkAndAddressOpen() {
       this.$refs.networkandaddressModal.$refs.networkAndAddress.show();
