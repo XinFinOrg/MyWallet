@@ -325,16 +325,16 @@ export default {
     bitfiAppModalOpen() {
       
       BitfiWallet("")
-        .then(_newWallet => {
-          console.log(_newWallet)
-          this.hardwareWalletOpen(_newWallet)
-          /*
-          this.decryptWallet([_newWallet]).then(() => {
+        .then(async _newWallet => {
+          //console.log(_newWallet)
+          //this.hardwareWalletOpen(_newWallet)
+          
+          this.decryptWallet([await _newWallet.getAccount(0)]).then(() => {
             this.$router.push({
               path: 'interface'
             });
           });
-          */
+          
         })
         .catch(e => {
           console.log(e)

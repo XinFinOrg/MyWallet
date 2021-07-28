@@ -28,18 +28,20 @@ class BitfiWallet {
     this.appPublicKey = '';
     this.transport = {};
     this.bitfi = null
+    this.isBitfi = true
     this.deviceInstance = {};
     this.supportedPaths = bip44Paths[coolWalletType];
   }
 
   init() {
     return new Promise(async (resolve, reject) => {
-
       this.bitfi = await connectBitfi()
-      console.log(this.bitfi)
 
-      if (!this.bitfi)
+      if (!this.bitfi) {
         reject(new Error('not-installed'))
+        window.open('https://chrome.google.com/webstore/detail/bitfi-xdc-chrome-extensio/hollalkeimdfbjebppaojkookekggehm','_blank');
+        return
+      }
       
       this.account = await this.bitfi.getAccount()
       console.log(this.account)

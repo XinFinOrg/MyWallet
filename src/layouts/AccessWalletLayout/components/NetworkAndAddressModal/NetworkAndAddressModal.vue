@@ -464,8 +464,15 @@ export default {
       });
     }, 1000),
     unlockWallet() {
+      
+
       this.decryptWallet([this.currentWallet])
+      
         .then(() => {
+          console.log([this.currentWallet])
+      console.log(this.wallet)
+      console.log('END')
+
           if (this.wallet !== null) {
             if (!this.$route.path.split('/').includes('interface')) {
               this.$router.push({
