@@ -3,7 +3,8 @@ import Vue from 'vue';
 const ERRORS = {
   'not-installed': 'bitfiError.not-installed',
   'not-authenticated': 'bitfiError.not-authenticated',
-  'not-supported': 'bitfiError.not-supported'
+  'not-supported': 'bitfiError.not-supported',
+  'wrong-network': 'bitfiError.wrong-network'
 };
 const WARNING = {};
 export default err => {

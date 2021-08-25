@@ -70,6 +70,10 @@ class BitfiWallet {
       };
 
       const networkId = tx.getChainId();
+      
+      if (parseInt(this.bitfi.networkID) !== parseInt(cwTx.chainId)) {
+        throw new Error('wrong-network')
+      }
 
       const data = {
         amount: BigInt(cwTx.value).toString(),
@@ -79,15 +83,15 @@ class BitfiWallet {
         from: this.account,
         networkId
       }
-      console.log(data)
-      console.log(cwTx)
-      
+
+      this.bitfi.request(this.bitfi.subjects.EXPAND)
+
       let result = await this.bitfi.request(this.bitfi.subjects.SIGN_TX, {
         timeoutMsec: 60 * 1000,
         data
       })
       
-      result = "0x134134134"
+      result = ""
 
       return {
         tx: {

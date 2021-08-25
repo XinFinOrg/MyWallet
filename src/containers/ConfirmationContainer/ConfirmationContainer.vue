@@ -266,6 +266,13 @@ export default {
 
       signPromise
         .then(_response => {
+          if (this.account.identifier === BITFI_WALLET) {
+            this.showSuccessModal(
+              'Please, open your BITFI chrome extension and approve the operation',
+              'Close'
+            )
+          }
+          
           if (_response) {
             this.signedTxObject = _response;
             this.signedTx = this.signedTxObject.rawTransaction;
@@ -274,12 +281,8 @@ export default {
         .catch(this.wallet.errorHandler);
 
       if (this.account.identifier === BITFI_WALLET) {
-        this.showSuccessModal(
-          'Please, open your BITFI chrome extension and approve the operation',
-          'Close'
-        )
-      }
-      else if (this.account.identifier === KEEPKEY) {
+        //do nothing
+      } else if (this.account.identifier === KEEPKEY) {
         signPromise.then(() => {
           this.confirmationModalOpen();
         });

@@ -56,6 +56,7 @@ import keepkey from '@/assets/images/icons/HardwareWallet/keepkey.svg';
 import finney from '@/assets/images/icons/button-finney-hover.png';
 import xwallet from '@/assets/images/icons/HardwareWallet/xwallet.svg';
 import bcvault from '@/assets/images/icons/HardwareWallet/bcvault.svg';
+import bitfiwallet from '@/assets/images/icons/HardwareWallet/bitfiwallet.svg';
 import coolwallet from '@/assets/images/icons/HardwareWallet/coolwallet.svg';
 import WalletOption from '../WalletOption';
 import { Toast } from '@/helpers';
@@ -206,7 +207,7 @@ export default {
         },
         {
           name: BITFI_WALLET_TYPE,
-          imgPath: bcvault,
+          imgPath: bitfiwallet,
           text: 'BITFI Wallet',
           disabled:
             platform.name.toLowerCase() !== 'chrome' &&
@@ -217,7 +218,7 @@ export default {
               ? 'Browser not supported by Bitfi'
               : '',
           msg: '',
-          link: 'https://https://bitfi.com/'
+          link: 'https://bitfi.com/order'
         }
       ]
     };
