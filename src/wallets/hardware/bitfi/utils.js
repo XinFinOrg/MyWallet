@@ -9,7 +9,7 @@ async function connectBitfi(intervalMsec = 1000, timeoutMsec = 3000) {
 
       const deadline = Date.now() + timeoutMsec
       const inter = setInterval(() => {
-        console.log('CHECK')
+        //console.log('CHECK')
         if (Date.now() > deadline) {
           clearInterval(inter)
           res(bitfi)

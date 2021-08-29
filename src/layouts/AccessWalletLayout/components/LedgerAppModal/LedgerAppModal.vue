@@ -272,7 +272,6 @@ export default {
       this.selectedPath = path;
     },
     next() {
-      console.log('HERE')
       this.$refs.ledgerApp.hide();
       LedgerWallet(this.selectedPath.path)
         .then(_newWallet => {

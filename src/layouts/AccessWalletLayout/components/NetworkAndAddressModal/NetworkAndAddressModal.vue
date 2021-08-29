@@ -469,9 +469,9 @@ export default {
       this.decryptWallet([this.currentWallet])
       
         .then(() => {
-          console.log([this.currentWallet])
-      console.log(this.wallet)
-      console.log('END')
+          //console.log([this.currentWallet])
+          //console.log(this.wallet)
+          //console.log('END')
 
           if (this.wallet !== null) {
             if (!this.$route.path.split('/').includes('interface')) {

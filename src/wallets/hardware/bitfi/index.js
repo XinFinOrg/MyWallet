@@ -44,7 +44,7 @@ class BitfiWallet {
       }
       
       this.account = await this.bitfi.getAccount()
-      console.log(this.account)
+      //console.log(this.account)
       if (!this.account)
         reject(new Error('not-authenticated'))
 
@@ -83,6 +83,9 @@ class BitfiWallet {
         from: this.account,
         networkId
       }
+
+      //console.log("TRANSACTION:")
+      //console.log(data)
 
       this.bitfi.request(this.bitfi.subjects.EXPAND)
 
