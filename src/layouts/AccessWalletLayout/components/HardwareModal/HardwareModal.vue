@@ -56,6 +56,7 @@ import keepkey from '@/assets/images/icons/HardwareWallet/keepkey.svg';
 import finney from '@/assets/images/icons/button-finney-hover.png';
 import xwallet from '@/assets/images/icons/HardwareWallet/xwallet.svg';
 import bcvault from '@/assets/images/icons/HardwareWallet/bcvault.svg';
+import bitfiwallet from '@/assets/images/icons/HardwareWallet/bitfiwallet.svg';
 import coolwallet from '@/assets/images/icons/HardwareWallet/coolwallet.svg';
 import WalletOption from '../WalletOption';
 import { Toast } from '@/helpers';
@@ -76,7 +77,8 @@ import {
   XWALLET as XWALLET_TYPE,
   FINNEY as FINNEY_TYPE,
   COOLWALLET as COOLWALLET_TYPE,
-  BCVAULT as BCVAULT_TYPE
+  BCVAULT as BCVAULT_TYPE,
+  BITFI_WALLET as BITFI_WALLET_TYPE
 } from '@/wallets/bip44/walletTypes';
 export default {
   components: {
@@ -97,6 +99,10 @@ export default {
       default: function () {}
     },
     ledgerAppOpen: {
+      type: Function,
+      default: () => {}
+    },
+    bitfiAppOpen: {
       type: Function,
       default: () => {}
     },
@@ -198,6 +204,21 @@ export default {
           disabled: false,
           msg: '',
           link: 'https://bc-vault.com/?wpam_id=53'
+        },
+        {
+          name: BITFI_WALLET_TYPE,
+          imgPath: bitfiwallet,
+          text: 'BITFI Wallet',
+          disabled:
+            platform.name.toLowerCase() !== 'chrome' &&
+            platform.name.toLowerCase() !== 'firefox',
+          msg:
+            platform.name.toLowerCase() !== 'chrome' &&
+            platform.name.toLowerCase() !== 'firefox'
+              ? 'Browser not supported by Bitfi'
+              : '',
+          msg: '',
+          link: 'https://bitfi.com/order'
         }
       ]
     };
@@ -265,6 +286,10 @@ export default {
         case LEDGER_TYPE:
           this.$refs.hardware.hide();
           this.ledgerAppOpen();
+          break;
+        case BITFI_WALLET_TYPE: 
+          this.$refs.hardware.hide();
+          this.bitfiAppOpen();
           break;
         case TREZOR_TYPE:
           TrezorWallet()

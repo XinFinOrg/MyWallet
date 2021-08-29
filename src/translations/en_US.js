@@ -21,6 +21,7 @@ import coolWalletError from './errors-coolwallet/en_US';
 import ledgerError from './errors-ledger/en_US';
 import secalotError from './errors-secalot/en_US';
 import keepkeyError from './errors-keepkey/en_US';
+import bitfiError from './errors-bitfi/en_US';
 import bitboxError from './errors-bitbox/en_US';
 import bitbox02Error from './errors-bitbox02/en_US';
 import buyHardwareWallet from './other/buy-hardware-wallet/en_US';
@@ -67,6 +68,7 @@ const en_US = {
   bcvaultError: bcvaultError,
   secalotError: secalotError,
   keepkeyError: keepkeyError,
+  bitfiError: bitfiError,
   bitboxError: bitboxError,
   bitbox02Error: bitbox02Error,
   buyHardwareWallet: buyHardwareWallet,

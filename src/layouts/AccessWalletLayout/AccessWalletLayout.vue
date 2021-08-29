@@ -6,6 +6,12 @@
         :networks="Networks"
         @hardwareWalletOpen="hardwareWalletOpen"
       />
+
+      <bitfi-app-modal
+        ref="bitfiAppModal"
+        :networks="Networks"
+        @hardwareWalletOpen="hardwareWalletOpen"
+      />
       <mew-connect-modal
         ref="mewconnectModal"
         :network-and-address-open="networkAndAddressOpen"
@@ -16,6 +22,7 @@
       <hardware-modal
         ref="hardwareModal"
         :ledger-app-open="ledgerAppModalOpen"
+        :bitfi-app-open="bitfiAppModalOpen"
         :network-and-address-open="networkAndAddressOpen"
         :bitbox-select-open="bitboxSelectModalOpen"
         :open-finney="finneyModalOpen"
@@ -127,6 +134,7 @@ import PrivateKeyModal from './components/PrivateKeyModal';
 import SoftwareModal from './components/SoftwareModal';
 import MnemonicModal from './components/MnemonicModal';
 import LedgerAppModal from './components/LedgerAppModal';
+import BitfiAppModal from './components/BitfiAppModal';
 import WalletPasswordModal from '@/components/WalletPasswordModal';
 import EnterPinNumberModal from '@/components/EnterPinNumberModal';
 import XwalletModal from './components/XwalletModal';
@@ -149,7 +157,7 @@ import { Toast } from '@/helpers';
 
 import DetectRTC from 'detectrtc';
 
-import { WalletConnectWallet, WalletLinkWallet } from '@/wallets';
+import { BitfiWallet, WalletConnectWallet, WalletLinkWallet } from '@/wallets';
 
 export default {
   name: 'AccessWalletLayout',
@@ -168,6 +176,7 @@ export default {
     'wallet-password-modal': WalletPasswordModal,
     'enter-pin-number-modal': EnterPinNumberModal,
     'ledger-app-modal': LedgerAppModal,
+    'bitfi-app-modal': BitfiAppModal,
     'finney-modal': FinneyModal,
     'xwallet-modal': XwalletModal,
     'bcvault-address-modal': BcVaultAddressModal,
@@ -312,6 +321,25 @@ export default {
     },
     ledgerAppModalOpen() {
       this.$refs.ledgerAppModal.$refs.ledgerApp.show();
+    },
+    bitfiAppModalOpen() {
+      
+      BitfiWallet("")
+        .then(async _newWallet => {
+          //console.log(_newWallet)
+          //this.hardwareWalletOpen(_newWallet)
+          
+          this.decryptWallet([await _newWallet.getAccount(0)]).then(() => {
+            this.$router.push({
+              path: 'interface'
+            });
+          });
+          
+        })
+        .catch(e => {
+          console.log(e)
+          BitfiWallet.errorHandler(e);
+        })
     },
     networkAndAddressOpen() {
       this.$refs.networkandaddressModal.$refs.networkAndAddress.show();
