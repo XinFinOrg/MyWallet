@@ -4,20 +4,11 @@ import HDWalletInterface from '@/wallets/HDWalletInterface';
 import errorHandler from './errorHandler';
 import bip44Paths from '../../bip44';
 import { bufferToHex } from 'ethereumjs-util';
-import Vue from 'vue';
-
 import store from '@/store';
-import {
-  getSignTransactionObject,
-  sanitizeHex,
-  getBufferFromHex,
-  calculateChainIdFromV
-} from '../../utils';
 import commonGenerator from '@/helpers/commonGenerator';
 import { connectBitfi } from './utils';
 
 const NEED_PASSWORD = false;
-const APP_NAME = 'MyEtherWalletV5';
 
 class BitfiWallet {
   constructor() {
@@ -53,7 +44,7 @@ class BitfiWallet {
   }
 
 
-  async getAccount(idx) {
+  async getAccount() {
     const address = this.account.slice(3);
     const txSigner = async tx => {
       tx = new Transaction(tx, {
@@ -84,9 +75,6 @@ class BitfiWallet {
         networkId
       }
 
-      //console.log("TRANSACTION:")
-      //console.log(data)
-
       this.bitfi.request(this.bitfi.subjects.EXPAND)
 
       let result = await this.bitfi.request(this.bitfi.subjects.SIGN_TX, {
@@ -101,25 +89,6 @@ class BitfiWallet {
           hash: result
         }
       }
-      /*
-      if (result) {
-        const resultTx = new Transaction(result);
-        tx.v = getBufferFromHex(sanitizeHex(resultTx.v.toString('hex')));
-        tx.r = getBufferFromHex(sanitizeHex(resultTx.r.toString('hex')));
-        tx.s = getBufferFromHex(sanitizeHex(resultTx.s.toString('hex')));
-        const signedChainId = calculateChainIdFromV(tx.v);
-        if (signedChainId !== networkId)
-          throw new Error(
-            Vue.$i18n.t('errorsGlobal.invalid-network-id-sig', {
-              got: signedChainId,
-              expected: networkId
-            }),
-            'InvalidNetworkId'
-          );
-        return getSignTransactionObject(tx);
-      }
-      */
-      return result;
     };
     const msgSigner = async msg => {
       throw new Error('not-supported')
