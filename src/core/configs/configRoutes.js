@@ -1,6 +1,7 @@
 const ROUTES_HOME = {
   HOME: { NAME: 'Home', PATH: '' },
   //A-Z
+  PAGE_NOT_FOUND: { NAME: 'PageNotFound', PATH: '*' },
   ACCESS_WALLET: { NAME: 'AccessWallet', PATH: 'wallet/access/:overlay?' },
   BUY_HARDWARE_WALLET: { NAME: 'BuyHardwareWallet', PATH: 'buy-hardware' },
   ABOUT_PAGE: { NAME: 'AboutPage', PATH: 'about' },
@@ -14,7 +15,8 @@ const ROUTES_HOME = {
   TERMS_OF_SERVICE: { NAME: 'TermsOfService', PATH: 'terms-of-service' },
   TOOLS: { NAME: 'Tools', PATH: 'tools' },
   CONVERT_UNITS: { NAME: 'ConvertUnits', PATH: 'convert-units' },
-  JOBS: { NAME: 'Careers', PATH: 'careers' }
+  JOBS: { NAME: 'Careers', PATH: 'careers' },
+  QR_CODE: { NAME: 'QrCode', PATH: 'qr-code' }
 };
 const ROUTES_WALLET = {
   WALLETS: { NAME: 'Wallets', PATH: '' },
