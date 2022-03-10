@@ -38,12 +38,16 @@
 </template>
 
 <script>
-import { isXDCAddress } from '@/core/helpers/addressUtils';
 import { mapGetters, mapState } from 'vuex';
 import NameResolver from '@/modules/name-resolver/index';
 import AddressBookAddEdit from './components/AddressBookAddEdit';
 import { isObject, debounce } from 'lodash';
-import { toChecksumAddress } from '@/core/helpers/addressUtils';
+import {
+  toChecksumAddress,
+  isXDCAddress,
+  getXDCAddress,
+  get0xAddress
+} from '@/core/helpers/addressUtils';
 
 const USER_INPUT_TYPES = {
   typed: 'TYPED',
@@ -118,7 +122,9 @@ export default {
       return this.isHomePage ? false : this.isValidAddress;
     },
     addrLabel() {
-      return this.label === '' ? this.$t('sendTx.to-addr') : this.label;
+      return getXDCAddress(
+        this.label === '' ? this.$t('sendTx.to-addr') : this.label
+      );
     }
   },
   watch: {
@@ -160,7 +166,7 @@ export default {
             : this.addressBookWithMyAddress.find(item => {
                 return value.toLowerCase() === item.address.toLowerCase();
               });
-        this.inputAddr = value;
+        this.inputAddr = get0xAddress(value);
         this.resolvedAddr = '';
         /**
          * Checks if the address is valid

@@ -78,7 +78,7 @@
                   class="justify-start d-flex align-center info-container--addr monospace"
                   v-on="on"
                 >
-                  {{ getXDCAddress(addrFirstSix) }}
+                  {{ addrFirstSix }}
                   <v-icon class="info-container--addr pt-1"
                     >mdi-dots-horizontal</v-icon
                   >
@@ -251,6 +251,7 @@ import ModuleAccessWalletHardware from '@/modules/access-wallet/ModuleAccessWall
 import ModuleAccessWalletSoftware from '@/modules/access-wallet/ModuleAccessWalletSoftware';
 import wallets from './handlers/config';
 import WALLET_TYPES from '../access-wallet/common/walletTypes';
+import { getXDCAddress } from '@/core/helpers/addressUtils';
 
 export default {
   components: {
@@ -308,7 +309,7 @@ export default {
      * returns checksummed address
      */
     getChecksumAddressString() {
-      return this.address ? toChecksumAddress(this.address) : '';
+      return this.address ? getXDCAddress(toChecksumAddress(this.address)) : '';
     },
     /**
      * checks whether hardware wallet
@@ -379,7 +380,7 @@ export default {
      * @returns {string} first 6 letters in the address
      */
     addrFirstSix() {
-      return this.address ? this.address.substring(0, 6) : '';
+      return this.address ? getXDCAddress(this.address.substring(0, 6)) : '';
     },
     /**
      * @returns {string} lat 4 letters in the address
