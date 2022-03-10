@@ -1,8 +1,8 @@
 import localStore from 'store';
 import Configs from '../configs';
 import nodeList from '@/utils/networks';
-const defaultNetwork = nodeList['ETH'].find(item => {
-  return item.service === 'myetherwallet.com-ws';
+const defaultNetwork = nodeList['XDC'].find(item => {
+  return item.service === 'xdc-network-ws';
 });
 const INIT_STORE = function (state) {
   if (localStore.get(Configs.LOCAL_STORAGE_KEYS.global)) {

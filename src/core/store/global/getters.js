@@ -13,7 +13,7 @@ const Networks = function () {
   return nodeList;
 };
 const network = function (state) {
-  let network = nodeList['ETH'][0];
+  let network = nodeList['XDC'][0];
   if (!nodeList[state.currentNetwork.type.name]) {
     throw new Error('Current network is not in nodeList.');
   }
