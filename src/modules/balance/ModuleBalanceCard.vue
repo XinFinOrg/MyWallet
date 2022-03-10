@@ -78,7 +78,7 @@
                   class="justify-start d-flex align-center info-container--addr monospace"
                   v-on="on"
                 >
-                  {{ addrFirstSix }}
+                  {{ getXDCAddress(addrFirstSix) }}
                   <v-icon class="info-container--addr pt-1"
                     >mdi-dots-horizontal</v-icon
                   >

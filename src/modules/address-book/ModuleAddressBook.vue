@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import { isAddress } from '@/core/helpers/addressUtils';
+import { isXDCAddress } from '@/core/helpers/addressUtils';
 import { mapGetters, mapState } from 'vuex';
 import NameResolver from '@/modules/name-resolver/index';
 import AddressBookAddEdit from './components/AddressBookAddEdit';
@@ -57,7 +57,7 @@ export default {
   props: {
     isValidAddressFunc: {
       type: Function,
-      default: isAddress
+      default: isXDCAddress
     },
     isHomePage: {
       type: Boolean,
