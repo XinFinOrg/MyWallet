@@ -137,7 +137,7 @@
                   class="textMedium--text mew-body"
                 />
                 <p v-else class="text-wrap textMedium--text mew-body mb-0">
-                  {{ item.address }}
+                  {{ getXDCAddress(item.address) }}
                 </p>
               </div>
               <div
@@ -155,6 +155,8 @@
 </template>
 <script>
 import SwapIcon from '@/assets/images/icons/swap-arrow.svg';
+import { getXDCAddress } from '@/core/helpers/addressUtils';
+
 export default {
   props: {
     items: {
@@ -168,7 +170,7 @@ export default {
       default: false
     }
   },
-  data: () => ({ swapIcon: SwapIcon }),
+  data: () => ({ swapIcon: SwapIcon, getXDCAddress }),
   methods: {
     isEven(_value) {
       return _value % 2 == 0;

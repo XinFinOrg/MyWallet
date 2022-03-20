@@ -151,7 +151,7 @@
 import Vue from 'vue';
 import { mapState, mapGetters } from 'vuex';
 import { toBN, toWei } from 'web3-utils';
-import { isAddress } from '@/core/helpers/addressUtils';
+import { get0xAddress, isXDCAddress } from '@/core/helpers/addressUtils';
 import { stringToArray } from '@/core/helpers/common';
 import {
   parseJSON,
@@ -230,7 +230,9 @@ export default {
       return [];
     },
     canInteract() {
-      return isAddress(this.contractAddress) && parseABI(parseJSON(this.abi));
+      return (
+        isXDCAddress(this.contractAddress) && parseABI(parseJSON(this.abi))
+      );
     },
     hasOutputs() {
       const outputsWithValues = this.selectedMethod.outputs.filter(item => {
@@ -257,8 +259,8 @@ export default {
       const params = [];
       for (const _input of this.selectedMethod.inputs) {
         if (_input.type.includes('[]'))
-          params.push(stringToArray(_input.value));
-        else params.push(_input.value);
+          params.push(stringToArray(get0xAddress(_input.value)));
+        else params.push(get0xAddress(_input.value));
       }
       const caller = this.currentContract.methods[
         this.selectedMethod.name
@@ -318,7 +320,7 @@ export default {
       for (const _input of this.selectedMethod.inputs) {
         if (
           !this.isValidInput(
-            _input.value,
+            get0xAddress(_input.value),
             this.getType(_input.type).solidityType
           )
         )
@@ -331,7 +333,7 @@ export default {
           this.abi = JSON.stringify(selected.abi);
         else this.abi = selected.abi;
       }
-      if (isAddress(selected.address)) {
+      if (isXDCAddress(selected.address)) {
         this.contractAddress = selected.address;
       }
     },

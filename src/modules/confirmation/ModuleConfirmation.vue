@@ -232,7 +232,7 @@
                     <v-col cols="12" md="9">
                       <app-scroll-block>
                         <div class="data-values text-md-right">
-                          {{ txVal.value }}
+                          {{ getXDCAddress(txVal.value) }}
                         </div>
                       </app-scroll-block>
                     </v-col>
@@ -278,7 +278,7 @@ import ConfirmationMesssage from './components/ConfirmationMessage';
 import ConfirmationSwapTransactionDetails from './components/ConfirmationSwapTransactionDetails';
 import ConfirmationSendTransactionDetails from './components/ConfirmationSendTransactionDetails';
 import ConfirmWithWallet from './components/ConfirmWithWallet';
-import { toChecksumAddress } from '@/core/helpers/addressUtils';
+import { toChecksumAddress, getXDCAddress } from '@/core/helpers/addressUtils';
 import {
   fromWei,
   hexToNumberString,
@@ -332,7 +332,8 @@ export default {
         etherscan: ''
       },
       error: '',
-      panel: []
+      panel: [],
+      getXDCAddress
     };
   },
   computed: {

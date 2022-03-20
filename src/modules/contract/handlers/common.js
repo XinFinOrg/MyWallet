@@ -7,7 +7,7 @@ import {
   string,
   uint
 } from '@/modules/contract/handlers/solidityTypes';
-import { isAddress } from '@/core/helpers/addressUtils';
+import { isXDCAddress } from '@/core/helpers/addressUtils';
 import validateHexString from '@/core/helpers/validateHexString';
 
 const isContractArgValid = (value, solidityType) => {
@@ -25,7 +25,7 @@ const isContractArgValid = (value, solidityType) => {
       return (
         value !== '' && !isNaN(value) && isInt(value) && !hasWhiteSpace(value)
       );
-    } else if (solidityType === address) return isAddress(value);
+    } else if (solidityType === address) return isXDCAddress(value);
     else if (solidityType === string) return true;
     else if (solidityType.includes(bytes))
       return value.substr(0, 2) === '0x' && validateHexString(value);

@@ -90,7 +90,11 @@
 <script>
 import { mapState, mapActions, mapGetters } from 'vuex';
 import NameResolver from '@/modules/name-resolver/index';
-import { toChecksumAddress, isAddress } from '@/core/helpers/addressUtils';
+import {
+  toChecksumAddress,
+  isXDCAddress,
+  get0xAddress
+} from '@/core/helpers/addressUtils';
 
 const modes = ['add', 'edit'];
 
@@ -150,8 +154,8 @@ export default {
     },
     validAddress() {
       return this.resolvedAddr.length > 0
-        ? isAddress(this.resolvedAddr)
-        : isAddress(this.addressToAdd);
+        ? isXDCAddress(this.resolvedAddr)
+        : isXDCAddress(this.addressToAdd);
     },
     editMode() {
       return this.mode === modes[1];
@@ -160,7 +164,10 @@ export default {
       return this.mode === modes[0];
     },
     isMyAddress() {
-      return this.address?.toLowerCase() === this.addressToAdd?.toLowerCase();
+      return (
+        this.address?.toLowerCase() ===
+        get0xAddress(this.addressToAdd)?.toLowerCase()
+      );
     },
     alreadyExists() {
       if (this.addMode) {
@@ -170,22 +177,22 @@ export default {
         return Object.keys(this.addressBookStore).some(key => {
           return (
             this.addressBookStore[key].address.toLowerCase() ===
-            this.addressToAdd?.toLowerCase()
+            get0xAddress(this.addressToAdd)?.toLowerCase()
           );
         });
       }
       return false;
     },
     checksumAddressToAdd() {
-      if (this.addressToAdd !== '' && isAddress(this.addressToAdd)) {
-        return toChecksumAddress(this.addressToAdd);
+      if (this.addressToAdd !== '' && isXDCAddress(this.addressToAdd)) {
+        return toChecksumAddress(get0xAddress(this.addressToAdd));
       }
-      return this.addressToAdd;
+      return get0xAddress(this.addressToAdd);
     }
   },
   watch: {
     toAddress(newVal) {
-      this.addressToAdd = newVal;
+      this.addressToAdd = get0xAddress(newVal);
     },
     addressToAdd() {
       this.resolveName();
@@ -202,10 +209,10 @@ export default {
     if (this.network.type.ens)
       this.nameResolver = new NameResolver(this.network, this.web3);
     if (this.addMode && this.toAddress) {
-      this.addressToAdd = this.toAddress;
+      this.addressToAdd = get0xAddress(this.toAddress);
     }
     if (this.editMode) {
-      this.addressToAdd = this.item.address;
+      this.addressToAdd = get0xAddress(this.item.address);
       this.nickname = this.item.nickname;
       this.currentIdx = this.addressBookStore.findIndex(
         item => item.address === this.item.address
@@ -226,9 +233,9 @@ export default {
         this.addressToAdd.includes('.')
       ) {
         await this.nameResolver
-          .resolveName(this.addressToAdd)
+          .resolveName(get0xAddress(this.addressToAdd))
           .then(addr => {
-            this.resolvedAddr = addr;
+            this.resolvedAddr = get0xAddress(addr);
           })
           .catch(() => {
             this.resolvedAddr = '';
@@ -236,7 +243,7 @@ export default {
       }
     },
     setAddress(value) {
-      this.addressToAdd = value ? value : '';
+      this.addressToAdd = value ? get0xAddress(value) : '';
     },
     setNickname(value) {
       this.nickname = value;
