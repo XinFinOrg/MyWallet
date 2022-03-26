@@ -1,13 +1,13 @@
 <template>
   <div class="default-header expandHeader">
-    <div
-      class="d-flex align-center justify-center pa-2 greyLight textMedium--text"
+    <!--<div
+      class="d-flex align-center justify-center pa-2 greyLight textMedium&#45;&#45;text"
     >
       Missing the old version?&nbsp;
       <a href="https://v5.myetherwallet.com" rel="noopener noreferrer">
         You can find version 5 here
       </a>
-    </div>
+    </div>-->
     <v-container class="d-flex align-center pt-8">
       <v-row align="center" no-gutters>
         <v-col class="d-md-none" cols="4">
@@ -18,7 +18,7 @@
             <v-img
               :class="$vuetify.breakpoint.smAndDown ? 'mx-auto' : ''"
               src="@/assets/images/icons/logo-mew.svg"
-              max-height="36"
+              max-height="44"
               max-width="130"
             />
           </router-link>

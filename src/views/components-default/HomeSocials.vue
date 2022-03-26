@@ -2,7 +2,7 @@
   <v-container>
     <div class="py-7" />
     <v-sheet align="center">
-      <h1 class="textDark--text pb-5">Join MEW Community</h1>
+      <h1 class="textDark--text pb-5">Join XOW Community</h1>
     </v-sheet>
     <v-sheet color="transparent" max-width="900px" class="mx-auto">
       <v-row align="center" justify="center">

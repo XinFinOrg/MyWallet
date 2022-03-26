@@ -5,7 +5,7 @@
       <router-view />
     </v-main>
     <the-default-footer />
-    <the-default-wallet-banner />
+<!--    <the-default-wallet-banner />-->
   </div>
 </template>
 

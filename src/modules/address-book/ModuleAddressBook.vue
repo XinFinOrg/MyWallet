@@ -112,19 +112,20 @@ export default {
           ]
         : [
             {
-              address: toChecksumAddress(this.$store.state.wallet.address),
+              address: getXDCAddress(toChecksumAddress(this.$store.state.wallet.address)),
               nickname: 'My Address',
               resolverAddr: ''
             }
-          ].concat(this.addressBookStore);
+          ].concat(this.addressBookStore.map(e => {
+            e.address = getXDCAddress(e.address)
+            return e
+        }));
     },
     enableSave() {
       return this.isHomePage ? false : this.isValidAddress;
     },
     addrLabel() {
-      return getXDCAddress(
-        this.label === '' ? this.$t('sendTx.to-addr') : this.label
-      );
+      return this.label === '' ? this.$t('sendTx.to-addr') : this.label
     }
   },
   watch: {
@@ -184,9 +185,9 @@ export default {
         /**
          * @emits setAddress
          */
-        this.$emit('setAddress', value, this.isValidAddress, {
+        this.$emit('setAddress', get0xAddress(value), this.isValidAddress, {
           type: inputType,
-          value: isObject(typeVal) ? typeVal.nickname : typeVal
+          value: isObject(typeVal) ? typeVal.nickname : get0xAddress(typeVal)
         });
         if (!this.isValidAddress) {
           this.resolveName();

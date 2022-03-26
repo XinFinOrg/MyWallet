@@ -140,8 +140,8 @@ export default {
         /* MEW wallet Button */
         {
           color: 'white',
-          title: 'MEW wallet',
-          subtitle: 'Connect MEW wallet app to MEW web',
+          title: 'XOW wallet',
+          subtitle: 'Connect XOW wallet app to MEW web',
           note: '',
           rightIcon: require('@/assets/images/icons/icon-mew-wallet.png'),
           titleIcon: 'mdi-shield-check',
@@ -155,7 +155,7 @@ export default {
         {
           color: 'white',
           title: 'Browser Extension',
-          subtitle: 'Use your web3 wallet with MEW.',
+          subtitle: 'Use your web3 wallet with XOW.',
           note: '',
           rightIcon: require('@/assets/images/icons/icon-mew-cx.png'),
           titleIcon: 'mdi-shield-check',

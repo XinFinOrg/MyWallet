@@ -9,9 +9,9 @@
     <template #rightColItem1>
       <module-swap-rates />
     </template>
-    <template #rightColItem2>
+    <!--<template #rightColItem2>
       <app-carousel />
-    </template>
+    </template>-->
   </the-wrapper-wallet>
 </template>
 

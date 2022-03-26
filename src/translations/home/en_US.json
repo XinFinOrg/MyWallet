@@ -1,7 +1,7 @@
 {
   "tagline1": "Ethereum's ",
   "tagline2": "Original Wallet",
-  "subheading": "MEW (MyEtherWallet) is a free, client-side interface helping you interact with the Ethereum blockchain. Our easy-to-use, open-source platform allows you to generate wallets, interact with smart contracts, and so much more.",
+  "subheading": "XOW (XDCWallet) is a free, client-side interface helping you interact with the Ethereum blockchain. Our easy-to-use, open-source platform allows you to generate wallets, interact with smart contracts, and so much more.",
   "create-wallet": {
     "title": "Create a new wallet",
     "subtitle-one": "Please select a method to create a new wallet",
@@ -45,7 +45,7 @@
   },
   "about-mew": {
     "heading": "Easy and secure access to the Ethereum Blockchain",
-    "subheading": "Why MEW",
+    "subheading": "Why XOW",
     "card-one": {
       "title": "Friendly to use",
       "text": "Access the Ethereum blockchain's original and most-trusted wallet, now with a host of new features all contained in an elegant and friendly interface."

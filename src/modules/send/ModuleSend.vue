@@ -194,6 +194,8 @@ import {
   toBNSafe
 } from '@/core/helpers/numberFormatHelper';
 import { MAIN_TOKEN_ADDRESS } from '@/core/helpers/common';
+import {get0xAddress} from '@/core/helpers/addressUtils';
+
 export default {
   components: {
     ModuleAddressBook,
@@ -512,7 +514,7 @@ export default {
     },
     toAddress() {
       if (this.isValidAddress) {
-        this.sendTx.setTo(this.toAddress, this.userInputType);
+        this.sendTx.setTo(get0xAddress(this.toAddress), this.userInputType);
       }
     },
     amount(newVal) {
@@ -655,7 +657,7 @@ export default {
       }
     },
     setAddress(addr, isValidAddress, userInputType) {
-      this.toAddress = addr;
+      this.toAddress = get0xAddress(addr);
       this.isValidAddress = isValidAddress;
       this.userInputType = userInputType;
     },
@@ -701,7 +703,7 @@ export default {
           : undefined;
         this.data = isHexStrict(this.prefilledData) ? this.prefilledData : '';
         this.amount = this.prefilledAmount;
-        this.toAddress = this.prefilledAddress;
+        this.toAddress = get0xAddress(this.prefilledAddress);
         this.gasLimit = this.prefilledGasLimit;
         this.selectedCurrency = foundToken ? foundToken : this.selectedCurrency;
         this.$refs.expandPanel.setToggle(true);

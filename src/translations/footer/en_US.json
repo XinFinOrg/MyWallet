@@ -1,6 +1,6 @@
 {
   "donation": {
-    "heading": "Love MEW?",
+    "heading": "Love XOW?",
     "text": "Help us keep MEW free and open-source, your donations go a long way towards making that possible.",
     "ether": "Ethereum Donation",
     "bitcoin": "Bitcoin Donation"
@@ -25,7 +25,7 @@
   "feedback": "Feedback",
   "privacy": "Privacy",
   "tos": "Terms",
-  "copyright": "© 2022 MyEtherWallet. All rights reserved. Pricing taken from",
+  "copyright": "© 2022 XDCWallet. All rights reserved. Pricing taken from",
   "send-offline": "Send Offline Helper",
   "mew-connect-protocol": "MEWconnect Protocol",
   "mew-wallet": "MEW wallet",
