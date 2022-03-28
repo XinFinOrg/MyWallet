@@ -1,13 +1,13 @@
 <template>
   <div>
     <home-landing />
-    <home-features />
-    <home-eth-blocks />
+    <!--<home-features />-->
+    <!--<home-eth-blocks />-->
     <home-socials />
-    <home-why-mew />
-    <app-mewtopia-block />
-    <app-partners-block />
-    <app-get-started />
+    <!--<home-why-mew />-->
+    <!--<app-mewtopia-block />-->
+    <!--<app-partners-block />-->
+    <!--<app-get-started />-->
   </div>
 </template>
 

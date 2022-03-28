@@ -19,9 +19,9 @@
     =====================================================================================
     -->
       <div style="max-width: 650px" class="mx-auto">
-        <a href="https://www.mewwallet.com/" target="_blank">
+       <!-- <a href="https://www.mewwallet.com/" target="_blank">
           <mew-button class="mb-5" color-theme="white" style="height: 160px">
-            <div class="px-2 textDark--text text-left d-flex align-center">
+            <div class="px-2 textDark&#45;&#45;text text-left d-flex align-center">
               <div>
                 <div class="mb-2 d-flex align-center">
                   <div class="mew-heading-2">Get MEW wallet app</div>
@@ -44,7 +44,7 @@
               </div>
             </div>
           </mew-button>
-        </a>
+        </a>-->
 
         <mew-button
           class="mb-5"
@@ -64,14 +64,14 @@
               </div>
               <div class="break-word">
                 For the highest standard of security, buy a hardware wallet and
-                use it with MEW.
+                use it with XOW.
               </div>
             </div>
             <div class="d-none d-sm-block px-5">
               <img
                 class="mew-wallet-img"
                 src="@/assets/images/icons/icon-hardware-wallet.png"
-                alt="MEWwallet"
+                alt="XOWwallet"
                 style="height: 90px"
               />
             </div>

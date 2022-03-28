@@ -5,11 +5,6 @@
 =====================================================================================
 -->
   <mew-overlay
-    :footer="{
-      text: step === 1 ? 'Need help? Read about' : 'Need help? Read',
-      linkTitle: footerLink.title,
-      link: footerLink.url
-    }"
     :show-overlay="open"
     :title="title"
     :back="showBack ? null : back"
@@ -232,7 +227,7 @@ export default {
           icon: require('@/assets/images/icons/hardware-wallets/icon-keepkey.svg'),
           type: WALLET_TYPES.KEEPKEY
         },
-        {
+        /*{
           label: 'BitBox02',
           icon: require('@/assets/images/icons/hardware-wallets/icon-bitbox.svg'),
           type: WALLET_TYPES.BITBOX2
@@ -241,7 +236,7 @@ export default {
           label: 'CoolWallet',
           icon: require('@/assets/images/icons/hardware-wallets/icon-coolwallet.svg'),
           type: WALLET_TYPES.COOL_WALLET
-        }
+        }*/
       ],
       ledgerApps: appPaths.map(item => {
         return {

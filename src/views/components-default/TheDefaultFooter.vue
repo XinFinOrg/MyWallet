@@ -1,7 +1,7 @@
 <template>
   <div class="mew-component--home-footer textDark--text">
     <div class="desktop-content d-none d-lg-block">
-      <v-container class="pt-12 pb-6">
+      <!--<v-container class="pt-12 pb-6">
         <v-row>
           <v-col v-for="(f, fkey) in footers" :key="fkey" cols="3">
             <div class="subtitle-1 font-weight-bold mb-1">{{ f.title }}</div>
@@ -25,7 +25,7 @@
             </div>
             <p>{{ $t('footer.donation.text') }}</p>
             <a
-              class="color--inherit d-flex align-center mb-3"
+              class="color&#45;&#45;inherit d-flex align-center mb-3"
               target="_blank"
               :href="`https://etherscan.io/address/${ethDonationAddress}`"
             >
@@ -43,7 +43,7 @@
               </div>
             </a>
             <a
-              class="color--inherit d-flex align-center"
+              class="color&#45;&#45;inherit d-flex align-center"
               target="_blank"
               :href="`https://blockchain.info/address/${btcDonationAddress}`"
             >
@@ -67,7 +67,7 @@
             <div class="d-flex align-center line-height-small">
               <div class="px-6 border-right">
                 <a
-                  class="color--inherit"
+                  class="color&#45;&#45;inherit"
                   href="mailto:support@myetherwallet.com"
                   target="_blank"
                 >
@@ -114,7 +114,7 @@
             </a>
           </div>
         </div>
-      </v-container>
+      </v-container>-->
       <v-sheet color="textDark" class="py-2">
         <v-container>
           <div class="d-flex align-center">
@@ -153,7 +153,7 @@
     </div>
 
     <div class="mobile-content d-block d-lg-none">
-      <v-expansion-panels accordion>
+     <!-- <v-expansion-panels accordion>
         <v-expansion-panel v-for="(mf, mfkey) in footers" :key="mfkey">
           <v-expansion-panel-header>
             <v-container>
@@ -192,7 +192,7 @@
             </h3>
             <p>{{ $t('footer.donation.text') }}</p>
             <a
-              class="color--inherit d-flex align-center mb-1"
+              class="color&#45;&#45;inherit d-flex align-center mb-1"
               target="_blank"
               :href="`https://etherscan.io/address/${ethDonationAddress}`"
             >
@@ -210,7 +210,7 @@
               </div>
             </a>
             <a
-              class="color--inherit d-flex align-center"
+              class="color&#45;&#45;inherit d-flex align-center"
               target="_blank"
               :href="`https://blockchain.info/address/${btcDonationAddress}`"
             >
@@ -246,7 +246,7 @@
             <div class="d-flex align-center line-height-small mx-auto">
               <div class="px-2 px-lg-6 border-right">
                 <a
-                  class="color--inherit"
+                  class="color&#45;&#45;inherit"
                   href="mailto:support@myetherwallet.com"
                   target="_blank"
                 >
@@ -266,7 +266,7 @@
             </div>
           </div>
         </v-sheet>
-      </v-container>
+      </v-container>-->
 
       <v-sheet color="textDark" class="py-9">
         <v-container>

@@ -35,17 +35,17 @@
             :list-obj="menuObj"
             @goToPage="routeTo"
           />
-          <a
+          <!--<a
             :href="swapLink"
             target="_blank"
-            class="white--text text-decoration--none"
+            class="white&#45;&#45;text text-decoration&#45;&#45;none"
           >
             {{ $t('header.buy-eth') }}
-          </a>
+          </a>-->
         </v-col>
-        <v-col cols="4" class="text-right">
+        <!--<v-col cols="4" class="text-right">
           <mew-tools class="ml-auto" />
-        </v-col>
+        </v-col>-->
       </v-row>
     </v-container>
   </div>
@@ -71,14 +71,14 @@ export default {
               title: 'Send transaction',
               to: { name: ROUTES_WALLET.SEND_TX.NAME }
             },
-            {
+            /*{
               title: 'Explore DApps',
               to: { name: ROUTES_WALLET.DAPPS.NAME }
             },
             {
               title: 'Swap tokens',
               to: { name: ROUTES_WALLET.SWAP.NAME }
-            },
+            },*/
             {
               title: 'Sign message',
               to: { name: ROUTES_WALLET.SIGN_MESSAGE.NAME }
@@ -92,10 +92,10 @@ export default {
               title: 'Verify message',
               to: { name: ROUTES_HOME.TOOLS.NAME, query: { tool: 'verify' } }
             },
-            {
+            /*{
               title: 'Convert units',
               to: { name: ROUTES_HOME.TOOLS.NAME, query: { tool: 'convert' } }
-            }
+            }*/
           ]
         }
       ]

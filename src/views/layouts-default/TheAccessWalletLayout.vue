@@ -138,7 +138,7 @@ export default {
       },
       buttons: [
         /* MEW wallet Button */
-        {
+        /*{
           color: 'white',
           title: 'XOW wallet',
           subtitle: 'Connect XOW wallet app to MEW web',
@@ -150,7 +150,7 @@ export default {
           fn: () => {
             this.openMEWconnect();
           }
-        },
+        },*/
         /* Browser Extension */
         {
           color: 'white',
@@ -169,7 +169,7 @@ export default {
         {
           color: 'white',
           title: 'Hardware Wallets',
-          subtitle: 'Ledger, Trezor, KeepKey, FINNEY, BitBox',
+          subtitle: 'Ledger, Trezor, KeepKey',
           note: '',
           rightIcon: require('@/assets/images/icons/icon-hardware-wallet.png'),
           titleIcon: 'mdi-shield-check',
@@ -180,7 +180,7 @@ export default {
           }
         },
         /* Mobile Apps */
-        {
+        /*{
           color: 'white',
           title: 'Mobile Apps',
           subtitle: 'WalletConnect, WalletLink',
@@ -195,7 +195,7 @@ export default {
           fn: () => {
             this.openOverlay(ACCESS_VALID_OVERLAYS.MOBILE);
           }
-        },
+        },*/
         /* Software */
         {
           color: 'white',

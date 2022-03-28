@@ -47,7 +47,7 @@ Vue.directive('lottie', LottieAnimation);
 Vue.filter('lokalise', lokalise);
 
 // eslint-disable-next-line
-Vue.use(VueIntercom, { appId: 'ja20qe25' });
+// Vue.use(VueIntercom, { appId: 'ja20qe25' });
 
 //Router
 Vue.use(Router);
@@ -61,9 +61,9 @@ new Vue({
   apolloProvider,
   vuetify,
   beforeCreate() {
-    this.$intercom.boot({
+    /*this.$intercom.boot({
       user_id: uuidv4()
-    });
+    });*/
     if (locStore.get('mew-testing') === undefined) {
       locStore.set('mew-testing', false);
     }
