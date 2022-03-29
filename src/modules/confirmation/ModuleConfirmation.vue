@@ -232,7 +232,7 @@
                     <v-col cols="12" md="9">
                       <app-scroll-block>
                         <div class="data-values text-md-right">
-                          {{ getXDCAddress(txVal.value) }}
+                          {{ txVal.value }}
                         </div>
                       </app-scroll-block>
                     </v-col>
