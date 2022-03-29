@@ -21,6 +21,6 @@ export default {
     blockExplorerAddr: '',
     websocket: null
   },
-  coingeckID: 'xdc-network',
+  coingeckoID: 'xdce-crowd-sale',
   gasPriceMultiplier: 1
 };
