@@ -76,12 +76,12 @@
         Warning Block
       =====================================================================================
       -->
-      <mew-warning-sheet
+      <!--<mew-warning-sheet
         class="mt-3"
         title="NOT RECOMMENDED"
         :link-obj="linkToLearnMore"
         description="This information is sensitive, and these options should only be used in offline settings by experienced crypto users."
-      />
+      />-->
     </div>
   </div>
 </template>

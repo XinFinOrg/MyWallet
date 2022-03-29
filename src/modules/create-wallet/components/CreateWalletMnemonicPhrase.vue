@@ -82,11 +82,11 @@
             @click.native="updateStep(2)"
           />
         </div>
-        <mew-warning-sheet
+        <!--<mew-warning-sheet
           class="mt-5 mb-0"
           title="NOT RECOMMENDED"
           description="This information is sensitive, and these options should only be used in offline settings by experienced crypto users. Your phrase is the key to your wallet. Please make sure to write it down and save it in a secure location. We CAN NOT retrieve or reset your phrase if you lose it."
-        />
+        />-->
       </template>
       <!--
       =====================================================================================
@@ -162,11 +162,11 @@
             @click.native="verify"
           />
         </div>
-        <mew-warning-sheet
+        <!--<mew-warning-sheet
           class="mt-5 mb-0"
           title="NOT RECOMMENDED"
           description="This information is sensitive, and these options should only be used in offline settings by experienced crypto users. Your phrase is the key to your wallet. Please make sure to write it down and save it in a secure location. We CAN NOT retrieve or reset your phrase if you lose it."
-        />
+        />-->
       </template>
       <!--
       =====================================================================================

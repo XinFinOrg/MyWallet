@@ -68,11 +68,11 @@
           Warning Block
         =====================================================================================
         -->
-      <mew-warning-sheet
+      <!--<mew-warning-sheet
         class="mt-4 mb-0"
         title="NOT RECOMMENDED"
         description="This information is sensitive, and these options should only be used in offline settings by experienced crypto users. You will need your keystore file + password to access your wallet. Please save them in a secure location. We CAN NOT retrieve or reset your keystore/password if you lose them."
-      />
+      />-->
     </template>
     <!--
       =====================================================================================
@@ -119,11 +119,11 @@
         :download="name"
         class="link"
       />
-      <mew-warning-sheet
+      <!--<mew-warning-sheet
         class="mt-4 mb-0"
         title="NOT RECOMMENDED"
         description="This information is sensitive, and these options should only be used in offline settings by experienced crypto users. You will need your keystore file + password to access your wallet. Please save them in a secure location. We CAN NOT retrieve or reset your keystore/password if you lose them."
-      />
+      />-->
     </template>
     <!--
       =====================================================================================

@@ -30,7 +30,7 @@
       :footer="{
         text: 'Need help?',
         linkTitle: 'Contact support',
-        link: 'mailto:support@myetherwallet.com'
+        link: 'mailto:support@blocksscan.io'
       }"
       title="Notifications"
       content-size="large"
@@ -80,7 +80,7 @@
         </div>
         <div v-show="notificationsByType.length === 0" class="pa-5 text-center">
           <h3 class="mb-5">No notifications to display for:</h3>
-          <h3 class="break-hash">{{ address }}</h3>
+          <h3 class="break-hash">{{ getXDCAddress(address) }}</h3>
         </div>
       </v-sheet>
       <!-- <div class="text-center py-6">
@@ -101,6 +101,7 @@ import handlerSwap from '@/modules/swap/handlers/handlerSwap';
 
 import formatNotification from './helpers/formatNotification';
 import { EventBus } from '@/core/plugins/eventBus.js';
+import { getXDCAddress } from '@/core/helpers/addressUtils';
 // import { ROUTES_WALLET } from '@/core/configs/configRoutes';
 
 export default {
@@ -114,6 +115,7 @@ export default {
   },
   data() {
     return {
+      getXDCAddress,
       selected: NOTIFICATION_TYPES.ALL,
       items: [
         { name: 'All', value: NOTIFICATION_TYPES.ALL },

@@ -68,7 +68,7 @@
               <div class="px-6 border-right">
                 <a
                   class="color&#45;&#45;inherit"
-                  href="mailto:support@myetherwallet.com"
+                  href="mailto:support@blocksscan.io"
                   target="_blank"
                 >
                   {{ $t('footer.feedback') }}
@@ -247,7 +247,7 @@
               <div class="px-2 px-lg-6 border-right">
                 <a
                   class="color&#45;&#45;inherit"
-                  href="mailto:support@myetherwallet.com"
+                  href="mailto:support@blocksscan.io"
                   target="_blank"
                 >
                   {{ $t('footer.feedback') }}
@@ -359,7 +359,7 @@ export default {
           { label: 'Help center', link: 'https://help.myetherwallet.com/en/' },
           {
             label: 'Customer support',
-            link: 'mailto:support@myetherwallet.com'
+            link: 'mailto:support@blocksscan.io'
           },
           { label: 'MEWtopia', link: 'https://www.mewtopia.com/' },
           { label: 'Press Kit', routerLink: 'PressKit' },

@@ -8,7 +8,7 @@
     :footer="{
       text: 'Need help?',
       linkTitle: 'Contact support',
-      link: 'mailto:support@myetherwallet.com'
+      link: 'mailto:support@blocksscan.io'
     }"
     content-size="large"
     :show-overlay="open"
@@ -85,12 +85,12 @@
       Warning
     =====================================================================================
     -->
-    <mew-warning-sheet
+    <!--<mew-warning-sheet
       title="Not Recommended"
       description="This information is sensitive, and these options should only be used in offline settings by experienced crypto users."
       :link-obj="warningSheetObj"
       class="mt-0 mb-0"
-    />
+    />-->
   </mew-overlay>
 </template>
 

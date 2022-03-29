@@ -56,7 +56,7 @@
         :footer="{
           text: 'Need help?',
           linkTitle: 'Contact support',
-          link: 'mailto:support@myetherwallet.com'
+          link: 'mailto:support@blocksscan.io'
         }"
         title="Interact with contract"
         :show-overlay="interact"

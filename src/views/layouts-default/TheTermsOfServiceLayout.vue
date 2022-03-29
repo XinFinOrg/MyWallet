@@ -329,11 +329,11 @@
               <i18n path="termsOfService.contact-info-title-p" tag="p">
                 <template #suppEmail>
                   <a
-                    href="mailto:support@myetherwallet.com"
+                    href="mailto:support@blocksscan.io"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    support@myetherwallet.com</a
+                    support@blocksscan.io</a
                   >.
                 </template>
               </i18n>

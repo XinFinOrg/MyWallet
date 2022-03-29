@@ -253,7 +253,7 @@
       :footer="{
         text: 'Need help?',
         linkTitle: 'Contact support',
-        link: 'mailto:support@myetherwallet.com'
+        link: 'mailto:support@blocksscan.io'
       }"
       :show-overlay="showSignOverlay"
       :title="title ? title : 'Message'"

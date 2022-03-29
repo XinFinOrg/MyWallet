@@ -114,7 +114,7 @@
               v-if="stakedStep1Title.showContactSupport"
               rel="noopener noreferrer"
               class="cursor-pointer greenPrimary--text text-lowercase"
-              href="mailto:support@myetherwallet.com"
+              href="mailto:support@blocksscan.io"
               target="_blank"
             >
               {{ $t('common.contact-support') }}

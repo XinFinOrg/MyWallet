@@ -5,7 +5,7 @@
     ===================================================
     -->
   <div>
-    <v-dialog
+    <!--<v-dialog
       :value="!displayedTrackingPopup"
       width="360"
       max-width="360"
@@ -18,14 +18,14 @@
       scrollable
     >
       <v-card>
-        <!--
+        &lt;!&ndash;
     ===================================================
    Titles
     ===================================================
-    -->
+    &ndash;&gt;
         <v-card-text class="pa-0">
           <div
-            class="textDark--text mew-heading-2 font-weight-regular pa-8 pb-4"
+            class="textDark&#45;&#45;text mew-heading-2 font-weight-regular pa-8 pb-4"
           >
             <span v-if="!onWhatWeCollect" class="break-word"
               >Help us make MEW better by allowing us to measure a few
@@ -38,16 +38,16 @@
               Back to overview</span
             >
           </div>
-          <!--
+          &lt;!&ndash;
     ===================================================
    Content (on mount)
     ===================================================
-    -->
+    &ndash;&gt;
           <div v-if="!onWhatWeCollect">
             <div
               v-for="(option, idx) in options"
               :key="idx"
-              :class="option.clickFn ? 'cursor--pointer clickable-content' : ''"
+              :class="option.clickFn ? 'cursor&#45;&#45;pointer clickable-content' : ''"
             >
               <v-divider />
               <v-row class="ma-0" @click="option.clickFn">
@@ -56,10 +56,10 @@
                     {{ option.iconLeft }}
                   </v-icon>
                 </v-col>
-                <v-col cols="8" :class="['py-4 pl-6', option.color + '--text']">
+                <v-col cols="8" :class="['py-4 pl-6', option.color + '&#45;&#45;text']">
                   <p
                     v-if="option.title"
-                    class="font-weight-bold mb-2 textDark--text"
+                    class="font-weight-bold mb-2 textDark&#45;&#45;text"
                   >
                     {{ option.title }}
                   </p>
@@ -87,18 +87,18 @@
               </v-row>
             </div>
           </div>
-          <!--
+          &lt;!&ndash;
     ===================================================
    Content (expanded on: What we collect)
     ===================================================
-    -->
+    &ndash;&gt;
           <div v-show="onWhatWeCollect">
             <v-divider />
             <div class="py-4 px-8">
-              <p class="font-weight-bold textDark--text mb-2">
+              <p class="font-weight-bold textDark&#45;&#45;text mb-2">
                 What we collect
               </p>
-              <ul class="what-we-collect-ul greyPrimary--text pl-5">
+              <ul class="what-we-collect-ul greyPrimary&#45;&#45;text pl-5">
                 <li
                   v-for="(item, idx) in whatWeCollectItems"
                   :key="item + idx"
@@ -120,11 +120,11 @@
           </div>
         </v-card-text>
         <v-divider />
-        <!--
+        &lt;!&ndash;
     ===================================================
    Buttons
     ===================================================
-    -->
+    &ndash;&gt;
         <v-card-actions class="px-8 py-6 d-flex flex-column justify-center">
           <mew-button
             has-full-width
@@ -133,14 +133,14 @@
             @click.native="onClick(true)"
           />
           <p
-            class="text-center greyPrimary--text mt-3 mb-0 cursor--pointer"
+            class="text-center greyPrimary&#45;&#45;text mt-3 mb-0 cursor&#45;&#45;pointer"
             @click="onClick(false)"
           >
             Don't allow
           </p>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+    </v-dialog>-->
   </div>
 </template>
 

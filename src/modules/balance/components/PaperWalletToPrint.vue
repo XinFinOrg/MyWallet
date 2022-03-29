@@ -14,7 +14,7 @@
             height="20"
             src="@/assets/images/icons/icon-support.svg"
           />
-          <div>support@myetherwallet.com</div>
+          <div>support@blocksscan.io</div>
         </div>
         <div class="d-flex align-center mr-3">
           <img
@@ -22,7 +22,7 @@
             height="20"
             src="@/assets/images/icons/icon-support.svg"
           />
-          <div>https://www.myetherwallet.com</div>
+          <div>https://wallet.blocksscan.io</div>
         </div>
       </div>
     </div>
@@ -62,7 +62,7 @@
           </div>
         </v-col>
         <v-col cols="auto" class="ml-auto">
-          <qr-code :data="address" :height="140" :width="140" />
+          <qr-code :data="getXDCAddress(address)" :height="140" :width="140" />
         </v-col>
       </v-row>
 
@@ -96,12 +96,12 @@
 
 <script>
 import { mapState } from 'vuex';
-import { toChecksumAddress } from '@/core/helpers/addressUtils';
+import { getXDCAddress, toChecksumAddress } from '@/core/helpers/addressUtils';
 
 export default {
   name: 'BalanceAddressPaperWallet',
   data() {
-    return {};
+    return {getXDCAddress};
   },
   computed: {
     ...mapState('wallet', ['address', 'instance', 'isHardware']),
@@ -112,7 +112,7 @@ export default {
       return null;
     },
     getChecksumAddressString() {
-      return this.address ? toChecksumAddress(this.address) : '';
+      return this.address ? getXDCAddress(toChecksumAddress(this.address)) : '';
     },
     showPrivateKey() {
       return !this.instance.isPubOnly;
