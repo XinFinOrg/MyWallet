@@ -115,7 +115,7 @@
           </div>
         </div>
       </v-container>-->
-      <v-sheet color="textDark" class="py-2">
+      <v-sheet color="textDark" class="py-2" style="border-radius: 0">
         <v-container>
           <div class="d-flex align-center">
             <a
