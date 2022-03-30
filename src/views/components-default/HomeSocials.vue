@@ -42,15 +42,15 @@ export default {
     socials: [
       {
         img: require('@/assets/images/icons/socials/facebook.png'),
-        link: 'https://www.facebook.com/MyEtherWallet',
+        link: 'https://www.facebook.com/BlocksScan',
         label: 'Facebook'
       },
       {
         img: require('@/assets/images/icons/socials/twitter.png'),
-        link: 'https://twitter.com/myetherwallet',
+        link: 'https://twitter.com/BlocksScan',
         label: 'Twitter'
       },
-      {
+      /*{
         img: require('@/assets/images/icons/socials/medium.png'),
         link: 'https://medium.com/@myetherwallet',
         label: 'Medium'
@@ -59,13 +59,13 @@ export default {
         img: require('@/assets/images/icons/socials/reddit.png'),
         link: 'https://www.reddit.com/r/MyEtherWallet/',
         label: 'Reddit'
-      },
+      },*/
       {
         img: require('@/assets/images/icons/socials/github.png'),
-        link: 'https://github.com/myetherwallet',
+        link: 'https://github.com/BlocksScan',
         label: 'Github'
       },
-      {
+      /*{
         img: require('@/assets/images/icons/socials/vkontakte.png'),
         link: 'https://vk.com/public190491855',
         label: 'Vkontakte'
@@ -79,15 +79,15 @@ export default {
         img: require('@/assets/images/icons/socials/mewtopia.png'),
         link: 'https://www.mewtopia.com/',
         label: 'Mewtopia'
-      },
+      },*/
       {
         img: require('@/assets/images/icons/socials/instagram.png'),
-        link: 'https://www.instagram.com/myetherwallet/',
+        link: 'https://www.instagram.com/blocksscan/',
         label: 'Instagram'
       },
       {
         img: require('@/assets/images/icons/socials/telegram.png'),
-        link: 'https://t.me/myetherwallet',
+        link: 'https://t.me/BlocksScan',
         label: 'Telegram'
       }
     ]

@@ -24,12 +24,12 @@
           </router-link>
         </v-col>
         <v-col class="justify-space-between d-none d-md-flex" cols="4">
-          <router-link
-            class="white--text text-decoration--none"
+          <!--<router-link
+            class="white&#45;&#45;text text-decoration&#45;&#45;none"
             :to="{ name: ROUTES_HOME.HOW_IT_WORKS.NAME }"
           >
             {{ $t('header.what-is-mew') }}
-          </router-link>
+          </router-link>-->
           <mew-menu
             activator-text-color="white--text"
             :list-obj="menuObj"

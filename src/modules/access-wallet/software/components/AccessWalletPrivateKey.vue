@@ -19,12 +19,12 @@
     =====================================================================================
     -->
     <div class="text-center">
-      <mew-checkbox
+      <!--<mew-checkbox
         v-model="acceptTerms"
         label="To access my wallet, I accept "
         :link="link"
         class="justify-center"
-      />
+      />-->
       <v-row dense class="align-center justify-center pt-4">
         <v-col cols="12" sm="4">
           <mew-button
@@ -60,7 +60,7 @@ export default {
   data() {
     return {
       privateKey: '',
-      acceptTerms: false,
+      acceptTerms: true,
       link: {
         title: 'Terms',
         url: 'https://www.myetherwallet.com/terms-of-service'

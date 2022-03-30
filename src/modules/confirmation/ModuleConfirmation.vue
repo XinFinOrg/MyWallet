@@ -47,7 +47,7 @@
                 target="_blank"
                 :href="links.etherscan"
                 class="d-flex justify-center justify-sm-start"
-                >View on Etherscan
+                >View on BlockScan
                 <v-icon color="greenPrimary" small>mdi-launch</v-icon></a
               >
             </v-col>
@@ -118,12 +118,12 @@
             <b>Make sure all the information is correct.</b> Cancelling or
             reversing a transaction cannot be guaranteed. You will still be
             charged gas fee even if transaction fails.
-            <a
+            <!--<a
               href="https://help.myetherwallet.com/en/articles/5461501-my-transaction-failed-why-was-i-charged"
               target="_blank"
               rel="noopener noreferrer"
               >Learn more.</a
-            >
+            >-->
           </div>
           <!-- transaction details -->
           <confirm-with-wallet
@@ -469,8 +469,8 @@ export default {
      */
     successBodyText() {
       return this.showSuccessSwap
-        ? 'Once completed, the token amount will be deposited to your wallet. This should take a few minutes depending on how congested the Ethereum network is.'
-        : 'Once completed, the token amount will be deposited to the address you provided. This should take a few minutes depending on how congested the Ethereum network is.';
+        ? 'Once completed, the token amount will be deposited to your wallet. This should take a few minutes depending on how congested the BlockScan network is.'
+        : 'Once completed, the token amount will be deposited to the address you provided. This should take a few minutes depending on how congested the BlockScan network is.';
     },
     /**
      * Property returns string, depending whether or not this is a swap or send
@@ -882,8 +882,8 @@ export default {
           {
             title: 'From address',
             value: item.from
-              ? toChecksumAddress(item.from)
-              : toChecksumAddress(this.address)
+              ? getXDCAddress(toChecksumAddress(item.from))
+              : getXDCAddress(toChecksumAddress(this.address))
           },
           {
             title:
@@ -891,8 +891,8 @@ export default {
                 ? 'Via Contract Address'
                 : 'To address',
             value: item.to
-              ? toChecksumAddress(item.to)
-              : toChecksumAddress(this.txTo)
+              ? getXDCAddress(toChecksumAddress(item.to))
+              : getXDCAddress(toChecksumAddress(this.txTo))
           },
           {
             title: 'Sending',
