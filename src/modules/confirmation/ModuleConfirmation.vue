@@ -469,8 +469,8 @@ export default {
      */
     successBodyText() {
       return this.showSuccessSwap
-        ? 'Once completed, the token amount will be deposited to your wallet. This should take a few minutes depending on how congested the BlockScan network is.'
-        : 'Once completed, the token amount will be deposited to the address you provided. This should take a few minutes depending on how congested the BlockScan network is.';
+        ? 'Once completed, the token amount will be deposited to your wallet.'
+        : 'Once completed, the token amount will be deposited to the address you provided';
     },
     /**
      * Property returns string, depending whether or not this is a swap or send

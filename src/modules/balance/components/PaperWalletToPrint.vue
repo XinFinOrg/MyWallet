@@ -14,7 +14,7 @@
             height="20"
             src="@/assets/images/icons/icon-support.svg"
           />
-          <div>support@blocksscan.io</div>
+          <div>support@xinfin.org</div>
         </div>
         <div class="d-flex align-center mr-3">
           <img
@@ -22,7 +22,7 @@
             height="20"
             src="@/assets/images/icons/icon-support.svg"
           />
-          <div>https://wallet.blocksscan.io</div>
+          <div>https://wallet.xinfin.network</div>
         </div>
       </div>
     </div>
@@ -81,11 +81,11 @@
           <div
             class="mew-heading-3 mew-address font-weight-bold word-break--break-all mt-4"
           >
-            {{ key }}
+            {{ getXDCAddress(key) }}
           </div>
         </v-col>
         <v-col cols="auto">
-          <qr-code :data="key" :height="140" :width="140" :type-number="10" />
+          <qr-code :data="getXDCAddress(key)" :height="140" :width="140" :type-number="10" />
         </v-col>
       </v-row>
     </v-container>
