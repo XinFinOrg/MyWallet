@@ -4,6 +4,7 @@ import {
   formatFloatingPointValue,
   formatIntegerToString
 } from '@/core/helpers/numberFormatHelper';
+import { getXDCAddress } from '@/core/helpers/addressUtils';
 /**
  * Formatted notification for mew-notification component
  */
@@ -29,11 +30,11 @@ const formatNotification = (obj, network) => {
       string: 'Total Transaction fee'
     },
     to: {
-      value: obj.toTxData && obj.toTxData.to ? obj.toTxData.to : obj.to,
+      value: obj.toTxData && obj.toTxData.to ? getXDCAddress(obj.toTxData.to) : getXDCAddress(obj.to),
       string: 'To'
     },
     from: {
-      value: obj.from,
+      value: getXDCAddress(obj.from),
       string: 'From'
     },
     amount: {
