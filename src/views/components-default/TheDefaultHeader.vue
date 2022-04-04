@@ -16,7 +16,7 @@
         <v-col cols="4">
           <router-link :to="{ name: ROUTES_HOME.HOME.NAME, query: {} }">
             <v-img
-              :class="$vuetify.breakpoint.smAndDown ? 'mx-auto' : ''"
+              :class="$vuetify.breakpoint.smAndDown ? 'mx-auto xdc-header-image' : 'xdc-header-image'"
               src="@/assets/images/icons/logo-mew.svg"
               max-height="44"
               max-width="130"
@@ -112,3 +112,9 @@ export default {
   }
 };
 </script>
+
+<style>
+  .xdc-header-image .v-image__image--cover{
+    background-size: contain;
+  }
+</style>
