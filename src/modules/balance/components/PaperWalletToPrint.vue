@@ -81,7 +81,7 @@
           <div
             class="mew-heading-3 mew-address font-weight-bold word-break--break-all mt-4"
           >
-            {{ getXDCAddress(key) }}
+            {{ key }}
           </div>
         </v-col>
         <v-col cols="auto">

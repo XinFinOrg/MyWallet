@@ -470,7 +470,7 @@ export default {
     successBodyText() {
       return this.showSuccessSwap
         ? 'Once completed, the token amount will be deposited to your wallet.'
-        : 'Once completed, the token amount will be deposited to the address you provided';
+        : 'Once completed, the token amount will be deposited to the address you provided.';
     },
     /**
      * Property returns string, depending whether or not this is a swap or send
