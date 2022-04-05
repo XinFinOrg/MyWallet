@@ -34,12 +34,12 @@
           <div
             class="d-flex align-center justify-center justify-md-end textDark--text"
           >
-            <a
-              class="black--text"
-              href="https://help.myetherwallet.com/en/"
-              target="_blank"
-              >Help Center</a
-            >
+<!--            <a-->
+<!--              class="black&#45;&#45;text"-->
+<!--              href="https://help.myetherwallet.com/en/"-->
+<!--              target="_blank"-->
+<!--              >Help Center</a-->
+<!--            >-->
             <!-- hide language select till translations are done-->
             <!-- <span class="mx-5">|</span>
             <div style="max-width=200px">

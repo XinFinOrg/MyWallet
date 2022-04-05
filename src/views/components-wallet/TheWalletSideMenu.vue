@@ -300,12 +300,12 @@ export default {
           route: { name: ROUTES_WALLET.SWAP.NAME },
           icon: swap
         },
-        {
-          title: this.$t('interface.menu.dapps'),
-          route: { name: ROUTES_WALLET.DAPPS.NAME },
-          icon: dapp,
-          hasNew: hasNew.length > 0
-        },
+        // {
+        //   title: this.$t('interface.menu.dapps'),
+        //   route: { name: ROUTES_WALLET.DAPPS.NAME },
+        //   icon: dapp,
+        //   hasNew: hasNew.length > 0
+        // },
         {
           title: this.$t('interface.menu.contract'),
           icon: contract,

@@ -2,7 +2,7 @@
   <div>
     <div class="textMedium--text mb-5">
       This fee is charged by the Ethereum network and fluctuates depending on
-      network traffic. MEW does not profit from this fee.
+      network traffic. XOW does not profit from this fee.
     </div>
 
     <!--

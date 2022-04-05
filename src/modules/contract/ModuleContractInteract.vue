@@ -288,7 +288,7 @@ export default {
           });
       } else if (this.isPayableFunction) {
         const rawTx = {
-          to: this.contractAddress,
+          to: get0xAddress(this.contractAddress),
           from: this.address,
           value: this.ethPayable,
           data: caller.encodeABI()
@@ -345,7 +345,7 @@ export default {
       this.interact = true;
       this.currentContract = new this.web3.eth.Contract(
         JSON.parse(this.abi),
-        this.contractAddress
+        get0xAddress(this.contractAddress)
       );
     },
     methodSelect(evt) {
