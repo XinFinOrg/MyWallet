@@ -42,27 +42,27 @@ export default {
     socials: [
       {
         img: require('@/assets/images/icons/socials/facebook.png'),
-        link: 'https://www.facebook.com/BlocksScan',
+        link: 'https://www.facebook.com/XinFinHybridBlockchain',
         label: 'Facebook'
       },
       {
         img: require('@/assets/images/icons/socials/twitter.png'),
-        link: 'https://twitter.com/BlocksScan',
+        link: 'https://twitter.com/XinFin_Official',
         label: 'Twitter'
       },
-      /*{
+      {
         img: require('@/assets/images/icons/socials/medium.png'),
-        link: 'https://medium.com/@myetherwallet',
+        link: 'https://medium.com/xinfin',
         label: 'Medium'
       },
       {
         img: require('@/assets/images/icons/socials/reddit.png'),
-        link: 'https://www.reddit.com/r/MyEtherWallet/',
+        link: 'https://www.reddit.com/r/xinfin/',
         label: 'Reddit'
-      },*/
+      },
       {
         img: require('@/assets/images/icons/socials/github.png'),
-        link: 'https://github.com/BlocksScan',
+        link: 'https://github.com/XinFinorg',
         label: 'Github'
       },
       /*{
