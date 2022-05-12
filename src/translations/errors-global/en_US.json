@@ -14,7 +14,7 @@
   "device-used-in-another-window": "Device is used in another window",
   "wrong-previous-session": "Wrong previous session",
   "mnemonic-wallet-access-error": "Something went wrong in mnemonic wallet access",
-  "invalid-public-key-needs-to-be-int8Array-with-length-33-65": "Expected public key to be an Uint8Array with length [33, 65]",
+  "invalid-public-key-needs-to-be-int8Array-with-length-33-65": "Please unlock your Wallet first",
   "insufficient-funds-for-transfer": "Returned error: \"insufficient funds for transfer",
   "promise-rejected-with-falsy-value": "Promise was rejected with a falsy value",
   "the-operation-is-insecure": "The operation is insecure.",

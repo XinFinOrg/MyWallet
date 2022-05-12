@@ -17,7 +17,7 @@
     <div style="background-color: white" class="py-6">
       <div class="px-6">
         <div>
-          Something went wrong, would you like to inform to #MEWteam about this
+          Something went wrong, would you like to inform to #XinFinTeam about this
           error?
         </div>
         <v-row class="mt-4 mb-2">

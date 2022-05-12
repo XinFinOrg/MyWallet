@@ -3,7 +3,7 @@
     :footer="{
       text: 'Need help?',
       linkTitle: 'Contact support',
-      link: 'mailto:support@blocksscan.io'
+      link: 'mailto:support@xinfin.org'
     }"
     :show-overlay="onRegister"
     :title="$t('ens.register-domain')"

@@ -82,12 +82,12 @@ export default {
       },*/
       {
         img: require('@/assets/images/icons/socials/instagram.png'),
-        link: 'https://www.instagram.com/blocksscan/',
+        link: 'https://instagram.com/xinfin_xdc_network',
         label: 'Instagram'
       },
       {
         img: require('@/assets/images/icons/socials/telegram.png'),
-        link: 'https://t.me/BlocksScan',
+        link: 'https://t.me/xinfin',
         label: 'Telegram'
       }
     ]

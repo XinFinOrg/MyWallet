@@ -754,7 +754,7 @@
                       | lokalise('dappsSubmission.mew-support.info')
                   }}
                 </div>
-                <a href="mailto:support@blocksscan.io" target="_blank">
+                <a href="mailto:support@xinfin.org" target="_blank">
                   <mew-button
                     :title="$t('dappsSubmission.contact-support')"
                     has-full-width

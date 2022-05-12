@@ -24,7 +24,7 @@
                       $t(`privacyPol.${item}`).includes('at:') ||
                       $t(`privacyPol.${item}`).includes('to:')
                     "
-                    href="mailto:support@blocksscan.io"
+                    href="mailto:support@xinfin.org"
                     rel="noopener noreferrer"
                   >
                     {{ $t('common.support-email') }}

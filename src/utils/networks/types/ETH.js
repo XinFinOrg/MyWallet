@@ -25,8 +25,8 @@ export default {
   isEthVMSupported: {
     supported: true,
     url: 'http://api.ethvm.com/',
-    blockExplorerTX: 'https://ethvm.com/tx/[[txHash]]',
-    blockExplorerAddr: 'https://ethvm.com/address/[[address]]',
+    blockExplorerTX: 'https://xdc.blocksscan.io/tx/[[txHash]]',
+    blockExplorerAddr: 'https://xdc.blocksscan.io/address/[[address]]',
     websocket: null
   },
   gasPriceMultiplier: 1,

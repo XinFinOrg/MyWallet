@@ -68,7 +68,7 @@
               <div class="px-6 border-right">
                 <a
                   class="color&#45;&#45;inherit"
-                  href="mailto:support@blocksscan.io"
+                  href="mailto:support@xinfin.org"
                   target="_blank"
                 >
                   {{ $t('footer.feedback') }}
@@ -247,7 +247,7 @@
               <div class="px-2 px-lg-6 border-right">
                 <a
                   class="color&#45;&#45;inherit"
-                  href="mailto:support@blocksscan.io"
+                  href="mailto:support@xinfin.org"
                   target="_blank"
                 >
                   {{ $t('footer.feedback') }}
@@ -359,7 +359,7 @@ export default {
           { label: 'Help center', link: 'https://help.myetherwallet.com/en/' },
           {
             label: 'Customer support',
-            link: 'mailto:support@blocksscan.io'
+            link: 'mailto:support@xinfin.org'
           },
           { label: 'MEWtopia', link: 'https://www.mewtopia.com/' },
           { label: 'Press Kit', routerLink: 'PressKit' },
@@ -380,12 +380,12 @@ export default {
             routerLink: 'Tools',
             query: { tool: 'verify' }
           },
+          /*
           {
             label: 'Convert units',
             routerLink: 'Tools',
             query: { tool: 'convert' }
           }
-          /*
           ,
           {
             label: 'Send offline help',
@@ -446,15 +446,15 @@ export default {
     ],
     socialIcons: [
       {
-        link: 'https://www.facebook.com/MyEtherWallet',
+        link: 'https://www.facebook.com/XinFinHybridBlockchain',
         icon: 'facebook'
       },
       {
-        link: 'https://twitter.com/myetherwallet',
+        link: 'https://twitter.com/XinFin_Official',
         icon: 'twitter'
       },
       {
-        link: 'https://www.instagram.com/myetherwallet/',
+        link: 'https://instagram.com/xinfin_xdc_network',
         icon: 'instagram'
       },
       {
@@ -462,11 +462,11 @@ export default {
         icon: 'linkedin'
       },
       {
-        link: 'https://github.com/myetherwallet',
+        link: 'https://github.com/XinFinorg',
         icon: 'github'
       },
       {
-        link: 'https://www.reddit.com/r/MyEtherWallet/',
+        link: 'https://www.reddit.com/r/xinfin/',
         icon: 'reddit'
       },
       {
@@ -474,11 +474,11 @@ export default {
         icon: 'youtube'
       },
       {
-        link: 'https://medium.com/@myetherwallet',
+        link: 'https://medium.com/xinfin',
         icon: 'medium'
       },
       {
-        link: 'https://t.me/myetherwallet',
+        link: 'https://t.me/xinfin',
         iconImage: require('@/assets/images/icons/icon-telegram.svg')
       }
     ],

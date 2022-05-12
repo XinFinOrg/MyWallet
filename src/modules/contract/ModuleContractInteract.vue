@@ -56,7 +56,7 @@
         :footer="{
           text: 'Need help?',
           linkTitle: 'Contact support',
-          link: 'mailto:support@blocksscan.io'
+          link: 'mailto:support@xinfin.org'
         }"
         title="Interact with contract"
         :show-overlay="interact"

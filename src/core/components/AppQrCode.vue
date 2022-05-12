@@ -77,7 +77,7 @@ export default {
         height: this.height,
         type: 'canvas',
         data: this.data,
-        image: mewIcon,
+        // image: mewIcon,
         margin: this.margin,
         qrOptions: {
           errorCorrectionLevel: 'H',

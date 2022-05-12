@@ -329,11 +329,11 @@
               <i18n path="termsOfService.contact-info-title-p" tag="p">
                 <template #suppEmail>
                   <a
-                    href="mailto:support@blocksscan.io"
+                    href="mailto:support@xinfin.org"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    support@blocksscan.io</a
+                    support@xinfin.org</a
                   >.
                 </template>
               </i18n>

@@ -43,11 +43,11 @@
             />
           </div>
         </v-card>
-        <img
-          src="@/assets/images/backgrounds/bg-home-spaceman-and-dog.svg"
-          alt="Spaceman and his dog"
-          height="500"
-        />
+<!--        <img-->
+<!--          src="@/assets/images/backgrounds/bg-home-spaceman-and-dog.svg"-->
+<!--          alt="Spaceman and his dog"-->
+<!--          height="500"-->
+<!--        />-->
       </v-container>
     </div>
     <div class="mobile-content d-block d-lg-none expandHeader pt-5">
@@ -122,7 +122,7 @@ export default {
 
 <style lang="scss" scoped>
 .desktop-content {
-  background-image: url(~@/assets/images/backgrounds/bg-homepage.svg);
+  /*background-image: url(~@/assets/images/backgrounds/bg-homepage.svg);*/
   background-size: cover;
   background-position: 100% bottom;
   .banner-content-container {

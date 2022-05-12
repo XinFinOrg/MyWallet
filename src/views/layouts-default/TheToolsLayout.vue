@@ -27,7 +27,7 @@
         </template>
       </mew-tabs>
     </v-container>
-    <app-get-started />
+<!--    <app-get-started />-->
   </div>
 </template>
 
@@ -73,10 +73,10 @@ export default {
         name: 'Verify message',
         val: 'verify'
       },
-      {
+      /*{
         name: 'Convert Units',
         val: 'convert'
-      }
+      }*/
     ]
   }),
   watch: {

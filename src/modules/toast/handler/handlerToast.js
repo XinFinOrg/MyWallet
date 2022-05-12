@@ -15,7 +15,7 @@ const GLOBAL_ERRORS = {
   'wrong previous session': 'errorsGlobal.wrong-previous-session',
   'Something went wrong in mnemonic wallet access':
     'errorsGlobal.mnemonic-wallet-access-error',
-  'Expected public key to be an Uint8Array with length [33, 65]':
+  'Please unlock your Wallet first':
     'errorsGlobal.invalid-public-key-needs-to-be-int8Array-with-length-33-65',
   'Returned error: insufficient funds for transfer':
     'errorsGlobal.insufficient-funds-for-transfer',

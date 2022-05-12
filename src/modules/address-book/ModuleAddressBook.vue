@@ -21,7 +21,7 @@
       :footer="{
         text: 'Need help?',
         linkTitle: 'Contact support',
-        link: 'mailto:support@blocksscan.io'
+        link: 'mailto:support@xinfin.org'
       }"
       :title="$t('interface.address-book.add-addr')"
       :show-overlay="addMode"
