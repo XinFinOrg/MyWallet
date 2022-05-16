@@ -14,9 +14,9 @@ export default {
       batchContract: '0xF243A92eB7D4B4F6A00A57888B887bd01ec6fd12',
       url: 'https://beaconscan.com/main/validator/',
       etherscanTxUrl: 'https://etherscan.io/tx/',
-      ethvmTxUrl: 'https://www.ethvm.com/tx/',
+      ethvmTxUrl: 'https://xdc.blocksscan.io/tx/',
       etherscanAddrUrl: 'https://etherscan.io/address/',
-      ethvmAddrUrl: 'https://www.ethvm.com/address/'
+      ethvmAddrUrl: 'https://xdc.blocksscan.io/address/'
     }
   }
 };

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="textMedium--text mb-5">
-      This fee is charged by the Ethereum network and fluctuates depending on
+      This fee is charged by the XinFin - XDC network and fluctuates depending on
       network traffic. XOW does not profit from this fee.
     </div>
 
