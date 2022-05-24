@@ -157,7 +157,7 @@ export default {
           title: 'Browser Extension',
           subtitle: 'Use your web3 wallet with XOW.',
           note: '',
-          rightIcon: require('@/assets/images/icons/icon-mew-cx.png'),
+          rightIcon: require('@/assets/images/icons/logo-mew-small.png'),
           titleIcon: 'mdi-shield-check',
           titleIconType: 'mdi',
           titleIconClass: 'greenPrimary',

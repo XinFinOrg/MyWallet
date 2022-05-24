@@ -34,7 +34,7 @@
         </h5>
         <div class="d-flex align-center">
           <span id="item-addr" class="monospace mr-3 truncate">
-            {{ checksumAddressToAdd }}
+            {{ getXDCAddress(checksumAddressToAdd) }}
           </span>
           <mew-copy :copy-value="item.address" :tooltip="$t('common.copy')" />
         </div>
@@ -82,7 +82,7 @@
       class="text-center mt-6 redPrimary--text cursor-pointer"
       @click="remove"
     >
-      {{ $t('interface.address-book.remove-addr') }}
+      Remove Address
     </div>
   </div>
 </template>
@@ -93,7 +93,8 @@ import NameResolver from '@/modules/name-resolver/index';
 import {
   toChecksumAddress,
   isXDCAddress,
-  get0xAddress
+  get0xAddress,
+  getXDCAddress
 } from '@/core/helpers/addressUtils';
 
 const modes = ['add', 'edit'];
