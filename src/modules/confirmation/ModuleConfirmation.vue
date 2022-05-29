@@ -47,7 +47,7 @@
                 target="_blank"
                 :href="links.etherscan"
                 class="d-flex justify-center justify-sm-start"
-                >View on BlockScan
+                >View on BlocksScan
                 <v-icon color="greenPrimary" small>mdi-launch</v-icon></a
               >
             </v-col>
