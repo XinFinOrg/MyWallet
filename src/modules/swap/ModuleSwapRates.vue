@@ -1,5 +1,9 @@
 <template>
-  <mew6-white-sheet v-if="isEthNetwork" :sideinfo="!mobile">
+  <mew6-white-sheet
+    v-if="isEthNetwork"
+    class="module-swap-rates"
+    :sideinfo="!mobile"
+  >
     <div class="px-5 px-lg-7 py-5">
       <div class="d-flex align-center justify-space-between">
         <span class="mew-heading-2">{{ $t('common.swap') }}</span>
@@ -15,7 +19,7 @@
       <div v-for="(data, key) in swapData" :key="key">
         <v-sheet
           v-if="data.rate"
-          color="greyLight"
+          color="buttonGrayLight"
           class="d-flex align-center justify-space-between border-radius--5px mt-1 py-3 px-4 cursor"
           @click="goToSwap(data)"
         >
@@ -23,30 +27,25 @@
             1 {{ data.fromT.symbol }} / {{ data.rate }} {{ data.toT.symbol }}
           </div>
           <div class="d-flex align-center">
-            <img
-              width="22"
-              :src="
-                require('@/assets/images/currencies/' +
-                  data.fromT.symbol.toLowerCase() +
-                  '.png')
-              "
-              alt="currency-icon"
-            />
+            <mew-token-container
+              size="small"
+              class="pa-1"
+              :img="ethIcon"
+            ></mew-token-container>
             <img
               width="18"
               class="mx-2"
               src="@/assets/images/icons/icon-swap-arrow-grey.png"
               alt="swap-icon"
             />
-            <img
-              width="22"
-              :src="
+            <mew-token-container
+              size="small"
+              :img="
                 require('@/assets/images/currencies/' +
                   data.toT.symbol.toLowerCase() +
                   '.png')
               "
-              alt="eth-icon"
-            />
+            ></mew-token-container>
           </div>
         </v-sheet>
       </div>
@@ -59,7 +58,7 @@
       <h3 class="ma-3">Loading swap pairs...</h3>
     </div>
     <div
-      v-if="error || !hasSwapRates"
+      v-if="showTokenIssue"
       class="pa-3 pb-4 d-flex flex-column align-center justify-space-around"
     >
       <v-progress-circular indeterminate />
@@ -72,12 +71,13 @@
 </template>
 
 <script>
-import handlerSwap from '@/modules/swap/handlers/handlerSwap';
+import ethIcon from '@/assets/images/networks/eth.svg';
 import { mapState, mapGetters } from 'vuex';
+import { toWei } from 'web3-utils';
 import { formatFloatingPointValue } from '@/core/helpers/numberFormatHelper';
 import { Toast, ERROR } from '@/modules/toast/handler/handlerToast';
 import handlerAnalytics from '@/modules/analytics-opt-in/handlers/handlerAnalytics.mixin';
-import { toWei } from 'web3-utils';
+import handlerSwap from '@/modules/swap/handlers/handlerSwap';
 
 const STATIC_PAIRS = [
   {
@@ -170,6 +170,7 @@ export default {
   },
   data() {
     return {
+      ethIcon: ethIcon,
       swapHandler: null,
       swapData: null,
       loading: true,
@@ -179,6 +180,9 @@ export default {
   computed: {
     ...mapState('wallet', ['web3']),
     ...mapGetters('global', ['isEthNetwork', 'network']),
+    showTokenIssue() {
+      return (this.error || !this.hasSwapRates) && !this.loading;
+    },
     hasSwapRates() {
       if (this.swapData) {
         return this.swapData.some(item => {
@@ -199,7 +203,7 @@ export default {
   methods: {
     setSwapHandler(val) {
       if (!this.isEthNetwork) return;
-      this.swapHandler = new handlerSwap(val);
+      this.swapHandler = new handlerSwap(val, this.network.type.name);
       this.fetchRates();
     },
     fetchRates() {
@@ -209,7 +213,10 @@ export default {
         this.swapHandler.getQuotesForSet(STATIC_PAIRS).then(res => {
           this.swapData = STATIC_PAIRS.map((itm, idx) => {
             itm['rate'] =
-              res[idx].length !== 0 && res[idx][0] && res[idx][0]?.amount
+              res[idx] &&
+              res[idx].length !== 0 &&
+              res[idx][0] &&
+              res[idx][0]?.amount
                 ? formatFloatingPointValue(res[idx][0]?.amount).value
                 : false;
             return itm;
@@ -228,7 +235,9 @@ export default {
         toToken: data.toT.contract,
         amount: '1'
       };
-      this.trackSwapRate(data.fromT.symbol + ' to ' + data.toT.symbol);
+      this.trackSwapRate(
+        `fromSwapTokenPairs ${data.fromT.symbol} to ${data.toT.symbol}`
+      );
       this.navigateToSwap(obj);
     },
     navigateToSwap(query) {

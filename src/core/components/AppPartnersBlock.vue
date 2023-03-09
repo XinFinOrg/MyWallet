@@ -2,10 +2,10 @@
   <v-container class="mew-component--partners py-7 py-md-12 mb-6">
     <v-sheet color="transparent" align="center">
       <div class="mew-heading-3 text-uppercase textMedium--text mb-1">
-        Partners
+        {{ $t('aboutUs.partners') }}
       </div>
     </v-sheet>
-    <v-row class="mt-2 px-4" align="center">
+    <v-row class="mt-2 ml-10 px-4" align="center">
       <v-col
         v-for="(p, key) in partners"
         :key="key"
@@ -14,9 +14,10 @@
         md="3"
         lg="2"
       >
-        <a :href="p.link" target="_blank">
+        <a v-if="p.link" :href="p.link" target="_blank">
           <img :src="p.img" style="width: 90%; max-width: 120px" />
         </a>
+        <img v-else :src="p.img" style="width: 90%; max-width: 120px" />
       </v-col>
     </v-row>
   </v-container>
@@ -39,10 +40,6 @@ export default {
       {
         img: require('@/assets/images/partners/bitbox.png'),
         link: 'https://shiftcrypto.ch/?ref=mew'
-      },
-      {
-        img: require('@/assets/images/partners/secalot.png'),
-        link: 'https://www.secalot.com/'
       },
       {
         img: require('@/assets/images/partners/bity.png'),
@@ -73,8 +70,8 @@ export default {
         link: 'https://app.1inch.io/'
       },
       {
-        img: require('@/assets/images/partners/dexag.png'),
-        link: 'https://dex.ag/'
+        img: require('@/assets/images/partners/buitl-w-rivet-v2.svg'),
+        link: 'https://rivet.cloud/'
       }
     ]
   })

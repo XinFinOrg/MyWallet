@@ -76,7 +76,7 @@
         </v-col>
         <v-col cols="12" lg="7">
           <v-img
-            src="@/assets/images/snippets/send-tx-page.png"
+            src="@/assets/images/snippets/send-tx-page.jpg"
             class="mt-n6"
           />
         </v-col>
@@ -87,16 +87,16 @@
 </template>
 
 <script>
-import AppBlockTitle from '@/core/components/AppBlockTitle';
-
 export default {
-  components: { AppBlockTitle },
-  data: () => ({
+  components: {
+    AppBlockTitle: () => import('@/core/components/AppBlockTitle')
+  },
+  data: vm => ({
     titleData: {
       textProps: '',
       toptitle: '',
-      title: 'Send ETH, ERC20 tokens & NFT',
-      description: 'Send your funds with the press of a button.',
+      title: vm.$t('howItWorks.send-funds.title'),
+      description: vm.$t('howItWorks.send-funds.description'),
       centered: false
     }
   })

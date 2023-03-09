@@ -8,8 +8,6 @@ const defaultNetwork = nodeList['XDC'].find(item => {
 
 const state = {
   localStore: true,
-  consentToTrack: false,
-  displayedTrackingPopup: false,
   Errors: {},
   online: true,
   linkQuery: {},
@@ -27,9 +25,8 @@ const state = {
     baseFeePerGas: '0',
     maxPriorityFeePerGas: '0'
   },
-  showedBanner: false,
-  showWalletPromo: false, // set this to true for future promos
-  testing: false
+  testing: false,
+  darkMode: false
 };
 state.currentNetwork.type = {
   name: state.currentNetwork.type.name

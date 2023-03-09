@@ -4,7 +4,7 @@
       Module Nft Manager
     =====================================================================================
     -->
-  <div>
+  <div class="module-nft-manager">
     <mew-module
       class="text-center d-flex justify-end flex-grow-1 pt-6 mr-3"
       :has-elevation="true"
@@ -17,13 +17,15 @@
       Loading
     =====================================================================================
     -->
-        <v-skeleton-loader
-          v-if="loadingContracts && !hasNoTokens"
-          type="table-heading,list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"
-        />
+        <div class="loader bgWalletBlockDark">
+          <v-skeleton-loader
+            v-if="loadingContracts && !hasNoTokens"
+            type="table-heading,list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"
+          />
+        </div>
         <!--
     =====================================================================================
-     Display if no nfts owned
+    Display if no nfts owned
     =====================================================================================
     -->
         <v-card
@@ -34,7 +36,7 @@
             hasNoTokens
           "
           flat
-          color="selectorBg lighten-1"
+          color="bgWalletBlockDark"
           class="d-flex align-center px-5 py-4"
           min-height="94px"
         >
@@ -71,7 +73,7 @@
                 <h5 class="font-weight-bold">
                   {{ selectedContract.name }}
                 </h5>
-                <div>Total: {{ selectedContract.count }}</div>
+                <div>Total: {{ selectedContract.total }}</div>
               </div>
               <div v-if="displayedTokens && displayedTokens.length === 0">
                 Loading ...
@@ -90,7 +92,6 @@
                   <nft-manager-details
                     :loading="loadingTokens"
                     :on-click="openNftSend"
-                    :get-image-url="getImageUrl"
                     :token="token"
                   />
                 </div>
@@ -125,12 +126,14 @@
         <nft-manager-send
           v-if="onNftSend"
           :close="closeNftSend"
-          :get-image-url="getImageUrl"
           :nft="selectedNft"
           :nft-category="selectedContract.name"
           :send="sendTx"
           :disabled="!isValid"
+          :enough-funds="enoughFunds"
+          :show-balance-error="showBalanceError"
           :set-address="setAddress"
+          @hasMinEth="hasMinEth"
         />
       </template>
     </mew-module>
@@ -138,8 +141,8 @@
 </template>
 
 <script>
-import NFT from './handlers/handlerNftManager';
 import { mapGetters, mapState } from 'vuex';
+import { toBN, isAddress } from 'web3-utils';
 import {
   Toast,
   SUCCESS,
@@ -147,40 +150,105 @@ import {
   ERROR
 } from '@/modules/toast/handler/handlerToast';
 import getService from '@/core/helpers/getService';
-import NftManagerDetails from './components/NftManagerDetails';
-import NftManagerSend from './components/NftManagerSend';
-import handlerNft from './handlers/handlerNft.mixin';
+
 import { ROUTES_WALLET } from '@/core/configs/configRoutes';
+import { ETH, BSC, MATIC } from '@/utils/networks/types';
+import { toBNSafe } from '@/core/helpers/numberFormatHelper';
+import NFT from './handlers/handlerNftManager';
+import handleError from '@/modules/confirmation/handlers/errorHandler.js';
+
+const MIN_GAS_LIMIT = 21000;
 
 export default {
   components: {
-    NftManagerDetails,
-    NftManagerSend
+    NftManagerDetails: () => import('./components/NftManagerDetails'),
+    NftManagerSend: () => import('./components/NftManagerSend')
   },
-  mixins: [handlerNft],
   data() {
     return {
       nft: {},
       activeTab: 0,
-      tokens: [],
       onNftSend: false,
       hasNoTokens: false,
       selectedNft: {},
       toAddress: '',
-      selectedContract: {}
+      selectedContract: {},
+      gasFees: '0',
+      enoughFunds: false,
+      showBalanceError: false,
+      localGasPrice: '0',
+      loadingContracts: true,
+      loadingTokens: true,
+      nftApiResponse: []
     };
   },
   computed: {
     ...mapState('wallet', ['balance', 'web3', 'address']),
-    ...mapState('global', ['network', 'online']),
-    ...mapGetters('global', ['isEthNetwork', 'network', 'gasPrice']),
+    ...mapState('global', ['network', 'gasPriceType']),
+    ...mapGetters('wallet', ['balanceInETH', 'balanceInWei']),
+    ...mapGetters('global', [
+      'isEthNetwork',
+      'network',
+      'gasPrice',
+      'gasPriceByType'
+    ]),
     /**
      * Get Tabs
      */
     tabs() {
       return this.contracts.map(item => {
-        return { name: `${item.name} (${item.count})` };
+        let tabName = `${item.name} (${item.count})`;
+        if (tabName.length > 25) {
+          tabName = item.name.substring(0, 20);
+          tabName += `... (${item.count})`;
+        }
+        return { name: tabName };
       });
+    },
+    tokens() {
+      if (this.nftApiResponse.length > 0) {
+        const contract = this.nftApiResponse.filter(item => {
+          return (
+            item.contract_address.toLowerCase() ===
+            this.selectedContract.contract.toLowerCase()
+          );
+        });
+        if (contract) {
+          return contract.map(item => {
+            const url = item.image_url ? item.image_url : '';
+            return {
+              image: `https://img.mewapi.io/?image=${url}`,
+              name: item.name || item.token_id,
+              token_id: item.token_id,
+              contract: item.contract_address,
+              erc721: item.contract.type === 'ERC721'
+            };
+          });
+        }
+      }
+      return [];
+    },
+    contracts() {
+      if (this.nftApiResponse.length > 0) {
+        // Organize contracts by address
+        return this.nftApiResponse.reduce((arr, item) => {
+          const nftAmount = item.queried_wallet_balances[0].quantity;
+          const inList = arr.find(i => i.contract === item.contract_address);
+          if (inList) {
+            inList.count++;
+            inList.total += nftAmount;
+          } else {
+            arr.push({
+              contract: item.contract_address,
+              count: 1,
+              total: nftAmount,
+              name: item.contract.name || item.collection.name
+            });
+          }
+          return arr;
+        }, []);
+      }
+      return [];
     },
     /**
      * Pagination
@@ -215,29 +283,122 @@ export default {
      * Check if address is valid
      */
     isValid() {
-      return this.nft.isValidAddress(this.toAddress);
+      return this.nft.isValidAddress(this.toAddress) && this.enoughFunds;
+    },
+    /**
+     * Check if network is supported
+     */
+    supportedNetwork() {
+      return this.supportedNetworks.includes(this.network.type.name);
+    },
+    /**
+     * List of supported networks
+     */
+    supportedNetworks() {
+      return [ETH.name, MATIC.name, BSC.name];
     }
   },
   watch: {
+    balanceInWei() {
+      this.hasMinEth();
+    },
+    web3() {
+      this.loadingContracts = true;
+      this.loadingTokens = true;
+      this.onNftSend = false;
+      if (this.address)
+        this.$router.push({ name: ROUTES_WALLET.NFT_MANAGER.NAME });
+      if (this.supportedNetwork) {
+        this.setUpNFT();
+      } else {
+        setTimeout(() => {
+          Toast(
+            `NFT Manager not supported in network: ${this.network.type.name}`,
+            {},
+            WARNING
+          );
+          this.nftApiResponse = [];
+        }, 1000);
+      }
+    },
+    address() {
+      this.loadingContracts = true;
+      this.loadingTokens = true;
+      this.onNftSend = false;
+      if (this.address)
+        this.$router.push({ name: ROUTES_WALLET.NFT_MANAGER.NAME });
+      this.setUpNFT();
+    },
     contracts(newVal) {
       if (newVal.length > 0) {
         this.onTab(0);
       }
+    },
+    async toAddress(newVal) {
+      if (isAddress(newVal)) {
+        try {
+          const gasTypeFee = this.gasPriceByType(this.gasPriceType);
+          this.localGasPrice = gasTypeFee;
+          const gasFees = await this.nft.getGasFees(newVal, this.selectedNft);
+          const gasFeesToBN = toBNSafe(gasFees).mul(toBNSafe(gasTypeFee));
+          this.gasFees = gasFeesToBN.toString();
+          if (gasFeesToBN.gte(toBN(this.balanceInWei))) {
+            //gasFeesToBN vs current balance
+            this.enoughFunds = false;
+            this.showBalanceError = true;
+          } else {
+            this.enoughFunds = true;
+            this.showBalanceError = false;
+          }
+        } catch (e) {
+          Toast(
+            `Can't send NFT! Please double check if everything is correct`,
+            {},
+            ERROR
+          );
+        }
+      }
     }
   },
   mounted() {
-    /**
-     * Init NFT Handler
-     */
-    this.nft = new NFT({
-      network: this.network,
-      address: this.address,
-      web3: this.web3
-    });
+    this.setUpNFT();
   },
   methods: {
-    getImageUrl(token) {
-      return this.nft.getImageUrl(token.contract, token.token_id);
+    setUpNFT() {
+      if (!this.supportedNetwork) return;
+      /**
+       * Init NFT Handler
+       */
+      this.nft = new NFT({
+        network: this.network,
+        address: this.address,
+        web3: this.web3
+      });
+
+      this.getNfts();
+      this.localGasPrice = this.gasPriceByType(this.gasPriceType);
+      this.hasMinEth();
+    },
+    getNfts() {
+      this.nft.getNfts().then(res => {
+        this.nftApiResponse = res;
+        this.loadingContracts = false;
+        setTimeout(() => {
+          this.loadingTokens = false;
+        }, 500);
+      });
+    },
+    hasMinEth() {
+      const currentGasPrice = this.localGasPrice;
+      if (
+        toBN(this.balanceInWei).gt(toBN(currentGasPrice).muln(MIN_GAS_LIMIT))
+      ) {
+        this.enoughFunds = true;
+        this.showBalanceError = false;
+      } else {
+        this.enoughFunds = false;
+        this.showBalanceError = true;
+      }
     },
     onTab(val) {
       this.activeTab = val;
@@ -257,15 +418,22 @@ export default {
     },
     closeNftSend() {
       this.onNftSend = false;
+      this.toAddress = '';
       this.$router.push({ name: ROUTES_WALLET.NFT_MANAGER.NAME });
     },
-    sendTx() {
+    async sendTx() {
       if (this.isValid) {
         try {
+          let gasPrice = undefined;
+          if (this.network.type.name === 'MATIC')
+            gasPrice = `0x${toBN(this.localGasPrice).toString('hex')}`;
           this.nft
-            .send(this.toAddress, this.selectedNft)
+            .send(this.toAddress, this.selectedNft, gasPrice)
             .then(response => {
               this.updateValues();
+              this.enoughFunds = true;
+              this.toAddress = '';
+              this.closeNftSend();
               Toast(
                 'Cheers! Your transaction was mined. Check it in ',
                 {
@@ -280,10 +448,9 @@ export default {
               );
             })
             .catch(e => {
-              Toast(e.message, {}, ERROR);
+              const error = handleError(e.message);
+              if (error) Toast(error, {}, ERROR);
             });
-          this.closeNftSend();
-          this.selectedNft = {};
         } catch (e) {
           Toast(e.message, {}, WARNING);
         }
@@ -297,7 +464,7 @@ export default {
       if (this.tokens.length === 0 && this.contracts.length === 1) {
         this.hasNoTokens = true;
       }
-      this.$apollo.queries.getOwnersERC721Balances.refetch();
+      this.getNfts();
     },
     setAddress(address) {
       if (typeof address === 'object' && !!address) {
@@ -315,7 +482,13 @@ export default {
   }
 };
 </script>
+
+<style lang="scss" scoped></style>
+
 <style lang="scss">
+.module-nft-manager .loader .v-skeleton-loader__bone {
+  background: transparent !important;
+}
 .nft-pagination {
   .v-pagination__navigation,
   .v-pagination__item {

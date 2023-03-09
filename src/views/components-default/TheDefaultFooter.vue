@@ -10,10 +10,16 @@
                 <router-link
                   v-if="d.routerLink"
                   :to="{ name: d.routerLink, query: d.query }"
+                  :class="d.class"
                 >
                   {{ d.label }}
                 </router-link>
-                <a v-if="d.link" :href="d.link" target="_blank">
+                <a
+                  v-if="d.link"
+                  :href="d.link"
+                  target="_blank"
+                  :class="d.class"
+                >
                   {{ d.label }}
                 </a>
               </v-list-item>
@@ -54,7 +60,7 @@
                 class="mr-2"
               />
               <div>
-                <div>BTC Donation</div>
+                <div>{{ $t('footer.donation.bitcoin') }}</div>
                 <div v-show="false" class="overline">
                   Address: {{ btcDonationAddress }}
                 </div>
@@ -126,7 +132,7 @@
             >
             <v-spacer />
             <p class="teal--text text--lighten-1 ma-0">
-              {{ $t('footer.copyright') }}
+              {{ $t('footer.copyright', { year: new Date().getFullYear() }) }}
               <a
                 class="cyan--text text--lighten-3"
                 href="https://www.coingecko.com/en"
@@ -153,7 +159,7 @@
     </div>
 
     <div class="mobile-content d-block d-lg-none">
-     <!-- <v-expansion-panels accordion>
+      <!-- <v-expansion-panels accordion>
         <v-expansion-panel v-for="(mf, mfkey) in footers" :key="mfkey">
           <v-expansion-panel-header>
             <v-container>
@@ -166,7 +172,12 @@
             <v-container>
               <v-sheet color="transparent" max-width="500px" class="mx-auto">
                 <ul>
-                  <li v-for="(md, mdkey) in mf.data" :key="mdkey">
+                  <li
+                    v-for="(md, mdkey) in mf.data"
+                    :key="mdkey"
+                    class="d-flex align-center"
+                  >
+                    <v-icon>mdi-menu-right</v-icon>
                     <router-link
                       v-if="md.routerLink"
                       :to="{ name: md.routerLink, query: md.query }"
@@ -203,7 +214,7 @@
                 class="mr-2"
               />
               <div>
-                <div>ETH Donation</div>
+                <div>{{ $t('footer.donation.ether') }}</div>
                 <div v-show="false" class="overline">
                   Address: {{ ethDonationAddress }}
                 </div>
@@ -221,7 +232,7 @@
                 class="mr-2"
               />
               <div>
-                <div>{{ $t('footer.donation.btc') }}</div>
+                <div>{{ $t('footer.donation.bitcoin') }}</div>
                 <div v-show="false" class="overline">
                   Address: {{ btcDonationAddress }}
                 </div>
@@ -230,21 +241,29 @@
           </div>
 
           <div
-            class="social-icons d-flex align-center justify-space-between mt-12"
+            class="social-icons d-flex align-center flex-wrap justify-center mt-12"
           >
             <a
               v-for="(i, key) in socialIcons"
               :key="key"
               :href="i.link"
               target="_blank"
+              style="height: 23px"
+              class="px-4 my-5"
             >
-              <mew-icon :img-height="23" :icon-name="i.icon" />
+              <mew-icon v-if="i.icon" :img-height="23" :icon-name="i.icon" />
+              <img
+                v-if="i.iconImage"
+                :src="i.iconImage"
+                alt="Social"
+                height="19"
+              />
             </a>
           </div>
 
           <div class="d-flex mt-10">
             <div class="d-flex align-center line-height-small mx-auto">
-              <div class="px-2 px-lg-6 border-right">
+              <div class="px-4 px-lg-6 border-right">
                 <a
                   class="color&#45;&#45;inherit"
                   href="mailto:support@xinfin.org"
@@ -253,12 +272,12 @@
                   {{ $t('footer.feedback') }}
                 </a>
               </div>
-              <div class="px-2 px-lg-6 border-right">
+              <div class="px-4 px-lg-6 border-right">
                 <router-link :to="{ name: ROUTES_HOME.PRIVACY_POLICY.NAME }">
                   Privacy
                 </router-link>
               </div>
-              <div class="px-2 px-lg-6">
+              <div class="px-4 px-lg-6">
                 <router-link :to="{ name: ROUTES_HOME.TERMS_OF_SERVICE.NAME }">
                   Terms
                 </router-link>
@@ -273,7 +292,7 @@
           <v-sheet color="transparent" max-width="500px" class="mx-auto">
             <div class="d-flex align-center justify-space-between">
               <a
-                :ref="`https://github.com/MyEtherWallet/MyEtherWallet/releases/tag/v${version}`"
+                :href="`https://github.com/MyEtherWallet/MyEtherWallet/releases/tag/v${version}`"
                 target="_blank"
                 class="cyan--text text--lighten-3 ma-0"
                 >v{{ version }}</a
@@ -293,7 +312,7 @@
             </div>
             <v-sheet color="transparent" max-width="300px" class="mx-auto">
               <p class="teal--text text--lighten-1 mt-6 mb-0 text-center">
-                {{ $t('footer.copyright') }}
+                {{ $t('footer.copyright', { year: new Date().getFullYear() }) }}
                 <a
                   class="cyan--text text--lighten-3"
                   href="https://www.coingecko.com/en"
@@ -370,29 +389,43 @@ export default {
       {
         title: 'Tools',
         data: [
-          { label: 'MEW wallet', link: 'https://www.mewwallet.com/' },
           {
-            label: 'MEW CX',
-            link: 'https://chrome.google.com/webstore/detail/mew-cx/nlbmnnijcnlegkjjpcfjclmcfggfefdm?utm_source=chrome-ntp-icon'
+            label: 'MEW wallet',
+            class: 'FooterMEWTool',
+            link: 'https://www.mewwallet.com/'
+          },
+          {
+            label: 'Enkrypt',
+            class: 'FooterCXTool',
+            link: 'https://www.enkrypt.com'
           },
           {
             label: 'Verify message',
+            class: 'FooterVerifyTool',
             routerLink: 'Tools',
             query: { tool: 'verify' }
-          },
+          }
           /*
           {
             label: 'Convert units',
+            class: 'FooterConvertTool',
             routerLink: 'Tools',
             query: { tool: 'convert' }
-          }
-          ,
-          {
-            label: 'Send offline help',
-            routerLink: 'Tools',
-            query: { tool: 'offline' }
           },
           {
+            label: 'Generate keystore file',
+            class: 'FooterKeystoreTool',
+            routerLink: 'Tools',
+            query: { tool: 'keystore' }
+          },
+          {
+            label: 'Send Offline Helper',
+            class: 'FooterOfflineTool',
+            routerLink: 'Tools',
+            query: { tool: 'offline' }
+          }
+          /*
+          ,{
             label: 'Transaction status',
             routerLink: 'SendTX'
           },
@@ -402,11 +435,6 @@ export default {
             query: { tool: 'watch' }
           },
           { label: 'Submit Dapp', routerLink: 'Home' },
-          {
-            label: 'Convert units',
-            routerLink: 'Tools',
-            query: { tool: 'convert' }
-          }
           */
         ]
       }
@@ -506,6 +534,10 @@ a {
   > div {
     line-height: 11px;
   }
+}
+.v-expansion-panel-header {
+  max-width: 524px;
+  margin: 0 auto;
 }
 </style>
 

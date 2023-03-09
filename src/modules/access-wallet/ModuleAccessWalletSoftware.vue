@@ -1,15 +1,11 @@
-<template>
+<template class="AccessSoftwareWallet">
   <!--
   =====================================================================================
     Overlay - access using software
   =====================================================================================
   -->
   <mew-overlay
-    :footer="{
-      text: 'Need help?',
-      linkTitle: 'Contact support',
-      link: 'mailto:support@xinfin.org'
-    }"
+    :footer="footer"
     content-size="large"
     :show-overlay="open"
     :title="title"
@@ -24,10 +20,11 @@
     <div
       v-if="walletType === types.OVERVIEW"
       style="max-width: 650px; width: 100%"
-      class="mx-auto"
+      class="mx-auto pt-5"
     >
       <div v-for="(btn, key) in buttons" :key="key" class="mb-5">
         <mew-button
+          :class="btn.class"
           has-full-width
           color-theme="greyMedium"
           btn-style="outline"
@@ -95,22 +92,24 @@
 </template>
 
 <script>
-import AccessWalletKeystore from './software/components/AccessWalletKeystore';
-import AccessWalletMnemonic from './software/components/AccessWalletMnemonic';
-import AccessWalletPrivateKey from './software/components/AccessWalletPrivateKey';
-import { mapActions, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
+
 import { Toast, ERROR } from '@/modules/toast/handler/handlerToast';
 import { SOFTWARE_WALLET_TYPES } from './software/handlers/helpers';
-import handlerAccessWalletSoftware from './software/handlers/handlerAccessWalletSoftware';
 import { ROUTES_WALLET } from '../../core/configs/configRoutes';
 import handlerAnalytics from '@/modules/analytics-opt-in/handlers/handlerAnalytics.mixin';
+
+import handlerAccessWalletSoftware from './software/handlers/handlerAccessWalletSoftware';
 
 export default {
   name: 'ModuleAccessWalletSoftware',
   components: {
-    AccessWalletKeystore,
-    AccessWalletMnemonic,
-    AccessWalletPrivateKey
+    AccessWalletKeystore: () =>
+      import('./software/components/AccessWalletKeystore'),
+    AccessWalletMnemonic: () =>
+      import('./software/components/AccessWalletMnemonic'),
+    AccessWalletPrivateKey: () =>
+      import('./software/components/AccessWalletPrivateKey')
   },
   mixins: [handlerAnalytics],
   props: {
@@ -137,7 +136,7 @@ export default {
       types: SOFTWARE_WALLET_TYPES,
       warningSheetObj: {
         title: 'Learn More',
-        url: 'https://help.myetherwallet.com/en/articles/5380611-using-mew-offline-cold-storage'
+        url: ''
       },
       buttons: [
         /* Keystore Button */
@@ -160,6 +159,7 @@ export default {
         {
           label: 'Private Key',
           icon: require('@/assets/images/icons/icon-private-key-grey.png'),
+          class: 'AccessPrivateKeyWallet',
           fn: () => {
             if (process.env.VUE_APP_PRIV_KEY) {
               this.accessHandler.unlockPrivateKeyWallet(
@@ -172,7 +172,12 @@ export default {
           }
         }
       ],
-      accessHandler: {}
+      accessHandler: {},
+      footer: {
+        text: 'Need help?',
+        linkTitle: 'Contact support',
+        link: 'mailto:support@xinfin.org'
+      }
     };
   },
 
@@ -200,7 +205,8 @@ export default {
       }
     },
     ...mapState('external', ['path']),
-    ...mapState('wallet', ['identifier'])
+    ...mapState('wallet', ['identifier', 'isOfflineApp']),
+    ...mapGetters('article', ['getArticle'])
   },
   watch: {
     open(newVal) {
@@ -214,6 +220,15 @@ export default {
    */
   mounted() {
     this.accessHandler = new handlerAccessWalletSoftware();
+    if (this.isOfflineApp) {
+      this.footer = {
+        text: 'Need help? Email us at support@myetherwallet.com',
+        linkTitle: '',
+        link: ''
+      };
+      this.warningSheetObj = {};
+    } else
+      this.warningSheetObj.url = this.getArticle('not-rec-when-access-wallet');
   },
   destroyed() {
     this.accessHandler = {};
@@ -243,7 +258,7 @@ export default {
             if (this.path !== '') {
               this.$router.push({ path: this.path });
             } else {
-              this.$router.push({ name: ROUTES_WALLET.WALLETS.NAME });
+              this.$router.push({ name: ROUTES_WALLET.DASHBOARD.NAME });
             }
             this.trackAccessWallet(this.type);
           })

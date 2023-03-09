@@ -1,19 +1,9 @@
 import { OneInch, ZEROX, ParaSwap, Changelly } from './providers';
-import { isAddress } from 'web3-utils';
 import BigNumber from 'bignumber.js';
-import Configs from './configs.js';
+import Configs from './configs/providersConfigs';
 import hasValidDecimals from '@/core/helpers/hasValidDecimals.js';
 import { isObject } from 'lodash';
-const mergeIfNotExists = (baseList, newList) => {
-  newList.forEach(t => {
-    for (const bl of baseList) {
-      if (bl.name.toLowerCase() === t.name.toLowerCase()) return;
-      if (bl.contract.toLowerCase() === t.contract.toLowerCase()) return;
-    }
-    baseList.push(t);
-  });
-  return baseList;
-};
+
 class Swap {
   constructor(web3, chain) {
     this.providers = [
@@ -25,28 +15,42 @@ class Swap {
     this.chain = chain;
   }
   getAllTokens() {
-    let allTokens = [];
+    const allTokens = {};
+    const DOGE_ADDRESS = '0x4206931337dc273a630d328dA6441786BfaD668f';
     return this.providers[0].getSupportedTokens().then(baseList => {
-      allTokens = allTokens.concat(baseList);
+      if (baseList && baseList.length > 0)
+        baseList.forEach(t => {
+          if (t.contract?.toLowerCase() !== DOGE_ADDRESS.toLowerCase())
+            allTokens[t.contract] = t;
+        });
       return Promise.all(
-        this.providers.map((p, idx) => {
-          if (idx < 2) return Promise.resolve();
+        this.providers.slice(3).map(p => {
           if (!p.isSupportedNetwork(this.chain)) return Promise.resolve();
           return p.getSupportedTokens().then(tokens => {
             if (tokens && tokens.length > 0) {
-              allTokens = mergeIfNotExists(allTokens, tokens);
+              tokens.forEach(t => {
+                if (
+                  t.contract?.toLowerCase() !== DOGE_ADDRESS.toLowerCase() &&
+                  !allTokens[t.contract]
+                ) {
+                  allTokens[t.contract] = t;
+                }
+              });
             }
           });
         })
       ).then(() => {
-        const sorted = allTokens
+        const sorted = Object.values(allTokens)
           .filter(t => isObject(t))
           .sort((a, b) => {
             if (a.name > b.name) return 1;
             return -1;
           });
         return {
-          fromTokens: sorted.filter(t => isAddress(t.contract)),
+          fromTokens: sorted?.filter(t => {
+            if (!t || !t.contract) return false;
+            return t;
+          }),
           toTokens: sorted
         };
       });

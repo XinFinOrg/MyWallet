@@ -40,11 +40,9 @@
 </template>
 
 <script>
-import fromToBlock from './SwapFromToBlock';
-
 export default {
   components: {
-    fromToBlock
+    fromToBlock: () => import('./SwapFromToBlock')
   },
   props: {
     to: {
@@ -130,9 +128,3 @@ export default {
   }
 };
 </script>
-
-<style lang="scss">
-.v-application .warning {
-  border-radius: 10px;
-}
-</style>

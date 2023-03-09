@@ -9,11 +9,15 @@ import { getXDCAddress } from '@/core/helpers/addressUtils';
  * Formatted notification for mew-notification component
  */
 const formatNotification = (obj, network) => {
+  const isEthVMSupported = network.type.isEthVMSupported;
+  const explorer = isEthVMSupported.supported
+    ? isEthVMSupported.blockExplorerTX
+    : network.type.blockExplorerTX;
   const newObj = {
     txHash: {
-      value: obj.hash,
+      value: obj.hash ? obj.hash : '',
       string: 'Transaction Hash',
-      link: `${network.type.blockExplorerTX.replace('[[txHash]]', obj.hash)}`
+      link: `${explorer ? explorer.replace('[[txHash]]', obj.hash) : ''}`
     },
     gasPrice: {
       value: `${formatIntegerToString(fromWei(obj.gasPrice, 'gwei'))} Gwei`,
@@ -30,7 +34,10 @@ const formatNotification = (obj, network) => {
       string: 'Total Transaction fee'
     },
     to: {
-      value: obj.toTxData && obj.toTxData.to ? getXDCAddress(obj.toTxData.to) : getXDCAddress(obj.to),
+      value:
+        obj.toTxData && obj.toTxData.to
+          ? getXDCAddress(obj.toTxData.to)
+          : getXDCAddress(obj.to),
       string: 'To'
     },
     from: {

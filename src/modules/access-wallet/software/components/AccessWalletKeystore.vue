@@ -2,7 +2,7 @@
   <mew-stepper :items="stepperItems" :on-step="step">
     <!--
     =====================================================================================
-      Step 1: Upload Keystore Files
+      Step 1: Verify Keystore Files
     =====================================================================================
     -->
     <template v-if="step === 1" #stepperContent1>
@@ -62,6 +62,7 @@
           <v-row class="align-stretch">
             <v-col cols="12">
               <mew-input
+                ref="passwordInput"
                 v-model="password"
                 label="Enter Password"
                 placeholder="Enter my keystore password"
@@ -75,6 +76,7 @@
                 next-btn-text="Access Wallet"
                 :next-btn-method="unlockBtn"
                 :back-btn-method="backStepOne"
+                :next-disable="!password"
               />
               <!--
             =====================================================================================
@@ -100,12 +102,11 @@
 
 <script>
 import { Toast, ERROR } from '@/modules/toast/handler/handlerToast';
-import AppBtnRow from '@/core/components/AppBtnRow';
 
 export default {
   name: 'AccessWalletKeystore',
   components: {
-    AppBtnRow
+    AppBtnRow: () => import('@/core/components/AppBtnRow')
   },
   props: {
     handlerAccessWallet: {
@@ -184,6 +185,8 @@ export default {
      */
     backStepOne() {
       this.step = 1;
+      this.password = '';
+      this.$refs.passwordInput.clear();
     }
   }
 };

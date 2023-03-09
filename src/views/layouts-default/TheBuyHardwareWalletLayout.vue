@@ -81,11 +81,11 @@
 </template>
 
 <script>
-import TheLayoutHeader from '../components-default/TheLayoutHeader';
-
 export default {
   name: 'TheBuyHardwareWalletLayout',
-  components: { TheLayoutHeader },
+  components: {
+    TheLayoutHeader: () => import('../components-default/TheLayoutHeader')
+  },
   data: () => ({
     buttons: [
       {
@@ -119,8 +119,8 @@ export default {
         logoText: 'BitBox02',
         walletImg: require('@/assets/images/hardware-wallets/bitbox.png'),
         priceNote: 'Starting from',
-        currency: '€',
-        price: '119.00',
+        currency: '$',
+        price: '143.00',
         note: 'The most trusted hardware wallet in the world. Get yours today!',
         link: 'https://shiftcrypto.ch/'
       },
@@ -152,6 +152,16 @@ export default {
         price: '89.00',
         note: 'Unmatched physical security for your private keys.',
         link: 'https://privacypros.io/?afmc=2j&utm_campaign=2j&utm_source=leaddyno&utm_medium=affiliate'
+      },
+      {
+        logoText: 'COOL WALLET',
+        // logoImg: require('@/assets/images/icons/hardware-wallets/icon-coolwallet.svg'),
+        walletImg: require('@/assets/images/hardware-wallets/CoolwalletMEW_new.png'),
+        priceNote: 'Starting from',
+        currency: '$',
+        price: '99.00',
+        note: 'Unmatched physical security for your private keys.',
+        link: 'https://www.coolwallet.io/mew/?ref=myetherwallet1'
       }
     ]
   })

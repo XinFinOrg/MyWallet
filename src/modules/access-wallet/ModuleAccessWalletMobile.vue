@@ -20,7 +20,7 @@
       Mobile Connection Protocol Buttons
     =====================================================================================
     -->
-    <div style="max-width: 650px; width: 100%" class="mx-auto mb-n5">
+    <div style="max-width: 650px; width: 100%" class="mx-auto mb-n5 pt-5">
       <div v-for="(btn, key) in buttons" :key="key">
         <mew-button
           has-full-width
@@ -50,15 +50,17 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex';
+
 import { Toast, SENTRY } from '@/modules/toast/handler/handlerToast';
 import {
   WalletConnectWallet,
   WalletLinkWallet
 } from '@/modules/access-wallet/hybrid/handlers';
-import { mapActions } from 'vuex';
 import { ROUTES_WALLET } from '@/core/configs/configRoutes';
-import handlerAnalytics from '@/modules/analytics-opt-in/handlers/handlerAnalytics.mixin';
 import WALLET_TYPES from './common/walletTypes';
+
+import handlerAnalytics from '@/modules/analytics-opt-in/handlers/handlerAnalytics.mixin';
 
 export default {
   name: 'ModuleAccessWalletMobile',

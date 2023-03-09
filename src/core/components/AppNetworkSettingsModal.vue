@@ -22,7 +22,6 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
 import AppSimpleDialog from './AppSimpleDialog';
 import gasPriceMixin from '@/modules/settings/handler/gasPriceMixin';
 import SettingsGasPrice from '@/modules/settings/components/SettingsGasPrice';
@@ -66,9 +65,6 @@ export default {
   data() {
     return {};
   },
-  computed: {
-    ...mapState('global', ['online'])
-  },
   watch: {
     /**
      * emit gas when modal
@@ -99,6 +95,7 @@ export default {
       this.trackGasSwitch(
         `type:${this.gasPriceType}, gas:${this.txFeeFormatted}`
       );
+      this.closeDialog();
     },
     closeDialog() {
       this.close();

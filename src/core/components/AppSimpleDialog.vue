@@ -5,16 +5,43 @@
   or (v-model="") to control dialog
   ==================================================================
   -->
-  <v-dialog v-model="isDialogOpen" :width="width">
-    <div class="white pa-8">
-      <div class="d-flex align-start justify-space-between mb-7">
+  <v-dialog
+    v-model="isDialogOpen"
+    content-class="whitePopup"
+    :width="width"
+    :max-width="maxWidth"
+    :fullscreen="$vuetify.breakpoint.smAndDown"
+  >
+    <div
+      v-if="!noPadding"
+      :class="$vuetify.breakpoint.smAndDown ? 'pa-3' : 'pa-8 pt-5'"
+    >
+      <div
+        v-if="!noTitle"
+        :class="[
+          title ? 'mb-7' : '',
+          'd-flex align-start justify-space-between'
+        ]"
+      >
         <div class="mew-heading-2 pr-5">
           {{ title }}
         </div>
-        <v-btn color="textLight" icon class="mt-n2 mr-n2" @click="closeDialog">
+        <v-btn color="textLight" icon class="" @click="closeDialog">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </div>
+      <slot />
+    </div>
+    <div v-else class="position-relative">
+      <v-btn
+        class="close-button"
+        fab
+        color="transparent"
+        depressed
+        @click="isDialogOpen = false"
+      >
+        <v-icon color="white">mdi-close</v-icon>
+      </v-btn>
       <slot />
     </div>
   </v-dialog>
@@ -34,11 +61,23 @@ export default {
     },
     width: {
       type: String,
-      default: '600'
+      default: ''
+    },
+    maxWidth: {
+      type: String,
+      default: ''
     },
     title: {
       type: String,
       default: ''
+    },
+    noTitle: {
+      type: Boolean,
+      default: false
+    },
+    noPadding: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -73,6 +112,13 @@ export default {
       }
     }
   },
+  mounted() {
+    // Apply initial v-model value
+    if (this.value) this.isDialogOpen = this.value;
+
+    // Apply initial isOpen value
+    if (this.isOpen) this.isDialogOpen = this.isOpen;
+  },
   methods: {
     closeDialog() {
       // Close the dialog
@@ -88,4 +134,13 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.position-relative {
+  position: relative;
+}
+.close-button {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+</style>

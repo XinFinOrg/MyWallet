@@ -92,17 +92,16 @@
 </template>
 
 <script>
-import AppBlockTitle from '@/core/components/AppBlockTitle';
-
 export default {
-  components: { AppBlockTitle },
-  data: () => ({
+  components: {
+    AppBlockTitle: () => import('@/core/components/AppBlockTitle')
+  },
+  data: vm => ({
     titleData: {
       textProps: 'white--text',
       toptitle: '',
-      title: 'Swap',
-      description:
-        'MEW has partnered with 1inch, DEX AG, Changelly, Bity, and Simplex for easy crypto purchases and swaps. Buy ETH right in the wallet, swap ETH for ERC20 tokens, BTC and more!',
+      title: vm.$t('howItWorks.swap.title'),
+      description: vm.$t('howItWorks.swap.description'),
       centered: false
     }
   })

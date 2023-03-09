@@ -1,5 +1,5 @@
 <template>
-  <div class="full-width">
+  <div class="full-width pt-6">
     <h3 class="mb-6">Enter your private key</h3>
     <!--
     =====================================================================================
@@ -8,6 +8,7 @@
     -->
     <mew-input
       v-model="privateKey"
+      class="PrivateKeyInput"
       label="Private Key"
       placeholder="Enter your Private Key"
       :rules="privKeyRulles"
@@ -21,13 +22,14 @@
     <div class="text-center">
       <!--<mew-checkbox
         v-model="acceptTerms"
-        label="To access my wallet, I accept "
+        :label="label"
         :link="link"
-        class="justify-center"
+        class="justify-center PrivateKeyTerms"
       />-->
       <v-row dense class="align-center justify-center pt-4">
         <v-col cols="12" sm="4">
           <mew-button
+            class="PrivateKeyAccess"
             has-full-width
             title="Access Wallet"
             btn-size="xlarge"
@@ -41,12 +43,15 @@
 </template>
 
 <script>
-import { isPrivateKey } from '../handlers/helpers';
 import { isValidPrivate } from 'ethereumjs-util';
+import { isString } from 'lodash';
+
+import { isPrivateKey } from '../handlers/helpers';
 import {
   getBufferFromHex,
   sanitizeHex
 } from '../../../access-wallet/common/helpers';
+import { mapState } from 'vuex';
 export default {
   name: 'AccessWalletPrivateKey',
   props: {
@@ -61,6 +66,7 @@ export default {
     return {
       privateKey: '',
       acceptTerms: true,
+      label: 'To access my wallet, I accept ',
       link: {
         title: 'Terms',
         url: 'https://www.myetherwallet.com/terms-of-service'
@@ -68,6 +74,7 @@ export default {
     };
   },
   computed: {
+    ...mapState('wallet', ['isOfflineApp']),
     /**
      * Property that controls Access Wallet button
      * Button is enabled when terms were accepted and
@@ -91,6 +98,7 @@ export default {
      * @returns actual private without '0x' prefix
      */
     actualPrivateKey() {
+      if (!isString(this.privateKey)) return '';
       return this.privateKey && this.privateKey.substr(0, 2) === '0x'
         ? this.privateKey.replace('0x', '')
         : this.privateKey;
@@ -103,6 +111,12 @@ export default {
         value => !!value || 'Required',
         value => isPrivateKey(value) || 'This is not a real private Key'
       ];
+    }
+  },
+  mounted() {
+    if (this.isOfflineApp) {
+      this.link = {};
+      this.label = 'To access my wallet, I accept Terms';
     }
   },
   methods: {

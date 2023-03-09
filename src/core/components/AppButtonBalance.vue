@@ -1,13 +1,28 @@
 <template>
   <div class="core--components--app-button-balance">
-    <v-skeleton-loader v-if="loading" type="text" width="100px" />
+    <div v-if="loading" class="greenPrimary--text d-flex align-center">
+      <v-progress-circular
+        size="11"
+        width="2"
+        class="mr-1"
+        indeterminate
+        color="primary"
+      />
+      {{ loadingText }}
+      <span v-if="!noDots" class="loading-dots">{{ loadingDots }}</span>
+    </div>
+
     <div v-else class="d-flex align-center justify-end">
-      <div class="greenPrimary--text mew-body">
+      <div v-if="!text" class="greenPrimary--text mew-body BalanceLabel">
         Balance: {{ balanceFormatted.value }}
+      </div>
+      <div else class="primary--text mew-body">
+        {{ text }}
       </div>
       <mew-tooltip
         v-if="balanceFormatted.tooltipText"
         class="pl-1"
+        style="height: 21px"
         :text="balanceFormatted.tooltipText"
       />
     </div>
@@ -21,20 +36,46 @@ export default {
   props: {
     loading: {
       type: Boolean,
-      default: true
+      default: false
+    },
+    noDots: {
+      type: Boolean,
+      default: false
+    },
+    loadingText: {
+      type: String,
+      default: 'Loading balance'
     },
     /** Set this proerty to wei if you are dispalying ETH balance vs erc20 tokens*/
     balance: {
       type: String,
       default: ''
+    },
+    text: {
+      type: String,
+      default: ''
     }
   },
   data() {
-    return {};
+    return { loadingDots: '' };
   },
   computed: {
     balanceFormatted() {
       return formatFloatingPointValue(this.balance);
+    }
+  },
+  mounted() {
+    this.animateLoadingDots();
+  },
+  methods: {
+    animateLoadingDots() {
+      const dots = 4;
+
+      setInterval(() => {
+        if (this.loadingDots.length < dots)
+          this.loadingDots = this.loadingDots + '.';
+        else this.loadingDots = '';
+      }, 400);
     }
   }
 };
@@ -45,5 +86,9 @@ export default {
   position: absolute;
   top: -25px;
   right: 0px;
+}
+
+.loading-dots {
+  width: 20px;
 }
 </style>

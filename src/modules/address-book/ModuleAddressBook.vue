@@ -2,10 +2,12 @@
   <div>
     <mew-address-select
       ref="addressSelect"
-      :resolved-addr="resolvedAddr"
+      :resolved-addr="addressOnly"
+      :hint="nameOnly"
       :copy-tooltip="$t('common.copy')"
       :save-tooltip="$t('common.save')"
       :enable-save-address="enableSave"
+      :show-save="enableSave"
       :label="addrLabel"
       :items="addressBookWithMyAddress"
       :placeholder="$t('sendTx.enter-addr')"
@@ -18,11 +20,7 @@
     />
     <!-- add and edit the address book -->
     <mew-overlay
-      :footer="{
-        text: 'Need help?',
-        linkTitle: 'Contact support',
-        link: 'mailto:support@xinfin.org'
-      }"
+      :footer="footer"
       :title="$t('interface.address-book.add-addr')"
       :show-overlay="addMode"
       :close="toggleOverlay"
@@ -39,24 +37,28 @@
 
 <script>
 import { mapGetters, mapState } from 'vuex';
-import NameResolver from '@/modules/name-resolver/index';
-import AddressBookAddEdit from './components/AddressBookAddEdit';
-import { isObject, debounce } from 'lodash';
+import { isObject, throttle } from 'lodash';
+import WAValidator from 'multicoin-address-validator';
+import { getAddressInfo } from '@kleros/address-tags-sdk';
+
 import {
   toChecksumAddress,
   isXDCAddress,
   getXDCAddress,
   get0xAddress
 } from '@/core/helpers/addressUtils';
+import NameResolver from '@/modules/name-resolver/index';
+import { ERROR, Toast } from '../toast/handler/handlerToast';
 
 const USER_INPUT_TYPES = {
   typed: 'TYPED',
-  selected: 'SELECTED'
+  selected: 'SELECTED',
+  resolved: 'RESOLVED'
 };
 
 export default {
   components: {
-    AddressBookAddEdit
+    AddressBookAddEdit: () => import('./components/AddressBookAddEdit')
   },
   props: {
     isValidAddressFunc: {
@@ -71,9 +73,17 @@ export default {
       type: String,
       default: ''
     },
+    currency: {
+      type: String,
+      default: 'ETH'
+    },
     preselectCurrWalletAdr: {
       type: Boolean,
       default: false
+    },
+    enableSaveAddress: {
+      type: Boolean,
+      default: true
     }
   },
   data() {
@@ -83,14 +93,26 @@ export default {
       inputAddr: '',
       nameResolver: null,
       isValidAddress: false,
-      loadedAddressValidation: false
+      loadedAddressValidation: false,
+      nametag: '',
+      footer: {
+        text: 'Need help?',
+        linkTitle: 'Contact support',
+        link: 'mailto:support@myetherwallet.com'
+      }
     };
   },
 
   computed: {
     ...mapState('addressBook', ['addressBookStore']),
     ...mapGetters('global', ['network']),
-    ...mapState('wallet', ['web3']),
+    ...mapState('wallet', [
+      'web3',
+      'address',
+      'isOfflineApp',
+      'identifier',
+      'instance'
+    ]),
     errorMessages() {
       if (!this.isValidAddress && this.loadedAddressValidation) {
         return this.$t('interface.address-book.validations.invalid-address');
@@ -110,35 +132,86 @@ export default {
               resolverAddr: '0xDECAF9CD2367cdbb726E904cD6397eDFcAe6068D'
             }
           ]
-        : [
+        : this.myAddressBook;
+    },
+    myAddressBook() {
+      if (!this.isHomePage && !this.identifier && this.instance)
+        this.instance.errorHandler(
+          new Error('Wallet has no identifier! Please refresh the page')
+        );
+      return this.address
+        ? [
             {
-              address: getXDCAddress(toChecksumAddress(this.$store.state.wallet.address)),
+              address: getXDCAddress(toChecksumAddress(this.address)),
               nickname: 'My Address',
               resolverAddr: ''
             }
-          ].concat(this.addressBookStore.map(e => {
-            e.address = getXDCAddress(e.address)
-            return e
-        }));
+          ].concat(
+            this.addressBookStore.map(e => {
+              e.address = getXDCAddress(e.address);
+              return e;
+            })
+          )
+        : // If address is undefined set to MEW Donations
+          [
+            {
+              address: '0xDECAF9CD2367cdbb726E904cD6397eDFcAe6068D',
+              currency: 'ETH',
+              nickname: 'MEW Donations',
+              resolverAddr: '0xDECAF9CD2367cdbb726E904cD6397eDFcAe6068D'
+            }
+          ].concat(
+            this.addressBookStore.map(e => {
+              e.address = getXDCAddress(e.address);
+              return e;
+            })
+          );
     },
     enableSave() {
-      return this.isHomePage ? false : this.isValidAddress;
+      return this.isHomePage
+        ? false
+        : this.isValidAddress && this.enableSaveAddress;
     },
     addrLabel() {
-      return this.label === '' ? this.$t('sendTx.to-addr') : this.label
+      return this.label === '' ? this.$t('sendTx.to-addr') : this.label;
+    },
+    addressOnly() {
+      return isAddress(this.resolvedAddr) && this.isValidAddress
+        ? this.resolvedAddr
+        : '';
+    },
+    nameOnly() {
+      return !isAddress(this.resolvedAddr) && this.isValidAddress
+        ? this.resolvedAddr || this.nametag
+        : '';
     }
   },
   watch: {
     web3() {
-      if (this.network.type.ens) {
+      if (this.network.type.ens && this.web3.currentProvider) {
         this.nameResolver = new NameResolver(this.network, this.web3);
       } else {
         this.nameResolver = null;
       }
+    },
+    inputAddr(newVal) {
+      this.nametag = '';
+      if (isAddress(newVal.toLowerCase())) {
+        this.resolveAddress();
+      } else {
+        this.resolveName();
+      }
     }
   },
   mounted() {
-    if (this.network.type.ens)
+    if (this.isOfflineApp) {
+      this.footer = {
+        text: 'Need help? Email us at support@myetherwallet.com',
+        linkTitle: '',
+        link: ''
+      };
+    }
+    if (this.network.type.ens && this.web3.currentProvider)
       this.nameResolver = new NameResolver(this.network, this.web3);
     if (this.isHomePage) {
       this.setDonationAddress();
@@ -146,7 +219,7 @@ export default {
     if (this.preselectCurrWalletAdr) {
       this.$refs.addressSelect.selectAddress(this.addressBookWithMyAddress[0]);
       this.setAddress(
-        toChecksumAddress(this.$store.state.wallet.address),
+        toChecksumAddress(this.address),
         USER_INPUT_TYPES.selected
       );
     }
@@ -156,41 +229,85 @@ export default {
      * Checks if address is valid
      * and sets the address value
      */
-    setAddress(value, inputType) {
+    async setAddress(value, inputType) {
       if (typeof value === 'string') {
-        /**
-         * Checks if user typed or selected an address from dropdown
-         */
-        const typeVal =
-          inputType === USER_INPUT_TYPES.typed
-            ? value
-            : this.addressBookWithMyAddress.find(item => {
-                return value.toLowerCase() === item.address.toLowerCase();
-              });
-        this.inputAddr = get0xAddress(value);
-        this.resolvedAddr = '';
-        /**
-         * Checks if the address is valid
-         */
-        const isAddValid = this.isValidAddressFunc(this.inputAddr);
-        if (isAddValid instanceof Promise) {
-          isAddValid.then(res => {
-            this.isValidAddress = res;
-          });
-        } else {
-          this.isValidAddress = isAddValid;
-        }
-        this.loadedAddressValidation = !this.isValidAddress ? false : true;
+        if (
+          this.currency.toLowerCase() ===
+          this.network.type.currencyName?.toLowerCase()
+        ) {
+          /**
+           * Checks if user typed or selected an address from dropdown
+           */
+          const typeVal =
+            inputType === USER_INPUT_TYPES.typed
+              ? value
+              : this.addressBookWithMyAddress.find(item => {
+                  return value.toLowerCase() === item.address.toLowerCase();
+                });
+          this.inputAddr = get0xAddress(value);
+          this.resolvedAddr = '';
+          /**
+           * Checks if the address is valid
+           */
+          try {
+            const isAddValid = this.isValidAddressFunc(this.inputAddr);
+            if (isAddValid instanceof Promise) {
+              const validation = await isAddValid;
+              this.isValidAddress = validation;
+            } else {
+              this.isValidAddress = isAddValid;
+            }
+          } catch (e) {
+            this.isValidAddress = false;
+          }
+          this.loadedAddressValidation = !this.isValidAddress ? false : true;
+          /**
+           * Resolve address with ENS/Unstoppable/Kleros
+           */
+          if (this.isValidAddress && !this.isOfflineApp)
+            await this.resolveAddress();
 
-        /**
-         * @emits setAddress
-         */
-        this.$emit('setAddress', get0xAddress(value), this.isValidAddress, {
-          type: inputType,
-          value: isObject(typeVal) ? typeVal.nickname : get0xAddress(typeVal)
-        });
-        if (!this.isValidAddress) {
-          this.resolveName();
+          /**
+           * @emits setAddress
+           */
+          this.$emit('setAddress', value, this.isValidAddress, {
+            type: inputType,
+            value: isObject(typeVal) ? typeVal.nickname : typeVal
+          });
+          if (!this.isValidAddress) {
+            await this.resolveName();
+          }
+        } else {
+          const currencyExists = WAValidator.findCurrency(
+            this.currency.toLowerCase()
+          );
+          if (currencyExists) {
+            const validate = WAValidator.validate(
+              value,
+              this.currency.toLowerCase()
+            );
+            if (validate) {
+              this.inputAddr = value;
+              this.isValidAddress = true;
+            } else {
+              this.isValidAddress = false;
+            }
+            this.loadedAddressValidation = true;
+            /**
+             * @emits setAddress
+             */
+            this.$emit('setAddress', get0xAddress(value), this.isValidAddress, {
+              type: inputType,
+              value: get0xAddress(value)
+            });
+          } else {
+            this.isValidAddress = false;
+            this.loadedAddressValidation = true;
+            this.$emit('setAddress', get0xAddress(value), this.isValidAddress, {
+              type: inputType,
+              value: get0xAddress(value)
+            });
+          }
         }
       }
     },
@@ -204,9 +321,13 @@ export default {
       this.isValidAddress = false;
       this.loadedAddressValidation = false;
       this.$refs.addressSelect.clear();
+      this.$emit('setAddress', this.resolvedAddr, this.isValidAddress, {
+        type: USER_INPUT_TYPES.typed,
+        value: this.inputAddr
+      });
 
       // Calls setups from mounted
-      if (this.network.type.ens)
+      if (!this.isOfflineApp && this.network.type.ens)
         this.nameResolver = new NameResolver(this.network, this.web3);
       if (this.isHomePage) {
         this.setDonationAddress();
@@ -223,9 +344,36 @@ export default {
       this.addMode = !this.addMode;
     },
     /**
+     * Resolves address and @returns name
+     */
+    resolveAddress: throttle(async function () {
+      if (this.nameResolver) {
+        try {
+          const reverseName = await this.nameResolver.resolveAddress(
+            this.inputAddr
+          );
+          if (reverseName && !reverseName.name) {
+            try {
+              await getAddressInfo(
+                toChecksumAddress(this.inputAddr),
+                'https://ipfs.kleros.io'
+              ).then(data => {
+                this.nametag = data?.publicNameTag || '';
+              });
+            } catch (e) {
+              this.nametag = '';
+            }
+          }
+          this.resolvedAddr = reverseName?.name ? reverseName.name : '';
+        } catch (e) {
+          Toast(e, {}, ERROR);
+        }
+      }
+    }, 300),
+    /**
      * Resolves name and @returns address
      */
-    resolveName: debounce(async function () {
+    resolveName: throttle(async function () {
       if (this.nameResolver) {
         try {
           await this.nameResolver.resolveName(this.inputAddr).then(addr => {
@@ -233,11 +381,10 @@ export default {
             this.isValidAddress = true;
             this.loadedAddressValidation = true;
             this.$emit('setAddress', this.resolvedAddr, this.isValidAddress, {
-              type: 'RESOLVED',
+              type: USER_INPUT_TYPES.resolved,
               value: this.inputAddr
             });
           });
-          // eslint-disable-next-line no-empty
         } catch (e) {
           this.loadedAddressValidation = true;
         }

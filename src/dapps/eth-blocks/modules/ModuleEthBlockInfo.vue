@@ -4,7 +4,9 @@
     Blocks Mint Tab
     ===================================================
     -->
-  <v-container class="px-3 pb-13 pt-5 px-md-15 pb-md-15 pt-md-8">
+  <v-container
+    class="dapps--module-eth-block-info px-3 pb-13 pt-5 px-md-15 pb-md-15 pt-md-8"
+  >
     <!--
         ===================================================
           Block Search or BlockInfo
@@ -81,6 +83,13 @@
             </template>
           </v-img>
         </a>
+        <!----- * BELOW IS COMMENTED OUT FOR NOW * ------->
+        <!-- <div v-if="isReserved">
+          <h3 class="text-center text-md-left mt-5 ml-1">Owners Comment:</h3>
+          <p class="ml-1">
+            {{ handlerBlock.description }}
+          </p>
+        </div> -->
       </div>
 
       <v-col>
@@ -89,15 +98,54 @@
           NFT Title
         ===================================================
         -->
-        <h2 class="mb-4 mb-md-5 text-center text-md-left">
-          Block #{{ blockNumberFormatted }}
-        </h2>
+        <div
+          class="d-flex flex-row align-center justify-space-between mb-4 mb-md-5"
+        >
+          <h2 class="text-center text-md-left">
+            Block #{{ blockNumberFormatted }}
+          </h2>
+          <div class="d-flex align-center">
+            <share-network
+              network="twitter"
+              :url="`https://www.ethvm.com/block/number/${blockRef}`"
+              title="Twitter message"
+              hashtags="MyEtherWallet,MEW,EthBlocks"
+            >
+              <mew-button class="mr-1" btn-style="light" color-theme="basic">
+                <div class="d-flex align-center">
+                  <v-icon left>mdi-twitter</v-icon>
+                  <div>Share</div>
+                </div>
+              </mew-button>
+            </share-network>
+            <!-------------* Below is commented out for now * ------------------->
+            <!-------------* Below is commented out for now * ------------------->
+            <!-- <share-network
+              network="twitter"
+              :url="`https://www.ethvm.com/block/number/${blockRef}`"
+              title="Eth Museum"
+              hashtags="MyEtherWallet,MEW,EthBlocks"
+            > -->
+            <mew-button
+              class="ml-4"
+              btn-style="light"
+              color-theme="basic"
+              disabled
+            >
+              <div class="d-flex align-center">
+                <v-icon left>mdi-launch</v-icon>
+                <div>View in Museum</div>
+              </div>
+            </mew-button>
+            <!-- </share-network> -->
+          </div>
+        </div>
         <!--
         ===================================================
           Block Info Alert component
         ===================================================
         -->
-        <block-info-alert
+        <block-info
           :block-alert="alert"
           :block-number="blockRef"
           :owner="alertOwner"
@@ -114,28 +162,18 @@
           Block Description
         ===================================================
         -->
-        <div v-if="!isReserved" class="border-container mt-4 mt-md-5 pa-5">
+        <div class="mt-10 mt-md-5">
           <div :class="['textMedium--text', { 'mb-2': !isTestNetwork }]">
             {{ handlerBlock.description }}
           </div>
-          <a
-            v-if="!isTestNetwork"
-            :href="`https://www.ethvm.com/block/number/${blockRef}`"
-            target="_blank"
-            @click="trackToEthVM"
-          >
-            View block #{{ blockRef }} info on EthVM
-          </a>
         </div>
-      </v-col>
-      <!--
-      ===================================================
-        NFT Properties
-        XS12
-      ===================================================
-      -->
-      <v-col v-if="!isReserved" cols="12" class="mt-4 mt-md-11">
-        <div class="table-properties">
+        <!--
+        ===================================================
+          NFT Properties
+          XS12
+        ===================================================
+        -->
+        <div class="table-properties mt-10">
           <div
             class="table-properties--header py-3 px-5 textLight--text mew-caption"
           >
@@ -158,6 +196,15 @@
         </div>
       </v-col>
     </v-row>
+    <a
+      v-if="!loading"
+      class="d-flex flex-row-reverse mt-3"
+      :href="`https://www.ethvm.com/block/number/${blockRef}`"
+      target="_blank"
+      @click="trackToEthVM"
+    >
+      View block info on EthVM
+    </a>
     <blocks-loading v-else />
     <block-send
       :open="openSendOverlay"
@@ -170,17 +217,15 @@
 </template>
 
 <script>
-import BlockInfoAlert from '../components/BlockInfoAlert.vue';
-import BlockSearch from '../components/BlockSearch.vue';
-import BlockSend from '../components/BlockSend.vue';
-import BlocksLoading from '../components/BlocksLoading.vue';
-import handlerBlock from '../handlers/handlerBlock';
+import { mapActions, mapGetters, mapState } from 'vuex';
+import { toBN } from 'web3-utils';
+
 import { BLOCK_ALERT } from '../handlers/helpers/blockAlertType';
 import { formatIntegerToString } from '@/core/helpers/numberFormatHelper';
 import { ETH_BLOCKS_ROUTE } from '../configsRoutes';
-import { mapActions, mapGetters, mapState } from 'vuex';
 import { validBlockNumber } from '../handlers/helpers/common';
-import { toBN } from 'web3-utils';
+
+import handlerBlock from '../handlers/handlerBlock';
 import handlerAnalytics from '@/modules/analytics-opt-in/handlers/handlerAnalytics.mixin';
 
 const MIN_GAS_TRANSFER = 150000;
@@ -189,10 +234,10 @@ const MIN_GAS_MINT = 350000;
 export default {
   name: 'ModuleEthBlockInfo',
   components: {
-    BlockInfoAlert,
-    BlockSearch,
-    BlocksLoading,
-    BlockSend
+    BlockInfo: () => import('../components/BlockInfo.vue'),
+    BlockSearch: () => import('../components/BlockSearch.vue'),
+    BlockSend: () => import('../components/BlockSend.vue'),
+    BlocksLoading: () => import('../components/BlocksLoading.vue')
   },
   mixins: [handlerAnalytics],
   props: {

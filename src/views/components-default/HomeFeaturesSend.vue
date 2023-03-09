@@ -28,17 +28,17 @@
 
 <script>
 import { mapGetters, mapState } from 'vuex';
-import ModuleAddressBook from '@/modules/address-book/ModuleAddressBook';
 
 export default {
   name: 'HomeFeaturesSend',
-  components: { ModuleAddressBook },
+  components: {
+    ModuleAddressBook: () => import('@/modules/address-book/ModuleAddressBook')
+  },
   data: () => ({
     data: '1337'
   }),
   computed: {
     ...mapState('wallet', ['balance', 'web3', 'address']),
-    ...mapState('global', ['online']),
     ...mapGetters('global', ['network', 'gasPrice']),
     ...mapGetters('wallet', ['balanceInETH', 'tokensList']),
     tokens() {

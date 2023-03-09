@@ -7,7 +7,7 @@
   "next": "Next",
   "copy": "Copy",
   "copied": "Copied",
-  "confirm-add": "Confirm & Add",
+  "confirm-add": "Confirm and add",
   "clear": "Clear",
   "cancel": "Cancel",
   "close": "Close",
@@ -51,7 +51,7 @@
   "gas": {
     "limit": "Gas Limit (usually ranges from 21,000 to 500,000)"
   },
-  "clear-all": "Clear All",
+  "clear-all": "Clear all",
   "logout": "Logout",
   "settings": "Settings",
   "exit-dapp": "Exit Dapp",

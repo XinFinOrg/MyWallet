@@ -1,32 +1,29 @@
 <template>
-  <div class="full-width">
+  <div class="module-network-switch full-width">
     <v-row
       v-if="!isSwapPage && hasNetworks"
       class="align-end justify-center justify-sm-space-between pa-0"
     >
-      <!--
-            =====================================================================================
-              Toggle: Main/Test/All
-            =====================================================================================
-            -->
+      <!-- ===================================================================================== -->
+      <!-- Toggle: Main/Test/All -->
+      <!-- ===================================================================================== -->
       <div
-        class="align-center align-sm-end justify-center pr-sm-3 pb-sm-3 order-sm-2"
+        class="align-center align-sm-end justify-center pr-sm-3 pb-sm-3 order-sm-2 mt-10 mt-sm-0"
       >
         <v-btn-toggle
           v-model="toggleType"
           mandatory
-          active-class="textDark white--text alig-end"
+          active-class="buttonToggleDark white--text alig-end"
         >
           <v-btn small>Main</v-btn>
           <v-btn small>Test</v-btn>
           <v-btn small>All</v-btn>
         </v-btn-toggle>
       </div>
-      <!--
-            =====================================================================================
-              Search Data
-            =====================================================================================
-            -->
+
+      <!-- ===================================================================================== -->
+      <!-- Search Data -->
+      <!-- ===================================================================================== -->
       <v-col cols="12" sm="7" class="order-sm-1">
         <mew-search
           placeholder="Find Network"
@@ -35,22 +32,20 @@
         />
       </v-col>
     </v-row>
-    <!--
-          =====================================================================================
-            Empty Search Message
-          =====================================================================================
-          -->
+
+    <!-- ===================================================================================== -->
+    <!-- Empty Search Message -->
+    <!-- ===================================================================================== -->
     <app-user-msg-block
       v-if="showEmptySearch || isSwapPage"
       :message="emptySearchMes"
       :is-alert="isSwapPage"
       class="mt-5"
     />
-    <!--
-          =====================================================================================
-            Networks
-          =====================================================================================
-          -->
+
+    <!-- ===================================================================================== -->
+    <!-- Networks -->
+    <!-- ===================================================================================== -->
     <v-radio-group v-model="networkSelected">
       <v-container
         v-for="(network, i) in networks"
@@ -62,23 +57,13 @@
         ]"
       >
         <v-row class="pa-0 mew-body align-center justify-start">
-          <!--
-                =====================================================================================
-                  Incon
-                =====================================================================================
-                -->
-          <v-img
-            :src="network.icon"
-            :lazy-src="require('@/assets/images/currencies/icon-eth-grey.svg')"
-            contain
-            max-height="24px"
-            max-width="24px"
-          />
-          <!--
-                =====================================================================================
-                  Symbol/Namte
-                =====================================================================================
-                -->
+          <!-- ===================================================================================== -->
+          <!-- Icon -->
+          <!-- ===================================================================================== -->
+          <mew-token-container :img="network.icon" size="24px" />
+          <!-- ===================================================================================== -->
+          <!-- Symbol/Name -->
+          <!-- ===================================================================================== -->
           <div class="textDark--text Capitalize pl-3">
             {{ network.name }}
           </div>
@@ -87,12 +72,16 @@
             {{ network.name_long }}
           </div>
           <v-spacer />
-          <!--
-                =====================================================================================
-                  Radio
-                =====================================================================================
-                -->
-          <v-radio :value="network.name" :class="['py-2 mb-0']"> </v-radio>
+
+          <!-- ===================================================================================== -->
+          <!-- Radio -->
+          <!-- ===================================================================================== -->
+          <v-radio
+            :value="network.name"
+            :class="['py-2 mb-0']"
+            :disabled="networkLoading"
+          >
+          </v-radio>
         </v-row>
       </v-container>
     </v-radio-group>
@@ -100,37 +89,50 @@
 </template>
 
 <script>
+import { mapActions, mapGetters, mapState } from 'vuex';
+import { debounce } from 'lodash';
+
 import * as nodes from '@/utils/networks/nodes';
 import * as types from '@/utils/networks/types';
-import { mapActions, mapGetters } from 'vuex';
 import { Toast, SUCCESS, ERROR } from '@/modules/toast/handler/handlerToast';
-import AppUserMsgBlock from '@/core/components/AppUserMsgBlock';
-import { debounce } from 'lodash';
+
 import handlerAnalytics from '@/modules/analytics-opt-in/handlers/handlerAnalytics.mixin';
+import matchNetwork from '@/core/helpers/matchNetwork';
+import WALLET_TYPES from '@/modules/access-wallet/common/walletTypes';
 
 export default {
   name: 'NetworkSwitch',
-  components: { AppUserMsgBlock },
+  components: {
+    AppUserMsgBlock: () => import('@/core/components/AppUserMsgBlock')
+  },
   mixins: [handlerAnalytics],
   props: {
     isWallet: { type: Boolean, default: true },
     /** Set this prop to pass specific networks to be displayed */
     filterTypes: { type: Array, default: () => [] },
     /** Set this prop to false if device does not support networks */
-    hasNetworks: { type: Boolean, default: true }
+    hasNetworks: { type: Boolean, default: true },
+    isSwapPage: {
+      type: Boolean,
+      default: false
+    }
   },
   data() {
     return {
+      networkSelectedBefore: null,
       networkSelected: null,
       nodes: nodes,
       toggleType: 0,
-      searchInput: ''
+      searchInput: '',
+      networkLoading: false
     };
   },
   computed: {
     ...mapGetters('global', ['network']),
+    ...mapState('global', ['validNetwork']),
+    ...mapState('wallet', ['identifier', 'instance', 'isOfflineApp']),
     /**
-     * Property returns sorted network names alphabeticaly in this order: ETH, main and then test networks
+     * Property returns sorted network names alphabetically in this order: ETH, main and then test networks
      * @returns {string[]}
      */
     typeNames() {
@@ -184,7 +186,7 @@ export default {
       return allNetworks;
     },
     /**
-     * Property shows invalid search if user inlcuded input and networks length is 0
+     * Property shows invalid search if user included input and networks length is 0
      * @returns {boolean}
      */
     showEmptySearch() {
@@ -219,25 +221,39 @@ export default {
           ? 'Select different feature to see all networks.'
           : 'We do not have a network with this name.'
       };
-    },
-    /**
-     * Property returns whether or not you are on the swap page
-     * @returns {boolean}
-     */
-    isSwapPage() {
-      return this.$route.name === 'Swap';
     }
   },
   watch: {
     networkSelected(value) {
-      if (value && value !== this.network.type.name) {
+      if (value && (value !== this.network.type.name || !this.validNetwork)) {
+        this.networkLoading = true;
         this.setNetworkDebounced(value);
       }
     },
     searchInput(newVal, oldVal) {
+      /**
+       * Set current network to prevent undefined networkSelected value
+       */
+      if (this.networks.length > 0) {
+        this.networkSelected = this.networkSelectedBefore;
+      }
+
       if (newVal != oldVal && (!oldVal || oldVal === '')) {
         this.toggleType = 2;
       }
+    },
+    validNetwork(val) {
+      if (!val) this.networkSelected = null;
+      else this.networkSelected = this.network.type.name;
+    },
+    async network() {
+      this.networkLoading = true;
+      const matched = await matchNetwork(
+        this.network.type.chainID,
+        this.identifier
+      );
+      if (matched) this.networkSelected = this.network.type.name;
+      this.networkLoading = false;
     },
     /**
      * Set networkSelected on toggle change, if network is in the list
@@ -248,20 +264,22 @@ export default {
           this.networks.filter(item => item.name === this.network.type.name)
             .length > 0
         ) {
-          this.networkSelected = this.network.type.name;
+          this.networkSelected = this.validNetwork
+            ? this.network.type.name
+            : '';
         }
       }
     }
   },
   mounted() {
-    this.networkSelected = this.network.type.name;
+    this.networkSelected = this.validNetwork ? this.network.type.name : '';
+    this.networkSelectedBefore = this.networkSelected;
   },
   methods: {
     ...mapActions('wallet', ['setWeb3Instance']),
     ...mapActions('global', ['setNetwork']),
-    ...mapActions('external', ['setTokenAndEthBalance']),
     /**
-     * Method checks whther symbol or name has searchInput substring
+     * Method checks whether symbol or name has searchInput substring
      * @returns {boolean}
      */
     hasString(symbol, name) {
@@ -282,33 +300,54 @@ export default {
      * @return {void}
      */
     setNetworkDebounced: debounce(function (value) {
+      this.savePreviousNetwork();
+
       const found = Object.values(this.nodes).filter(item => {
         if (item.type.name === value) {
           return item;
         }
       });
-      try {
-        this.setNetwork(found[0]).then(() => {
+      this.setNetwork({
+        network: found[0],
+        walletType: this.instance?.identifier || ''
+      })
+        .then(() => {
           if (this.isWallet) {
-            this.setWeb3Instance().then(() => {
-              this.setTokenAndEthBalance();
+            this.networkSelected = this.validNetwork
+              ? this.network.type.name
+              : '';
+            this.networkLoading = false;
+            const setNetworkCall =
+              this.identifier === WALLET_TYPES.WEB3_WALLET
+                ? this.setWeb3Instance(window.ethereum)
+                : this.setWeb3Instance();
+            setNetworkCall.then(() => {
+              Toast(`Switched network to: ${found[0].type.name}`, {}, SUCCESS);
+              this.trackNetworkSwitch(found[0].type.name);
+              this.$emit('newNetwork');
             });
-            Toast(
-              `Switched network to: ${found[0].type.name} - ${found[0].service}`,
-              {},
-              SUCCESS
-            );
           }
-          this.trackNetworkSwitch(found[0].type.name);
-          this.$emit('newNetwork');
+        })
+        .catch(e => {
+          this.networkSelected = this.validNetwork
+            ? this.network.type.name
+            : '';
+          this.networkLoading = false;
+          Toast(e, {}, ERROR);
         });
-      } catch (e) {
-        Toast(`Could not switch network`, {}, ERROR);
+    }, 1000),
+    /**
+     * Backup current network value
+     */
+    savePreviousNetwork() {
+      if (this.networkSelected) {
+        this.networkSelectedBefore = this.networkSelected;
       }
-    }, 1000)
+    }
   }
 };
 </script>
+
 <style lang="scss" scoped>
 $borderNetwork: 1px solid #ececec;
 .network-border {
@@ -324,5 +363,10 @@ $borderNetwork: 1px solid #ececec;
 
 .network-border-last {
   border-radius: 0px 0px 4px 4px;
+}
+
+.mint-me-color {
+  filter: brightness(0) saturate(100%) invert(90%) sepia(3%) saturate(5171%)
+    hue-rotate(348deg) brightness(92%) contrast(63%);
 }
 </style>

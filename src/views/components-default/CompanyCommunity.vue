@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="company-community">
     <v-container>
       <v-row>
-        <v-col cols="6">
+        <v-col cols="12" sm="6">
           <v-sheet max-width="400px">
             <v-img
               src="@/assets/images/icons/icon-message2-mew.svg"
@@ -16,12 +16,12 @@
               class="mt-5"
               btn-link="https://help.myetherwallet.com/en/"
               :has-full-width="false"
-              title="Visit Help Center"
+              :title="$t('aboutUs.get-answers.btn-title')"
               btn-size="xlarge"
             />
           </v-sheet>
         </v-col>
-        <v-col cols="6">
+        <v-col cols="12" sm="6">
           <v-sheet max-width="400px">
             <v-img
               src="@/assets/images/icons/icon-community-mew.svg"
@@ -53,14 +53,15 @@
 </template>
 
 <script>
-import AppBlockTitle from '@/core/components/AppBlockTitle';
 import Telegram from '@/assets/images/icons/icon-telegram-dark.svg';
 import Slack from '@/assets/images/icons/icon-slack-dark.svg';
 import Reddit from '@/assets/images/icons/icon-reddit-dark.svg';
 import Github from '@/assets/images/icons/icon-github-dark.svg';
 export default {
-  components: { AppBlockTitle },
-  data: () => ({
+  components: {
+    AppBlockTitle: () => import('@/core/components/AppBlockTitle')
+  },
+  data: vm => ({
     icons: [
       {
         link: 'https://t.me/myetherwallet',
@@ -80,15 +81,13 @@ export default {
       }
     ],
     titleData: {
-      title: 'Get answers to questions',
-      description:
-        'See our Help Center for assistance with using MEW, sending transactions, swapping, DeFi, DApps, and much more.',
+      title: vm.$t('aboutUs.get-answers.title'),
+      description: vm.$t('aboutUs.get-answers.description'),
       centered: false
     },
     titleDataRight: {
-      title: 'Join the MEW community',
-      description:
-        'Follow us on our social channels for Ethereum news, guides, security tips, and support from other MEW users.',
+      title: vm.$t('aboutUs.community.title'),
+      description: vm.$t('aboutUs.community.description'),
       centered: false
     }
   })

@@ -145,18 +145,21 @@
 </template>
 
 <script>
-import phraseBlock from '@/components/PhraseBlock';
 import { mapActions, mapState } from 'vuex';
-import { Toast, ERROR, SENTRY } from '@/modules/toast/handler/handlerToast';
 import { isEmpty } from 'lodash';
-import AccessWalletAddressNetwork from '@/modules/access-wallet/common/components/AccessWalletAddressNetwork';
+
+import { Toast, ERROR, SENTRY } from '@/modules/toast/handler/handlerToast';
+
 import WALLET_TYPES from '@/modules/access-wallet/common/walletTypes';
 import paths from '@/modules/access-wallet/hardware/handlers/bip44';
 export default {
   name: 'AccessMnemonic',
   components: {
-    phraseBlock,
-    AccessWalletAddressNetwork
+    phraseBlock: () => import('@/components/PhraseBlock'),
+    AccessWalletAddressNetwork: () =>
+      import(
+        '@/modules/access-wallet/common/components/AccessWalletAddressNetwork'
+      )
   },
   props: {
     handlerAccessWallet: {
@@ -225,10 +228,10 @@ export default {
     },
     /**
      * Property validates whether or not all words has been entered
-     * @return booelan
+     * @return boolean
      */
     isValidMnemonic() {
-      return Object.keys(this.phrase).length === this.length;
+      return this.phraseToLength.length === this.length;
     },
 
     /*------------------------------------
@@ -239,7 +242,7 @@ export default {
      * Is used in unlock wallet method
      */
     parsedPhrase() {
-      return Object.values(this.phrase).join(' ').toLowerCase();
+      return this.phraseToLength.join(' ').toLowerCase();
     },
     /**
      * Property returns default Paths + Custom paths, used in Select Path component
@@ -259,13 +262,19 @@ export default {
           return newObj;
         })
         .concat(this.paths);
+    },
+    phraseToLength() {
+      const phrase = Object.values(this.phrase);
+      if (phrase.length > this.length) phrase.length = this.length;
+      return phrase;
     }
   },
   watch: {
     phrase: {
       deep: true,
       handler: function (newval) {
-        if (newval && !isEmpty(newval)) {
+        if (newval && !isEmpty(newval) && !isEmpty(newval[1])) {
+          this.checkPhrase(newval);
           const splitVal = newval[1].split(' ');
           if (splitVal.length === 12 || splitVal.length === 24) {
             this.length = splitVal.length;
@@ -325,6 +334,7 @@ export default {
     clearFields() {
       this.phrase = {};
       this.length = 12;
+      this.extraWord = '';
     },
     /**
      * reset component
@@ -355,6 +365,18 @@ export default {
       } else {
         Toast('Something went wrong in mnemonic wallet access', {}, SENTRY);
       }
+    },
+    /**
+     * Remove empty words from the phrase
+     */
+    checkPhrase(val) {
+      const testObj = {};
+      let changed = false;
+      Object.values(val).forEach((item, idx) => {
+        if (!isEmpty(item)) testObj[idx + 1] = item.toLowerCase();
+        else changed = true;
+      });
+      if (changed) this.phrase = testObj;
     }
   }
 };

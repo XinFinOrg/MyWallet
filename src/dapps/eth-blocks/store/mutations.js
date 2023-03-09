@@ -36,8 +36,40 @@ const DELETE_ETH_BLOCK_TX = function (state, obj) {
   }
 };
 
+/**
+ *
+ * @param {string} blockNumber
+ */
+const ADD_BLOCK_TO_CART = function (state, blockNumber) {
+  if (state.cart.ETH.length >= 100) {
+    state.cart.ETH.shift();
+  }
+  state.cart.ETH.push(blockNumber);
+};
+
+/**
+ *
+ * @param {string} blockNumber
+ */
+const REMOVE_FROM_CART = function (state, blockNumber) {
+  state.cart.ETH = state.cart.ETH.filter(item => {
+    if (item !== blockNumber) return item;
+  });
+};
+
+/**
+ *
+ * @param {string} blockNumber
+ */
+const EMPTY_CART = function (state) {
+  state.cart.ETH = [];
+};
+
 export default {
   INIT_STORE,
   ADD_ETH_BLOCK_TX,
-  DELETE_ETH_BLOCK_TX
+  DELETE_ETH_BLOCK_TX,
+  ADD_BLOCK_TO_CART,
+  REMOVE_FROM_CART,
+  EMPTY_CART
 };

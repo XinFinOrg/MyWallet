@@ -82,9 +82,10 @@
         <div class="d-flex align-center justify-space-between flex-wrap mb-2">
           <div class="d-flex align-center flex-wrap flex-grow-1">
             <v-btn
-              color="greyLight"
+              color="buttonGrayLight"
               depressed
               class="text-transform--initial"
+              :disabled="error !== ''"
               @click="openGasPriceModal"
             >
               <div class="d-flex align-center">
@@ -141,14 +142,9 @@
             :class="[hasError ? 'redPrimary--text' : '']"
             class="ml-2"
           >
-            {{ message }}
-            <a
-              v-if="notEnoughEth"
-              rel="noopener noreferrer"
-              target="_blank"
-              :href="swapLink"
-            >
-              Buy more ETH
+            {{ error }}
+            <a v-if="notEnoughEth && network.type.canBuy" @click="openBuySell">
+              Buy more {{ network.type.currencyName }}
             </a>
           </div>
           <div>
@@ -169,6 +165,8 @@
 <script>
 import { mapGetters, mapActions, mapState } from 'vuex';
 import BigNumber from 'bignumber.js';
+import { fromWei } from 'web3-utils';
+
 import AppNetworkSettingsModal from './AppNetworkSettingsModal.vue';
 import AppModal from '@/core/components/AppModal.vue';
 import {
@@ -176,10 +174,13 @@ import {
   formatFloatingPointValue
 } from '@/core/helpers/numberFormatHelper';
 import { estimatedTime } from '@/core/helpers/gasPriceHelper';
-import { fromWei } from 'web3-utils';
+
+import handlerAnalytics from '@/modules/analytics-opt-in/handlers/handlerAnalytics.mixin';
+import buyMore from '@/core/mixins/buyMore.mixin.js';
 export default {
   name: 'AppTransactionFee',
   components: { AppNetworkSettingsModal, AppModal },
+  mixins: [buyMore, handlerAnalytics],
   props: {
     showFee: {
       type: Boolean,
@@ -201,10 +202,6 @@ export default {
       type: String,
       default: '0'
     },
-    message: {
-      type: String,
-      default: ''
-    },
     notEnoughEth: {
       type: Boolean,
       default: false
@@ -216,6 +213,10 @@ export default {
     totalGasLimit: {
       type: String,
       default: '0'
+    },
+    isSwap: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -223,13 +224,8 @@ export default {
   },
   computed: {
     ...mapGetters('external', ['fiatValue']),
-    ...mapGetters('global', [
-      'network',
-      'isEthNetwork',
-      'swapLink',
-      'gasPriceByType'
-    ]),
-    ...mapState('global', ['online', 'gasPriceType']),
+    ...mapGetters('global', ['network', 'isEthNetwork', 'gasPriceByType']),
+    ...mapState('global', ['gasPriceType', 'preferredCurrency']),
     txFeeInEth() {
       return fromWei(this.txFee);
     },
@@ -245,9 +241,10 @@ export default {
     },
     feeInUsd() {
       const value = formatFiatValue(
-        BigNumber(this.txFeeInEth).times(this.fiatValue).toFixed(2)
+        BigNumber(this.txFeeInEth).times(this.fiatValue).toFixed(2),
+        { currency: this.preferredCurrency }
       ).value;
-      return `~${'$' + value}`;
+      return value;
     },
     hasError() {
       return this.error !== '';
@@ -260,11 +257,19 @@ export default {
     gasPriceModal() {
       clearInterval(this.interval);
       this.interval = this.setGasPriceInterval();
+    },
+    gasPriceType(newVal) {
+      if (this.isSwap) {
+        this.trackSwap(`swapGasSwitch: ${newVal}`);
+      }
     }
   },
   mounted() {
     // update gasprice every 2 minutes
     this.interval = this.setGasPriceInterval();
+    if (this.isSwap) {
+      this.trackSwap(`swapGasSwitch: ${this.gasPriceType}`);
+    }
   },
   methods: {
     ...mapActions('global', ['updateGasPrice']),
@@ -285,6 +290,7 @@ export default {
       this.$emit('onLocalGasPrice', val);
     },
     showHighNote() {
+      this.trackGasSwitch('openHowGasIsEstimated');
       this.openHighFeeNote = true;
     },
     closeHighFeeNote() {

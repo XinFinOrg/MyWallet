@@ -10,12 +10,20 @@
     :close="close"
     content-size="large"
   >
-    <transfer v-if="isTransfer" ref="transfer" :transfer="transfer" />
+    <transfer
+      v-if="isTransfer"
+      ref="transfer"
+      :transfer="transfer"
+      :manage-domain-handler="manageDomainHandler"
+    />
     <renew
       v-if="isRenew"
       :get-rent-price="getRentPrice"
       :host-name="hostName"
       :renew="renew"
+      :no-funds-for-renewal-fees="noFundsForRenewalFees"
+      :get-total-renew-fee-only="getTotalRenewFeeOnly"
+      :loading-renew="loadingRenew"
     />
     <manage-multicoins
       v-if="isManageMulticoin"
@@ -38,12 +46,6 @@
 </template>
 
 <script>
-import renew from '../components/manage/ManageRenew';
-import transfer from '../components/manage/ManageTransfer';
-import manageMulticoins from '../components/manage/ManageMulticoins';
-import manageTxtRecords from '../components/manage/ManageTxtRecords';
-import manageUploadWebsite from '../components/manage/ManageUploadWebsite';
-
 const types = [
   'transfer',
   'renew',
@@ -53,11 +55,12 @@ const types = [
 ];
 export default {
   components: {
-    transfer,
-    renew,
-    manageMulticoins,
-    manageTxtRecords,
-    manageUploadWebsite
+    renew: () => import('../components/manage/ManageRenew'),
+    transfer: () => import('../components/manage/ManageTransfer'),
+    manageMulticoins: () => import('../components/manage/ManageMulticoins'),
+    manageTxtRecords: () => import('../components/manage/ManageTxtRecords'),
+    manageUploadWebsite: () =>
+      import('../components/manage/ManageUploadWebsite')
   },
   props: {
     hostName: {
@@ -74,7 +77,21 @@ export default {
       },
       type: Function
     },
+    getTotalRenewFeeOnly: {
+      default: function () {
+        return {};
+      },
+      type: Function
+    },
     settingIpfs: {
+      default: false,
+      type: Boolean
+    },
+    noFundsForRenewalFees: {
+      default: false,
+      type: Boolean
+    },
+    loadingRenew: {
       default: false,
       type: Boolean
     },
@@ -130,6 +147,10 @@ export default {
       default: null
     },
     textRecords: {
+      type: [Object, null],
+      default: null
+    },
+    manageDomainHandler: {
       type: [Object, null],
       default: null
     }

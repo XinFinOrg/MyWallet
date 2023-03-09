@@ -13,7 +13,34 @@ const deleteEthBlockTx = function ({ commit }, val) {
   commit('DELETE_ETH_BLOCK_TX', val);
 };
 
+/**
+ * Adds blockNumber to cart (ETH)
+ * @param {string} val
+ */
+const addBlockToCart = function ({ commit }, val) {
+  commit('ADD_BLOCK_TO_CART', val);
+};
+
+/**
+ * remove blockNumber to cart (ETH)
+ * @param {string} val
+ */
+const removeBlockFromCart = function ({ commit }, val) {
+  commit('REMOVE_FROM_CART', val);
+};
+
+/**
+ * empty cart
+ * @param {string} val
+ */
+const emptyCart = function ({ commit }, val) {
+  commit('EMPTY_CART', val);
+};
+
 export default {
   addEthBlockTx,
-  deleteEthBlockTx
+  deleteEthBlockTx,
+  addBlockToCart,
+  removeBlockFromCart,
+  emptyCart
 };

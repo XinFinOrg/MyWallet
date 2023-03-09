@@ -76,12 +76,11 @@ Unlock wallet button
 
 <script>
 import { EventBus } from '@/core/plugins/eventBus';
-import AccessWalletDerivationPath from './AccessWalletDerivationPath.vue';
 
 export default {
   name: 'AccessWalletKeepkey',
   components: {
-    AccessWalletDerivationPath
+    AccessWalletDerivationPath: () => import('./AccessWalletDerivationPath.vue')
   },
   props: {
     paths: {
@@ -123,6 +122,9 @@ export default {
       // this.deviceInfo = deviceInfo;
       this.pinEnabled = true;
     });
+  },
+  beforeDestroy() {
+    EventBus.$off('enablePin');
   },
   methods: {
     /**

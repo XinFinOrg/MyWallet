@@ -5,14 +5,14 @@
         <v-col class="pa-0" cols="12" md="6">
           <div style="max-width: 520px; margin: 0 auto">
             <img
+              v-lazy="three"
               class="d-lg-none d-md-none d-inline"
               width="100%"
-              :src="three"
             />
             <img
+              v-lazy="six"
               class="d-lg-inline d-md-inline d-none"
               width="100%"
-              :src="six"
             />
           </div>
         </v-col>
@@ -23,19 +23,25 @@
           :class="$vuetify.breakpoint.smAndDown ? 'mt-8' : ''"
         >
           <div style="max-width: 370px">
-            <div class="mew-subtitle mb-7">Home of ETH Block NFTs!</div>
+            <div class="mew-subtitle mb-7">
+              {{
+                $t('home.eth-blocks.title') | lokalise('home.eth-blocks.title')
+              }}
+            </div>
             <div>
-              ETH Blocks is an NFT series representing mined Ethereum blocks and
-              their properties. Whether it's a special block number, the block
-              of your first transaction, or a block that contains a transaction
-              with a special message. Own a part of history with ETH Blocks by
-              MEW.
+              {{
+                $t('home.eth-blocks.description')
+                  | lokalise('home.eth-blocks.description')
+              }}
             </div>
             <mew-button
               :has-full-width="$vuetify.breakpoint.smAndDown"
               class="mt-8"
               btn-size="xlarge"
-              title="Access your wallet to Mint"
+              :title="
+                $t('home.eth-blocks.btn-text')
+                  | lokalise('home.eth-blocks.btn-text')
+              "
               @click.native="
                 $router.push({
                   name: 'EthBlocks',
@@ -51,8 +57,8 @@
 </template>
 
 <script>
-import ethBlocksThree from '@/assets/images/icons/eth-blocks-3.png';
-import ethBlocksSix from '@/assets/images/icons/eth-blocks-6.png';
+import ethBlocksThree from '@/assets/images/icons/eth-blocks-3.jpg';
+import ethBlocksSix from '@/assets/images/icons/eth-blocks-6.jpg';
 export default {
   name: 'HomeEthBlocks',
   components: {},

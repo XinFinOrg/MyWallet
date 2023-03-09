@@ -5,7 +5,7 @@
       Title
     =====================================================================================
     -->
-    <div class="mew-heading-2 mb-3 mr-3">
+    <div class="mew-heading-2 mb-3">
       {{ $t('interface.qr.title') }}
     </div>
 
@@ -46,8 +46,10 @@
           <qr-code :data="getXDCAddress(address)" :height="132" :width="132" />
         </div>
         <div class="pl-3">
-          <div class="d-block monospace textDark-text container-qr--addr">
-            {{ getXDCAddress(getChecksumAddressString) }}
+          <div
+            class="d-block monospace textDark-text container-qr--addr BalanceCardAddress"
+          >
+            {{ get0xAddress(getChecksumAddressString) }}
           </div>
           <div
             class="d-inline-flex align-center cursor--pointer mt-4 pa-1"
@@ -64,7 +66,7 @@
 <script>
 import anime from 'animejs/lib/anime.es.js';
 import clipboardCopy from 'clipboard-copy';
-import { Toast, INFO } from '@/modules/toast/handler/handlerToast';
+import { Toast, SUCCESS } from '@/modules/toast/handler/handlerToast';
 import { mapState, mapGetters } from 'vuex';
 import {
   toChecksumAddress,
@@ -76,6 +78,7 @@ export default {
     ...mapState('wallet', ['address']),
     ...mapGetters('global', ['network']),
     getChecksumAddressString() {
+      if (!this.address) return '';
       return toChecksumAddress(this.address);
     }
   },
@@ -88,21 +91,23 @@ export default {
   methods: {
     copyAddress() {
       clipboardCopy(getXDCAddress(this.address));
-      Toast(`Copied ${getXDCAddress(this.address)} successfully!`, {}, INFO);
+      Toast(`Copied ${getXDCAddress(this.address)} successfully!`, {}, SUCCESS);
     },
     getNetwork() {
       return this.network ? this.network.type.currencyName : 'ETH';
     },
     animateMewCard() {
       const el = document.querySelector('.mew-card');
-      el.style.opacity = 0;
-      anime({
-        targets: el,
-        opacity: 1,
-        delay: 1300,
-        duration: 500,
-        easing: 'easeInOutQuad'
-      });
+      if (el) {
+        el.style.opacity = 0;
+        anime({
+          targets: el,
+          opacity: 1,
+          delay: 1300,
+          duration: 500,
+          easing: 'easeInOutQuad'
+        });
+      }
     }
   }
 };

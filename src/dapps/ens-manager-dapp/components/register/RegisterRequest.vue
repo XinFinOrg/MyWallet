@@ -3,7 +3,10 @@
     <div v-if="loading" class="d-flex align-center justify-center">
       <v-progress-circular indeterminate color="greenPrimary" />
     </div>
-    <div v-if="!loading" class="d-flex align-center pa-6 greyLight rounded">
+    <div
+      v-if="!loading"
+      class="d-flex align-center pa-6 bgWalletBlockDark rounded"
+    >
       <v-icon size="80" color="greenPrimary" class="mr-3">
         mdi-check-circle-outline
       </v-icon>
@@ -19,14 +22,15 @@
     </div>
     <mew-select
       :has-filter="true"
-      :label="$t('ens.request.choose-term')"
+      :label="$t('ens.request.select-duration')"
       :items="items"
+      normal-dropdown
       @input="setDuration"
     />
 
     <div class="font-weight-bold text-center">
       {{ $t('ens.request.estimated-price') }}: {{ rentPriceETH }}
-      {{ $t('common.currency.eth') }} (${{ rentPriceUSD }})
+      {{ $t('common.currency.eth') }} ({{ rentPriceUSD }})
     </div>
     <div class="d-flex justify-center mt-6">
       <mew-button
@@ -39,11 +43,9 @@
 </template>
 
 <script>
-import {
-  formatFloatingPointValue,
-  formatFiatValue
-} from '@/core/helpers/numberFormatHelper';
+import { mapGetters } from 'vuex';
 
+import { formatFloatingPointValue } from '@/core/helpers/numberFormatHelper';
 export default {
   components: {},
   props: {
@@ -73,7 +75,10 @@ export default {
     items() {
       const items = [];
       for (let i = 0; i < 20; i++) {
-        items.push({ name: i + 1 + ' ' + 'year', value: (i + 1).toString() });
+        items.push({
+          name: i + 1 + ' ' + `year${i < 1 ? '' : 's'}`,
+          value: (i + 1).toString()
+        });
       }
       return items;
     }
@@ -82,12 +87,13 @@ export default {
     this.rentPrice();
   },
   methods: {
+    ...mapGetters('global', ['getFiatValue']),
     rentPrice() {
       if (this.duration > 0) {
         return this.getRentPrice(this.duration).then(resp => {
           if (resp) {
             this.rentPriceETH = formatFloatingPointValue(resp.eth).value;
-            this.rentPriceUSD = formatFiatValue(resp.usd).value;
+            this.rentPriceUSD = this.getFiatValue()(resp.usd);
           }
         });
       }

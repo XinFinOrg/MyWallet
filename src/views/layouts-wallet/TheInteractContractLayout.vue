@@ -10,18 +10,13 @@
 </template>
 
 <script>
-import TheWrapperWallet from '@/core/components/TheWrapperWallet';
-import ModuleSwapRates from '@/modules/swap/ModuleSwapRates.vue';
-import ModuleContractInteract from '@/modules/contract/ModuleContractInteract.vue';
-
 export default {
   name: 'InteracContractLayout',
   components: {
-    ModuleContractInteract,
-    ModuleSwapRates,
-    TheWrapperWallet
+    TheWrapperWallet: () => import('@/core/components/TheWrapperWallet'),
+    ModuleSwapRates: () => import('@/modules/swap/ModuleSwapRates'),
+    ModuleContractInteract: () =>
+      import('@/modules/contract/ModuleContractInteract')
   }
 };
 </script>
-
-<style lang="scss"></style>

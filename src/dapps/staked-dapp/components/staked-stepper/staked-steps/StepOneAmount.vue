@@ -21,9 +21,13 @@
           label="Staking amount"
           :items="selectItems"
           :error-messages="errorMessages"
-          :buy-more-str="errorMessages ? 'Buy more.' : null"
+          :buy-more-str="
+            errorMessages ? (network.type.canBuy ? 'Buy more.' : null) : null
+          "
+          filter-placeholder="Search for Amount"
           is-custom
           outlined
+          @buyMore="openBuySell"
           @input="setAmount"
         />
         <!--
@@ -31,7 +35,7 @@
     Staking APR and fee
     ===================================================
     -->
-        <div class="pt-6">
+        <div class="mt-12">
           <v-row>
             <v-col
               cols="6"
@@ -50,7 +54,7 @@
               md="6"
               class="py-1 text-uppercase textLight--text font-weight-bold d-flex align-center"
             >
-              Staking Fee
+              <div class="staking-fee">Staking Fee</div>
               <mew-tooltip class="ml-1" :text="toolTipFee" max-width="320px" />
             </v-col>
             <v-col cols="6" md="6" class="py-1 text-right">
@@ -79,7 +83,7 @@
                 forecast.duration
               }}</v-col>
               <v-col cols="6" md="6" class="py-1 text-right textLight--text">
-                {{ '$' + forecast.balanceFiat }}
+                {{ forecast.balanceFiat }}
               </v-col>
             </v-row>
             <v-row>
@@ -99,7 +103,9 @@
     User information
     ===================================================
     -->
-      <div class="greyLight px-6 px-sm-12 py-8 mt-2 border-radius--10px">
+      <div
+        class="bgWalletBlockDark px-6 px-sm-12 py-8 mt-6 border-radius--10px"
+      >
         <ul class="user-info textMedium--text">
           <li>Your ETH is staked with our partner Staked.us</li>
           <li>Staked.us will create and maintain Eth2 validators for you</li>
@@ -129,16 +135,18 @@
 </template>
 
 <script>
-import BorderBlock from '@/components/BorderBlock';
 import BigNumber from 'bignumber.js';
 import { mapState, mapGetters } from 'vuex';
+
 import {
-  formatFiatValue,
   formatPercentageValue,
   formatFloatingPointValue
 } from '@/core/helpers/numberFormatHelper';
+import buyMore from '@/core/mixins/buyMore.mixin.js';
+
 export default {
-  components: { BorderBlock },
+  components: { BorderBlock: () => import('@/components/BorderBlock') },
+  mixins: [buyMore],
   props: {
     currentApr: {
       type: String,
@@ -157,7 +165,7 @@ export default {
     ...mapState('wallet', ['web3']),
     ...mapGetters('wallet', ['balanceInETH']),
     ...mapGetters('external', ['fiatValue']),
-    ...mapGetters('global', ['network']),
+    ...mapGetters('global', ['network', 'getFiatValue']),
     networkImg() {
       return this.network.type.icon;
     },
@@ -186,7 +194,7 @@ export default {
             name: i + ' ETH',
             value: i + '', //change to string to make mew select filter work
             img: this.networkImg,
-            price: formatFiatValue(new BigNumber(i).times(this.fiatValue)).value
+            price: this.getFiatValue(new BigNumber(i).times(this.fiatValue))
           });
         }
       }
@@ -230,11 +238,11 @@ export default {
       return [
         {
           duration: 'In 3 months',
-          balanceFiat: formatFiatValue(
+          balanceFiat: this.getFiatValue(
             new BigNumber(this.amount)
               .plus(threeMonthsEarning)
               .times(this.fiatValue)
-          ).value,
+          ),
           balanceETH: formatFloatingPointValue(
             new BigNumber(this.amount).plus(threeMonthsEarning)
           ).value,
@@ -242,11 +250,11 @@ export default {
         },
         {
           duration: 'In 1 year',
-          balanceFiat: formatFiatValue(
+          balanceFiat: this.getFiatValue(
             new BigNumber(this.amount)
               .plus(oneYearEarnings)
               .times(this.fiatValue)
-          ).value,
+          ),
           balanceETH: formatFloatingPointValue(
             new BigNumber(this.amount).plus(oneYearEarnings)
           ).value,
@@ -254,11 +262,11 @@ export default {
         },
         {
           duration: 'In 2 years',
-          balanceFiat: formatFiatValue(
+          balanceFiat: this.getFiatValue(
             new BigNumber(this.amount)
               .plus(twoYearEarnings)
               .times(this.fiatValue)
-          ).value,
+          ),
           balanceETH: formatFloatingPointValue(
             new BigNumber(this.amount).plus(twoYearEarnings)
           ).value,
@@ -306,5 +314,9 @@ export default {
       margin-bottom: 0;
     }
   }
+}
+// Set line height to align center with tooltip icon
+.staking-fee {
+  line-height: 20px;
 }
 </style>

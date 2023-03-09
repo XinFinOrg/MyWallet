@@ -1,15 +1,19 @@
 <template>
   <mew6-white-sheet class="px-5 px-lg-7 py-5 justify-space-between">
     <v-row dense>
-      <v-col cols="12">
+      <v-col cols="11">
         <div class="mew-heading-2 mb-3">{{ actualTitle }}</div>
       </v-col>
-      <v-col cols="12" class="px-0">
+      <v-col cols="1" align="right" @click="toggleDropdown">
+        <v-icon color="black">{{ chevronIcon }}</v-icon>
+      </v-col>
+      <v-col v-if="dropdown" cols="12" class="px-0">
         <div v-for="(data, key) in actualNotifications" :key="key" class="mb-2">
           <mew-notification
             :show-indicator="false"
             :notification="data.notification"
             class="px-0"
+            @click.native="markNotificationAsRead(data)"
           />
         </div>
       </v-col>
@@ -18,12 +22,13 @@
 </template>
 
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 import formatNotification from '@/modules/notifications/helpers/formatNotification';
+import formatNonChainNotification from '@/modules/notifications/helpers/formatNonChainNotification';
+import { NOTIFICATION_TYPES } from '@/modules/notifications/handlers/handlerNotification.js';
 
 export default {
   name: 'ModuleTransferHistory',
-  components: {},
   props: {
     isSwap: {
       type: Boolean,
@@ -31,7 +36,7 @@ export default {
     }
   },
   data() {
-    return {};
+    return { dropdown: true };
   },
   computed: {
     ...mapState('wallet', ['web3', 'address']),
@@ -40,14 +45,20 @@ export default {
     parsedTxNotifications() {
       return this.txNotifications
         .map(item => {
-          return formatNotification(item, this.network);
+          if (item.hasOwnProperty('hash')) {
+            return formatNotification(item, this.network);
+          }
+          return formatNonChainNotification(item);
         })
         .sort(this.sortByDate);
     },
     parsedSwapNotifications() {
       return this.swapNotifications
         .map(item => {
-          return formatNotification(item, this.network);
+          if (item.hasOwnProperty('hash')) {
+            return formatNotification(item, this.network);
+          }
+          return formatNonChainNotification(item);
         })
         .sort(this.sortByDate);
     },
@@ -58,12 +69,34 @@ export default {
     },
     actualTitle() {
       return this.isSwap ? `Swap History` : `Tx History`;
+    },
+    chevronIcon() {
+      return this.dropdown ? 'mdi-chevron-up' : 'mdi-chevron-down';
     }
   },
   mounted() {},
   methods: {
+    ...mapActions('notifications', ['updateNotification']),
+    markNotificationAsRead(notification) {
+      if (!notification.read) {
+        notification.markAsRead().then(() => {
+          const type = notification.type.toLowerCase();
+          if (
+            type === NOTIFICATION_TYPES.OUT ||
+            type === NOTIFICATION_TYPES.SWAP
+          ) {
+            this.updateNotification(notification);
+          } else {
+            notification.read = true;
+          }
+        });
+      }
+    },
     sortByDate(a, b) {
       return new Date(b.date) - new Date(a.date);
+    },
+    toggleDropdown() {
+      this.dropdown = !this.dropdown;
     }
   }
 };

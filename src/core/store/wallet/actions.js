@@ -1,10 +1,12 @@
 import url from 'url';
 import web3 from 'web3';
+import { formatters } from 'web3-core-helpers';
+
 import MEWProvider from '@/utils/web3-provider';
 import WALLET_TYPES from '@/modules/access-wallet/common/walletTypes';
-import { formatters } from 'web3-core-helpers';
 import EventNames from '@/utils/web3-provider/events';
 import { EventBus } from '@/core/plugins/eventBus';
+
 const removeWallet = function ({ commit, state }) {
   if (
     state.identifier === WALLET_TYPES.WALLET_CONNECT ||
@@ -29,6 +31,10 @@ const setTokens = function ({ commit }, params) {
 
 const setAccountBalance = function ({ commit }, balance) {
   commit('SET_BALANCE', balance);
+};
+
+const setLedgerBluetooth = function ({ commit }, ledgerBLE) {
+  commit('SET_LEDGER_BLUETOOTH', ledgerBLE);
 };
 
 const setWeb3Instance = function (
@@ -62,7 +68,10 @@ const setWeb3Instance = function (
   web3Instance['mew'] = {};
   web3Instance['mew'].sendBatchTransactions = arr => {
     // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async resolve => {
+    return new Promise(async (resolve, reject) => {
+      const nonce = await (arr[0].nonce === undefined
+        ? web3Instance.eth.getTransactionCount(state.address)
+        : arr[0].nonce);
       for (let i = 0; i < arr.length; i++) {
         const gasPrice = rootGetters['global/gasPrice'];
 
@@ -75,9 +84,6 @@ const setWeb3Instance = function (
         const gas = await (arr[i].gas === undefined
           ? web3Instance.eth.estimateGas(localTx)
           : arr[i].gas);
-        const nonce = await (arr[i].nonce === undefined
-          ? web3Instance.eth.getTransactionCount(state.address)
-          : arr[i].nonce);
         arr[i].nonce = web3.utils.toBN(nonce).addn(i).toString();
         arr[i].gas = gas;
         arr[i].gasLimit = gas;
@@ -88,9 +94,19 @@ const setWeb3Instance = function (
           arr[i].gasPrice === undefined ? gasPrice : arr[i].gasPrice;
         arr[i] = formatters.inputCallFormatter(arr[i]);
       }
-
       const batchSignCallback = promises => {
-        resolve(promises);
+        if (promises instanceof Error) {
+          reject(promises);
+        }
+        if (promises && promises.rejected)
+          reject(new Error('User rejected transaction'));
+        if (state.identifier === WALLET_TYPES.WEB3_WALLET) {
+          Promise.all(promises)
+            .then(values => {
+              resolve(values);
+            })
+            .catch(e => reject(e));
+        } else resolve(promises);
       };
       EventBus.$emit(
         EventNames.SHOW_BATCH_TX_MODAL,
@@ -111,12 +127,23 @@ const setBlockNumber = function ({ commit }, val) {
   commit('SET_BLOCK_NUMBER', val);
 };
 
+const setOfflineApp = function ({ commit }, val) {
+  commit('SET_OFFLINE_APP', val);
+};
+
+const setLedgerApp = function ({ commit }, val) {
+  commit('SET_LEDGER_APP', val);
+};
+
 export default {
   removeWallet,
   setWallet,
+  setLedgerBluetooth,
   setAccountBalance,
   setWeb3Instance,
   setBlockNumber,
   setOwnedDomains,
-  setTokens
+  setTokens,
+  setOfflineApp,
+  setLedgerApp
 };

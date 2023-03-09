@@ -8,6 +8,8 @@ import {
 } from '@/core/helpers/gasPriceHelper';
 import { toBN } from 'web3-utils';
 import { isEmpty } from 'lodash';
+import { formatFiatValue } from '@/core/helpers/numberFormatHelper';
+import WALLET_TYPES from '@/modules/access-wallet/common/walletTypes';
 
 const Networks = function () {
   return nodeList;
@@ -30,20 +32,22 @@ const network = function (state) {
   }
   return network;
 };
-const gasPriceByType = (state, getters) => type => {
-  if (!getters.isEIP1559SupportedNetwork) {
-    return getGasBasedOnType(state.baseGasPrice, type);
-  }
-  const priorityFee = getPriorityFeeBasedOnType(
-    toBN(state.eip1559.maxPriorityFeePerGas),
-    type
-  );
-  const baseFee = getBaseFeeBasedOnType(
-    toBN(state.eip1559.baseFeePerGas),
-    type
-  );
-  return baseFee.add(priorityFee).toString();
-};
+const gasPriceByType =
+  (state, getters) =>
+  (type = 'economy') => {
+    if (!getters.isEIP1559SupportedNetwork) {
+      return getGasBasedOnType(state.baseGasPrice, type);
+    }
+    const priorityFee = getPriorityFeeBasedOnType(
+      toBN(state.eip1559.maxPriorityFeePerGas),
+      type
+    );
+    const baseFee = getBaseFeeBasedOnType(
+      toBN(state.eip1559.baseFeePerGas),
+      type
+    );
+    return baseFee.add(priorityFee).toString();
+  };
 const gasPrice = function (state, getters) {
   if (!getters.isEIP1559SupportedNetwork) {
     return getGasBasedOnType(state.baseGasPrice, state.gasPriceType);
@@ -64,8 +68,11 @@ const localContracts = function (state, getters) {
     : [];
 };
 
-const hasSwap = function (state, getters) {
+const hasSwap = function (state, getters, rootState) {
   const name = getters.network.type.name;
+  const device = rootState.wallet.instance?.identifier;
+
+  if (device === WALLET_TYPES.COOL_WALLET_S) return false;
   return name === ETH.name || name === BSC.name || name === MATIC.name;
 };
 
@@ -74,6 +81,28 @@ const swapLink = function (state, getters, rootState) {
   const link = 'https://ccswap.myetherwallet.com/#/';
   return hasAddress ? `${link}?to=${hasAddress}` : link;
 };
+const currencyConfig = (state, getters, rootState) => {
+  const currency = state.preferredCurrency;
+  const { currencyRate } = rootState.external;
+  const rate = currencyRate.data ? currencyRate.data.exchange_rate : 1;
+  return { currency, rate };
+};
+
+const getFiatValue =
+  (state, getters) =>
+  /**
+   * @param {Number|String} value
+   * @param {Object} options
+   * @param {Boolean} options.doNotLocalize - formats value to currency, no rate
+   * @returns - Formatted localized currency
+   */
+  (value, options = {}) => {
+    const config = options.doNotLocalize
+      ? { currency: getters.currencyConfig.currency }
+      : getters.currencyConfig;
+    return formatFiatValue(value, config).value;
+  };
+
 const isEIP1559SupportedNetwork = function (state) {
   return state.eip1559.baseFeePerGas !== '0';
 };
@@ -103,6 +132,8 @@ export default {
   gasPrice,
   isEthNetwork,
   localContracts,
+  currencyConfig,
+  getFiatValue,
   isTestNetwork,
   hasSwap,
   swapLink,

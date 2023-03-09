@@ -2,7 +2,7 @@
 // to date. If dependencies are too outdated, exit with an error, failing `npm
 // run update:packages` and thus eventually the entire build.
 
-const package = require('./package.json');
+const parsedPackage = require('./package.json');
 const packageJson = require('package-json');
 const SAFE_TIME = 1000 * 1 * 60 * 60 * 24 * 7; //7days
 // webpack has a major update
@@ -14,6 +14,7 @@ const EXCEPTIONS = [
   'postcss-url',
   'webpack',
   'copy-webpack-plugin',
+  'sass',
   'sass-loader',
   'husky',
   '@aave/protocol-js',
@@ -26,12 +27,17 @@ const EXCEPTIONS = [
   'remark-cli',
   'node-fetch',
   'vuetify',
-  'eslint',
-  'imagemin-mozjpeg', // issue with importing it to vue config will look into it more if we need it
-  '@vue/eslint-config-prettier', // creates more warnings
-  // versions for vue3
+  'vue-i18n',
+  'stylelint',
+  'stylelint-config-standard',
+  'vue',
   'vue-router',
   'vuex',
+  'eslint',
+  'eslint-plugin-vue',
+  'imagemin-mozjpeg', // issue with importing it to vue config will look into it more if we need it
+  // versions for vue3
+  '@vue/eslint-config-prettier', // creates more warnings
   '@vue/test-utils',
   '@vue/babel-preset-app',
   '@vue/cli-plugin-babel',
@@ -40,14 +46,58 @@ const EXCEPTIONS = [
   '@vue/cli-plugin-unit-jest',
   '@vue/cli-service',
   'vue-i18n',
-  'vue'
+  'vue',
+  '@vue/cli-plugin-e2e-nightwatch',
+  '@kleros/address-tags-sdk',
+  // breaking
+  '@shapeshiftoss/hdwallet-core',
+  '@shapeshiftoss/hdwallet-keepkey-webusb',
+  'package-json',
+  'codecov',
+  'node-polyfill-webpack-plugin',
+  '@lokalise/node-api',
+  '@unstoppabledomains/resolution',
+  '@walletconnect/client',
+  '@walletconnect/qrcode-modal',
+  'chromedriver',
+  '@ethereumjs/common',
+  '@ethereumjs/tx',
+  'graphql',
+  'vue-lazyload',
+  '@ensdomains/ensjs',
+  'vue-template-compiler',
+  '@aave/contract-helpers',
+  '@aave/math-utils',
+  'node-sass',
+  '@ledgerhq/hw-transport-web-ble',
+  '@ledgerhq/hw-transport-webusb',
+  '@ledgerhq/hw-app-eth',
+  'uuid',
+  'web3-eth-contract',
+  'is-ipfs',
+  'axios',
+  'prettier', // creates more warnings
+  '@ledgerhq/hw-app-eth', // issue with imports
+  '@ledgerhq/live-common', // issue with imports
+  '@commitlint/config-conventional',
+  '@ensdomains/ens-contracts',
+  'imagemin-webp',
+  'lottie-web',
+  'highcharts',
+  'commitlint',
+  'hdkey',
+  'eslint-plugin-security',
+  'protobufjs',
+  'stylelint-config-prettier',
+  'webpack-bundle-analyzer',
+  'babel-jest'
 ];
 const CUSTOM_DIST = {
   ['babel-core']: 'bridge'
 };
 const ALL_PACKAGES = Object.assign(
-  package.dependencies,
-  package.devDependencies
+  parsedPackage.dependencies,
+  parsedPackage.devDependencies
 );
 const names = Object.keys(ALL_PACKAGES);
 let updatesFound = false;

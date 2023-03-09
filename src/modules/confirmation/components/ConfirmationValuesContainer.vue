@@ -53,7 +53,7 @@
           <div class="d-flex align-center justify-center">
             <mew-token-container :img="item.icon" size="medium" />
           </div>
-          <div class="mew-heading-4 font-weight-medium black--text pt-2">
+          <div class="mew-heading-4 font-weight-medium textDark--text pt-2">
             {{ item.value }}
             <span class="mew-body font-weight-medium"> {{ item.type }} </span>
           </div>
@@ -73,12 +73,7 @@
             =====================================================================================
             -->
           <div v-if="item.amount && item.icon">
-            <v-img
-              :src="item.icon"
-              max-height="24px"
-              max-width="24px"
-              contain
-            />
+            <mew-token-container :img="item.icon" />
           </div>
           <div v-if="!item.amount">
             <v-img
@@ -110,13 +105,13 @@
             =====================================================================================
             -->
             <div v-if="item.amount" class="pt-2">
-              <div class="mew-heading-2 black--text">
+              <div class="mew-heading-2 textDark--text">
                 {{ item.amount }}
                 <span class="mew-body font-weight-medium">
                   {{ item.type }}
                 </span>
               </div>
-              <div class="mew-heading-4 textMedium--text">${{ item.usd }}</div>
+              <div class="mew-heading-4 textMedium--text">{{ item.usd }}</div>
             </div>
             <!--
             =====================================================================================
@@ -126,7 +121,7 @@
             <div v-else class="pt-2">
               <div
                 v-if="item.nickname !== ''"
-                class="mew-heading-3 black--text text-truncate"
+                class="mew-heading-3 textDark--text text-truncate"
               >
                 {{ item.nickname }}
               </div>
@@ -181,7 +176,7 @@ export default {
 <style lang="scss" scoped>
 .value-container {
   border-radius: 8px;
-  background-color: #f9f9f9;
+  background-color: var(--v-bgWalletBlockDark-base);
 }
 .arrow-icon {
   position: absolute;

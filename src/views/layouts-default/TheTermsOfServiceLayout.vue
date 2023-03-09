@@ -92,7 +92,11 @@
               >
                 <template #article1>
                   <a
-                    href="https://help.myetherwallet.com/en/articles/5377591-myetherwallet-an-introduction"
+                    :href="
+                      parent.$store.getters['article/getArticle'](
+                        'mew-introduction'
+                      )
+                    "
                     target="_blank"
                     rel="noopener noreferrer"
                     >"{{ parent.$t('termsOfService.article1') }}"</a
@@ -100,7 +104,11 @@
                 </template>
                 <template #article2>
                   <a
-                    href="https://help.myetherwallet.com/en/articles/5377928-pro-tips-how-to-avoid-phishing-scams"
+                    :href="
+                      parent.$store.getters['article/getArticle'](
+                        'avoid-phishing-scams'
+                      )
+                    "
                     target="_blank"
                     rel="noopener noreferrer"
                     >“{{ parent.$t('termsOfService.article2') }}”</a
@@ -204,6 +212,62 @@
 
               <p>
                 {{ parent.$t('termsOfService.third-party-title-p') }}
+              </p>
+            </div>
+            <div class="content">
+              <h3>
+                {{ parent.$t('termsOfService.subscription-plans-title') }}
+              </h3>
+
+              <p>
+                {{ parent.$t('termsOfService.subscription-plans-p1') }}
+              </p>
+              <p>
+                {{ parent.$t('termsOfService.subscription-plans-p2') }}
+              </p>
+              <p>
+                {{ parent.$t('termsOfService.subscription-plans-p3') }}
+              </p>
+              <p>
+                {{ parent.$t('termsOfService.subscription-plans-p4') }}
+              </p>
+
+              <p>
+                {{ parent.$t('termsOfService.subscription-free-trial-title') }}
+              </p>
+              <p>
+                {{
+                  parent.$t('termsOfService.subscription-free-trial-title-p1')
+                }}
+              </p>
+              <p>
+                {{
+                  parent.$t('termsOfService.subscription-free-trial-title-p2')
+                }}
+              </p>
+              <p>
+                {{
+                  parent.$t('termsOfService.subscription-free-trial-title-p3')
+                }}
+              </p>
+              <p>
+                {{ parent.$t('termsOfService.subscription-fee-changes-title') }}
+              </p>
+              <p>
+                {{
+                  parent.$t('termsOfService.subscription-fee-changes-title-p1')
+                }}
+              </p>
+              <p>
+                {{
+                  parent.$t('termsOfService.subscription-fee-changes-title-p2')
+                }}
+              </p>
+              <p>
+                {{ parent.$t('termsOfService.subscription-refund-title') }}
+              </p>
+              <p>
+                {{ parent.$t('termsOfService.subscription-refund-title-p1') }}
               </p>
             </div>
 

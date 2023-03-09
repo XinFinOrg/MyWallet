@@ -1,5 +1,5 @@
 <template>
-  <div class="component-container">
+  <div class="component-container company-our-story">
     <div class="py-10" />
     <v-container class="pb-0">
       <v-sheet max-width="600px" color="transparent" class="mx-auto">
@@ -17,17 +17,16 @@
 </template>
 
 <script>
-import AppBlockTitle from '@/core/components/AppBlockTitle';
-
 export default {
-  components: { AppBlockTitle },
-  data: () => ({
+  components: {
+    AppBlockTitle: () => import('@/core/components/AppBlockTitle')
+  },
+  data: vm => ({
     titleData: {
       textProps: '',
       toptitle: '',
-      title: 'About Us',
-      description:
-        'MyEtherWallet - please, call us MEW - puts the Ethereum blockchain at your fingertips. We are a team of crypto-enthusiasts dedicated to bring you the most secure, most intuitive, and dare we say prettiest way to manage your ETH and ERC20 tokens. We are always here to help, and we are never giving away ETH. Cheers!',
+      title: vm.$t('aboutUs.about-us.title'),
+      description: vm.$t('aboutUs.about-us.description'),
       centered: true
     }
   })

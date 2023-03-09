@@ -5,7 +5,10 @@
       Provider Rate Row
     =====================================================================================
     -->
-    <v-item-group v-if="step >= 1 && toTokenSymbol && !hasProviderError">
+    <v-item-group
+      v-if="step >= 1 && toTokenSymbol && !hasProviderError"
+      :value="0"
+    >
       <v-row no-gutters>
         <div v-if="providersList.length > 0" class="mew-heading-3 mb-5 pl-4">
           Select rate
@@ -24,7 +27,7 @@
               ]"
               @click="
                 toggle();
-                setProvider(idx);
+                setProvider(idx, true);
               "
             >
               <v-row no-gutters class="align-center justify-start">
@@ -125,14 +128,14 @@
   </div>
 </template>
 <script>
-import AppUserMsgBlock from '@/core/components/AppUserMsgBlock';
-import { formatFloatingPointValue } from '@/core/helpers/numberFormatHelper';
 import { isArray } from 'lodash';
+
+import { formatFloatingPointValue } from '@/core/helpers/numberFormatHelper';
 const MAX_PROVIDERS = 3;
 export default {
   name: 'SwapProvidersList',
   components: {
-    AppUserMsgBlock
+    AppUserMsgBlock: () => import('@/core/components/AppUserMsgBlock')
   },
   props: {
     step: {
@@ -164,6 +167,10 @@ export default {
       default: () => {
         return { subtitle: '' };
       }
+    },
+    selectedProviderId: {
+      type: Number,
+      default: () => undefined
     }
   },
   data() {
@@ -193,7 +200,7 @@ export default {
         : null;
     },
     /**
-     * Property returns quotes to be displaid on the ui
+     * Property returns quotes to be displayed on the ui
      * If more then 3 quotes found: the list will be sliced by max_providers
      * List Fitlers out null and undefined items
      * Used in Providers Rate Row
@@ -202,19 +209,22 @@ export default {
       if (!this.isLoading && this.step > 0) {
         const list =
           !this.showMore && this.providersCut > 0
-            ? this.availableQuotes
-                .slice(0, MAX_PROVIDERS)
-                .filter(item => !!item)
-            : this.availableQuotes.filter(item => !!item);
-        const returnedList = list.map(quote => {
-          const formatted = formatFloatingPointValue(quote.rate * 100);
-          const formattedAmt = formatFloatingPointValue(quote.amount);
-          return {
-            rate: formatted.value,
-            amount: formattedAmt.value,
-            tooltip: `${formattedAmt.tooltipText} ${this.toTokenSymbol}`
-          };
-        });
+            ? this.availableQuotes.slice(0, MAX_PROVIDERS)
+            : this.availableQuotes;
+        const returnedList = list.reduce((arr, item) => {
+          if (item) {
+            const formatted = formatFloatingPointValue(item.rate * 100);
+            const formattedAmt = formatFloatingPointValue(item.amount);
+            arr.push({
+              rate: formatted.value,
+              amount: formattedAmt.value,
+              tooltip: `${formattedAmt.tooltipText || formattedAmt.value} ${
+                this.toTokenSymbol
+              }`
+            });
+          }
+          return arr;
+        }, []);
         if (returnedList) return returnedList;
       }
       return [];
@@ -255,25 +265,54 @@ export default {
 
           this.$nextTick(() => {
             if (bestRate !== -1) {
-              this.$refs[`card${bestRate}`][0].toggle();
-              this.setProvider(bestRate);
+              const rateCard = this.$refs[`card${bestRate}`];
+              if (!rateCard) return;
+              const card = rateCard[0];
+              if (!card?.isActive) {
+                card.toggle();
+              }
+              this.setProvider(bestRate, this.step === 1);
             }
           });
         }
       },
       immediate: true
+    },
+    selectedProviderId: {
+      handler: function (id) {
+        setTimeout(() => {
+          if (id !== undefined) {
+            const card = this.$refs[`card${id}`][0];
+            if (card?.hasOwnProperty('isActive') && !card?.isActive) {
+              card.toggle();
+            }
+          } else {
+            setTimeout(() => {
+              const refs = Object.keys(this.$refs);
+              const cards = refs.filter(c => c.includes('card'));
+              cards.forEach(c => {
+                const card = this.$refs[c][0];
+                if (card?.isActive) {
+                  card.toggle();
+                }
+              });
+            }, 500);
+          }
+        }, 100);
+      }
     }
   }
 };
 </script>
+
 <style lang="scss" scoped>
 .rate-active {
   border: 1px solid var(--v-greenPrimary-base) !important;
-  background-color: var(--v-greyLight-base) !important;
+  background-color: var(--v-buttonGrayLight-base) !important;
 }
 .rate {
   min-height: 60px;
   border-radius: 8px;
-  border: 1px solid var(--v-greyLight-base);
+  border: 1px solid var(--v-borderInput-base);
 }
 </style>

@@ -25,18 +25,16 @@
 </template>
 
 <script>
-import BlocksDropDown from './BlocksDropDown.vue';
-
 const SORT_VALUES = [
   { text: 'Newest', value: 0 },
   { text: 'Oldest', value: 1 },
-  { text: 'Number: 0 To 9', value: 2 },
-  { text: 'Number: 9 To 0', value: 3 }
+  { text: 'Number: 0 to 9', value: 2 },
+  { text: 'Number: 9 to 0', value: 3 }
 ];
 export default {
   name: 'BlocksSort',
   components: {
-    BlocksDropDown
+    BlocksDropDown: () => import('./BlocksDropDown.vue')
   },
   props: {},
   data() {

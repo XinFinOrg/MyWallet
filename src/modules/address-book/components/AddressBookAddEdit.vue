@@ -12,8 +12,10 @@
       :placeholder="$t('interface.address-book.enter-addr')"
       :value="addressToAdd"
       :rules="addressRules"
+      :persistent-hint="validAddress"
+      :hint="resolvedName || nametag || coin"
+      :resolved-addr="resolvedAddress"
       autofocus
-      :resolved-addr="resolvedAddr"
       @input="setAddress"
     />
     <!--
@@ -77,18 +79,23 @@
     Address Book - remove address
   =====================================================================================
   -->
-    <div
-      v-if="editMode"
-      class="text-center mt-6 redPrimary--text cursor-pointer"
-      @click="remove"
-    >
-      Remove Address
+    <div v-if="editMode" class="mt-4 text-center">
+      <mew-button
+        title="Remove Address"
+        :has-full-width="false"
+        btn-size="small"
+        btn-style="transparent"
+        @click.native="remove"
+      />
     </div>
   </div>
 </template>
 
 <script>
 import { mapState, mapActions, mapGetters } from 'vuex';
+import { isEmpty, throttle } from 'lodash';
+import { getAddressInfo } from '@kleros/address-tags-sdk';
+
 import NameResolver from '@/modules/name-resolver/index';
 import {
   toChecksumAddress,
@@ -96,6 +103,7 @@ import {
   get0xAddress,
   getXDCAddress
 } from '@/core/helpers/addressUtils';
+import { isValidCoinAddress } from '../handlers/handlerMulticoins.js';
 
 const modes = ['add', 'edit'];
 
@@ -112,7 +120,8 @@ export default {
       nameResolver: null,
       currentIdx: null,
       nickname: '',
-      addressToAdd: ''
+      addressToAdd: '',
+      nametag: ''
     };
   },
   computed: {
@@ -124,13 +133,16 @@ export default {
         return (
           !this.addressToAdd ||
           !this.validAddress ||
+          isEmpty(this.nickname) ||
           this.nickname?.length > 20 ||
           this.alreadyExists
         );
       }
       if (this.editMode) {
         return (
-          this.nickname === this.item.nickname || this.nickname?.length > 20
+          this.nickname === this.item.nickname ||
+          this.nickname?.length > 20 ||
+          isEmpty(this.nickname)
         );
       }
       return true;
@@ -149,14 +161,31 @@ export default {
     nicknameRules() {
       return [
         value =>
-          (value && value.length < 20) ||
+          (value && value.length >= 1) ||
+          this.$t('interface.address-book.validations.nickname-required'),
+        value =>
+          (value && value.length <= 20) ||
           this.$t('interface.address-book.validations.nickname-length')
       ];
     },
     validAddress() {
-      return this.resolvedAddr.length > 0
-        ? isXDCAddress(this.resolvedAddr)
-        : isXDCAddress(this.addressToAdd);
+      if (this.addressToAdd.length > 94) return false;
+      return this.resolvedAddr.length > 0 && !this.resolvedAddr?.includes('.')
+        ? isXDCAddress(this.resolvedAddr) ||
+            isValidCoinAddress(this.resolvedAddr).valid
+        : isXDCAddress(this.lowercaseAddressToAdd) ||
+            isValidCoinAddress(this.lowercaseAddressToAdd).valid ||
+            isValidCoinAddress(this.addressToAdd).valid;
+    },
+    coin() {
+      if (!this.validAddress) return '';
+      return `Valid ${this.coinType} address`;
+    },
+    coinType() {
+      return this.resolvedAddr.length > 0 && !this.resolvedAddr?.includes('.')
+        ? isValidCoinAddress(this.resolvedAddr).coin
+        : isValidCoinAddress(this.lowercaseAddressToAdd).coin ||
+            isValidCoinAddress(this.addressToAdd).coin;
     },
     editMode() {
       return this.mode === modes[1];
@@ -167,7 +196,9 @@ export default {
     isMyAddress() {
       return (
         this.address?.toLowerCase() ===
-        get0xAddress(this.addressToAdd)?.toLowerCase()
+          get0xAddress(this.addressToAdd)?.toLowerCase() ||
+        this.address?.toLowerCase() ===
+          get0xAddress(this.resolvedAddr)?.toLowerCase()
       );
     },
     alreadyExists() {
@@ -175,28 +206,70 @@ export default {
         if (this.isMyAddress) {
           return true;
         }
-        return Object.keys(this.addressBookStore).some(key => {
-          return (
-            this.addressBookStore[key].address.toLowerCase() ===
-            get0xAddress(this.addressToAdd)?.toLowerCase()
-          );
-        });
+        return this.checkResolvedExists || this.checkAddressExists;
       }
       return false;
     },
+    checkResolvedExists() {
+      return Object.keys(this.addressBookStore).some(key => {
+        const storedAddr = this.addressBookStore[key];
+        return (
+          this.resolvedAddr !== '' &&
+          (storedAddr.address.toLowerCase() ===
+            addressToAdd(this.resolvedAddr)?.toLowerCase() ||
+            storedAddr.resolvedAddr.toLowerCase() ===
+              addressToAdd(this.resolvedAddr)?.toLowerCase())
+        );
+      });
+    },
+    checkAddressExists() {
+      return Object.keys(this.addressBookStore).some(key => {
+        const storedAddr = this.addressBookStore[key];
+        return (
+          (storedAddr.resolvedAddr !== '' &&
+            storedAddr.resolvedAddr?.toLowerCase() ===
+              addressToAdd(this.addressToAdd)?.toLowerCase()) ||
+          storedAddr.address.toLowerCase() ===
+            addressToAdd(this.addressToAdd)?.toLowerCase()
+        );
+      });
+    },
     checksumAddressToAdd() {
-      if (this.addressToAdd !== '' && isXDCAddress(this.addressToAdd)) {
-        return toChecksumAddress(get0xAddress(this.addressToAdd));
+      if (
+        this.addressToAdd !== '' &&
+        isXDCAddress(this.lowercaseAddressToAdd)
+      ) {
+        return toChecksumAddress(get0xAddress(this.lowercaseAddressToAdd));
       }
       return get0xAddress(this.addressToAdd);
+    },
+    lowercaseAddressToAdd() {
+      return this.addressToAdd.toLowerCase();
+    },
+    resolvedAddress() {
+      if (this.resolvedAddr.length === 0) return '';
+      return this.validAddress && !this.resolvedAddr?.includes('.')
+        ? this.resolvedAddr
+        : '';
+    },
+    resolvedName() {
+      if (this.resolvedAddr.length === 0) return '';
+      return this.validAddress && this.resolvedAddr?.includes('.')
+        ? this.resolvedAddr
+        : '';
     }
   },
   watch: {
     toAddress(newVal) {
       this.addressToAdd = get0xAddress(newVal);
     },
-    addressToAdd() {
-      this.resolveName();
+    addressToAdd(newVal) {
+      this.nametag = '';
+      if (isAddress(newVal.toLowerCase())) {
+        this.resolveAddress();
+      } else {
+        this.resolveName();
+      }
     },
     web3() {
       if (this.network.type.ens) {
@@ -226,23 +299,46 @@ export default {
       this.addressToAdd = '';
       this.nickname = '';
       this.resolvedAddr = '';
+      this.nametag = '';
     },
-    async resolveName() {
-      if (
-        this.nameResolver &&
-        this.addressToAdd &&
-        this.addressToAdd.includes('.')
-      ) {
-        await this.nameResolver
-          .resolveName(get0xAddress(this.addressToAdd))
-          .then(addr => {
-            this.resolvedAddr = get0xAddress(addr);
-          })
-          .catch(() => {
-            this.resolvedAddr = '';
-          });
+    /**
+     * Resolves address and @returns name
+     */
+    resolveAddress: throttle(async function () {
+      if (this.nameResolver) {
+        try {
+          const resolvedName = await this.nameResolver.resolveAddress(
+            get0xAddress(this.addressToAdd)
+          );
+          if (resolvedName && !resolvedName.name) {
+            await getAddressInfo(
+              this.checksumAddressToAdd,
+              'https://ipfs.kleros.io'
+            ).then(data => {
+              this.nametag = data?.publicNameTag || '';
+            });
+          }
+          this.resolvedAddr = resolvedName.name ? resolvedName.name : '';
+        } catch (e) {
+          this.nametag = '';
+          this.resolvedAddr = '';
+        }
       }
-    },
+    }, 300),
+    /**
+     * Resolves name and @returns address
+     */
+    resolveName: throttle(async function () {
+      if (this.nameResolver) {
+        try {
+          await this.nameResolver.resolveName(this.addressToAdd).then(addr => {
+            this.resolvedAddr = get0xAddress(addr);
+          });
+        } catch (e) {
+          this.resolvedAddr = '';
+        }
+      }
+    }, 500),
     setAddress(value) {
       this.addressToAdd = value ? get0xAddress(value) : '';
     },
@@ -252,15 +348,17 @@ export default {
     update() {
       this.addressBookStore[this.currentIdx].address =
         this.checksumAddressToAdd;
+      this.addressBookStore[this.currentIdx].coinType =
+        this.coinType.toLowerCase();
       this.addressBookStore[this.currentIdx].nickname = this.nickname;
       this.setAddressBook(this.addressBookStore);
-      this.$emit('back', 3);
+      this.$emit('back', [3]);
     },
     remove() {
       this.addressBookStore.splice(this.currentIdx, 1);
       this.setAddressBook(this.addressBookStore);
       this.reset();
-      this.$emit('back', 3);
+      this.$emit('back', [3]);
     },
     add() {
       if (this.alreadyExists) {
@@ -269,12 +367,13 @@ export default {
       }
       this.addressBookStore.push({
         address: this.checksumAddressToAdd,
-        resolvedAddr: this.resolvedAddr,
+        resolvedAddr: this.resolvedAddress,
+        coinType: this.coinType.toLowerCase(),
         nickname: this.nickname || (this.addressBookStore.length + 1).toString()
       });
       this.setAddressBook(this.addressBookStore);
       this.reset();
-      this.$emit('back', 3);
+      this.$emit('back', [3]);
     }
   }
 };

@@ -6,14 +6,12 @@ import {
   formatIntegerValue
 } from '@/core/helpers/numberFormatHelper';
 import { MAIN_TOKEN_ADDRESS } from '@/core/helpers/common';
-const tempTokenCache = {};
 /**
  * Get Eth Fiat value
  */
 const fiatValue = function (state, getters) {
   const tokenUSDValue = getters.networkTokenUSDMarket.value;
-  const rate = state.currencyRate.data?.exchange_rate || 1;
-  return new BigNumber(tokenUSDValue).times(rate);
+  return new BigNumber(tokenUSDValue);
 };
 
 /**
@@ -26,10 +24,10 @@ const balanceFiatValue = function (state, getters, rootState, rootGetters) {
 
 const totalTokenFiatValue = function (state, getters, rootState, rootGetters) {
   const tokenList = rootGetters['wallet/tokensList'];
-  const rate = state.currencyRate.data?.exchange_rate || 1;
   if (!tokenList.length) return new BigNumber(0);
   const totalValue = tokenList.reduce((total, currentVal) => {
     const balance =
+      !currentVal.isHidden &&
       currentVal.usdBalance !== null &&
       (currentVal.price_change_percentage_24h !== null ||
         currentVal.market_cap !== 0)
@@ -37,7 +35,7 @@ const totalTokenFiatValue = function (state, getters, rootState, rootGetters) {
         : 0;
     return new BigNumber(total).plus(balance);
   }, 0);
-  return totalValue.times(rate);
+  return totalValue;
 };
 
 /**
@@ -98,10 +96,11 @@ const contractToToken =
     }
     contractAddress = contractAddress.toLowerCase();
     let tokenId = platformList[contractAddress];
+    let cgToken;
     if (contractAddress === MAIN_TOKEN_ADDRESS) {
       tokenId = rootGetters['global/network'].type.coingeckoID;
-      const networkType = rootGetters['global/network'].type;
       cgToken = getters.getCoinGeckoTokenById(tokenId);
+      const networkType = rootGetters['global/network'].type;
       return Object.assign(cgToken, {
         name: networkType.currencyName,
         symbol: networkType.currencyName,
@@ -112,18 +111,12 @@ const contractToToken =
         decimals: 18
       });
     }
-    let cgToken;
     cgToken = getters.getCoinGeckoTokenById(tokenId);
-    let networkToken = tempTokenCache[contractAddress];
-    if (!networkToken) {
-      networkToken = rootGetters['global/network'].type.tokens.find(
-        t => t.address.toLowerCase() === contractAddress
-      );
-      tempTokenCache[contractAddress] = networkToken;
-    }
+    const networkToken = state.networkTokens.get(contractAddress);
+
     if (!networkToken) return null;
     return Object.assign(cgToken, {
-      name: networkToken.symbol,
+      name: networkToken.name,
       symbol: networkToken.symbol,
       subtext: networkToken.name,
       value: networkToken.name,

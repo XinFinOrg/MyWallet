@@ -4,69 +4,72 @@
       v-model="navOpen"
       app
       class="wallet-sidemenu"
-      :src="background"
       width="300"
       :dark="$vuetify.theme.dark"
+      color="bgSideMenu"
     >
       <template #prepend>
+        <mew-popup
+          :footer="footer"
+          :show="isOpenNetworkOverlay || !validNetwork"
+          :title="
+            validNetwork
+              ? 'Select Network'
+              : 'Current network is not supported. Select a network below.'
+          "
+          content-size="large"
+          :close="validNetwork ? closeNetworkOverlay : null"
+          has-body-content
+          :has-buttons="false"
+          :left-btn="leftBtn"
+          hide-close-btn
+          :large-title="validNetwork"
+        >
+          <network-switch
+            :filter-types="filterNetworks"
+            :is-swap-page="isSwapPage"
+            @newNetwork="closeNetworkOverlay"
+          />
+        </mew-popup>
         <div class="pa-5 pb-3">
           <div class="mt-2 mb-4 d-flex align-center justify-space-between">
-            <router-link :to="{ name: ROUTES_WALLET.DASHBOARD.NAME }">
+            <!-- ================================================================================== -->
+            <!-- MEW logo -->
+            <!-- ================================================================================== -->
+            <router-link :to="offlineModeRoute">
               <img width="120" src="@/assets/images/icons/logo-mew.svg" />
             </router-link>
-            <!--
-            =====================================================================================
-             Close Navigation Bar for xs-md screens
-            =====================================================================================
-            -->
+
+            <!-- ================================================================================== -->
+            <!-- Close Navigation Bar for xs-md screens -->
+            <!-- ================================================================================== -->
             <v-btn icon class="d-block d-lg-none" @click="navOpen = false">
               <v-icon color="white">mdi-close</v-icon>
             </v-btn>
           </div>
-          <balance-card />
 
-          <v-btn
-            v-if="network.type.name === 'ETH'"
-            class="mt-3"
-            color="white"
-            outlined
-            x-large
-            width="100%"
-            @click.native="openSimplex"
-          >
-            <div class="d-flex align-center justify-space-between width--full">
-              <div>Buy ETH here</div>
-
-              <div class="d-flex align-center">
-                <img
-                  src="@/assets/images/icons/icon-visa-white.png"
-                  alt="Master card"
-                  height="11"
-                />
-                <img
-                  src="@/assets/images/icons/icon-mastercard-mew.png"
-                  alt="Master card"
-                  height="16"
-                  class="ml-2"
-                />
-              </div>
-            </div>
-          </v-btn>
+          <!-- ================================================================================== -->
+          <!-- Wallet balance card -->
+          <!-- ================================================================================== -->
+          <balance-card :sidemenu-status="navOpen" />
         </div>
       </template>
 
-      <v-list>
-        <v-list-item-group model="menuSelected">
+      <!-- ================================================================================== -->
+      <!-- Wallet Side Nav -->
+      <!-- ================================================================================== -->
+      <v-list dense>
+        <v-list-item-group>
           <template v-for="(item, idx) in sectionOne">
             <v-list-item
-              v-if="!item.children && shouldShow(item.route)"
+              v-if="shouldShow(item.route)"
               :key="item + idx + 1"
               :to="item.route"
             >
               <v-list-item-icon class="mx-3">
                 <img
-                  width="26"
-                  height="26"
+                  width="24"
+                  height="24"
                   :src="item.icon"
                   :alt="item.title"
                 />
@@ -75,8 +78,9 @@
               <v-list-item-content>
                 <v-list-item-title
                   class="white--text font-weight-regular mew-body"
-                  v-text="item.title"
-                />
+                >
+                  {{ item.title }}
+                </v-list-item-title>
               </v-list-item-content>
               <div
                 v-if="item.hasNew"
@@ -85,17 +89,60 @@
                 new
               </div>
             </v-list-item>
+          </template>
+        </v-list-item-group>
+      </v-list>
 
+      <v-divider class="my-1 mx-6" />
+
+      <v-list v-if="!isOfflineApp" dense>
+        <v-list-item-group>
+          <template v-for="(item, idx) in sectionTwo">
+            <v-list-item
+              v-if="shouldShow(item.route)"
+              :key="item + idx"
+              :to="item.route"
+              :active-class="item.route ? '' : 'remove-active-class'"
+              @click="item.fn ? item.fn() : () => {}"
+            >
+              <v-list-item-icon class="mx-3">
+                <img
+                  width="24"
+                  height="24"
+                  :src="item.icon"
+                  :alt="item.title"
+                />
+              </v-list-item-icon>
+
+              <v-list-item-content>
+                <v-list-item-title
+                  class="white--text mew-body font-weight-regular"
+                >
+                  {{ item.title }}
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </template>
+        </v-list-item-group>
+      </v-list>
+
+      <v-divider v-if="!isOfflineApp" class="my-1 mx-6" />
+
+      <v-list v-if="!isOfflineApp" dense>
+        <v-list-item-group>
+          <template v-for="(item, idx) in sectionThree">
+            <!-- Sub-menu items -->
             <v-list-group
               v-if="item.children"
               :key="item + idx + 2"
               prepend-icon=""
+              :value="expendSubMenu(item.children)"
             >
               <template #activator>
                 <v-list-item-icon class="mx-3">
                   <img
-                    width="26"
-                    height="26"
+                    width="24"
+                    height="24"
                     :src="item.icon"
                     :alt="item.title"
                   />
@@ -103,8 +150,9 @@
                 <v-list-item-content>
                   <v-list-item-title
                     class="white--text font-weight-regular mew-body"
-                    v-text="item.title"
-                  ></v-list-item-title>
+                  >
+                    {{ item.title }}
+                  </v-list-item-title>
                 </v-list-item-content>
               </template>
               <v-list-item
@@ -117,8 +165,9 @@
                 <v-list-item-content>
                   <v-list-item-title
                     class="pl-13 white--text font-weight-regular mew-body"
-                    v-text="child.title"
-                  ></v-list-item-title>
+                  >
+                    {{ child.title }}
+                  </v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
             </v-list-group>
@@ -126,45 +175,61 @@
         </v-list-item-group>
       </v-list>
 
-      <v-divider class="my-4 mx-6" />
+      <v-divider v-if="!isOfflineApp" class="my-1 mx-6" />
 
-      <v-list>
+      <v-list dense>
         <v-list-item
-          v-for="(item, idx) in sectionTwo"
+          v-for="(item, idx) in sectionFour"
           :key="item + idx"
-          dense
           :to="item.route"
           @click="item.fn()"
         >
           <v-list-item-icon class="mx-3">
-            <img width="26" height="26" :src="item.icon" :alt="item.title" />
+            <img width="24" height="24" :src="item.icon" :alt="item.title" />
           </v-list-item-icon>
 
           <v-list-item-content>
-            <v-list-item-title
-              class="white--text mew-body font-weight-regular"
-              v-text="item.title"
-            />
+            <v-list-item-title class="white--text mew-body font-weight-regular">
+              {{ item.title }}
+            </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+
         <div class="mt-3 px-8">
-          <div class="matomo-tracking-switch">
-            <v-switch
-              :input-value="consentToTrack"
-              inset
-              :label="`Data Tracking ${consentToTrack ? 'On' : 'Off'}`"
-              color="greenPrimary"
-              off-icon="mdi-alert-circle"
-              @change="setConsent"
-            />
-          </div>
+          <v-switch
+            v-model="locDarkMode"
+            class="tracking-switch"
+            hide-details
+            dark
+            inset
+            :label="`Dark theme is ${locDarkMode ? 'On' : 'Off'}`"
+            color="white"
+            off-icon="mdi-alert-circle"
+          />
+        </div>
+
+        <div v-if="online" class="mt-3 px-8">
           <div class="d-flex align-center justify-space-between">
-            <!-- <theme-switch /> -->
-            <div class="greyPrimary--text">v{{ version }}</div>
+            <a
+              :href="`https://github.com/MyEtherWallet/MyEtherWallet/releases/tag/v${version}`"
+              target="_blank"
+              class="label-text"
+              >v{{ version }}</a
+            >
           </div>
         </div>
       </v-list>
     </v-navigation-drawer>
+    <app-modal
+      :show="openQR"
+      :close="closeQR"
+      :has-buttons="false"
+      width="408px"
+    >
+      <template #dialogBody>
+        <app-addr-qr />
+      </template>
+    </app-modal>
     <mew-popup
       max-width="400px"
       hide-close-btn
@@ -195,166 +260,322 @@
       <v-row class="pa-3 align-center justify-space-between">
         <app-btn-menu class="mr-3" @click.native="openNavigation" />
 
-        <router-link
-          :to="{ name: ROUTES_WALLET.DASHBOARD.NAME }"
-          style="line-height: 0"
-        >
+        <router-link :to="offlineModeRoute" style="line-height: 0">
           <img height="26" src="@/assets/images/icons/logo-mew.svg" />
         </router-link>
         <v-spacer />
-        <module-notifications invert-icon />
+        <module-notifications v-if="!isOfflineApp" invert-icon />
       </v-row>
     </v-system-bar>
   </div>
 </template>
 
 <script>
-import AppBtnMenu from '@/core/components/AppBtnMenu';
-import ModuleNotifications from '@/modules/notifications/ModuleNotifications';
-import background from '@/assets/images/backgrounds/bg-light.jpg';
-import dashboard from '@/assets/images/icons/icon-dashboard-enable.png';
-import send from '@/assets/images/icons/icon-send-enable.png';
-import nft from '@/assets/images/icons/icon-nft.png';
-import swap from '@/assets/images/icons/icon-swap-enable.png';
-import dapp from '@/assets/images/icons/icon-dapp-center-enable.png';
-import contract from '@/assets/images/icons/icon-contract-enable.png';
-import message from '@/assets/images/icons/icon-message-enable.png';
-import settings from '@/assets/images/icons/icon-setting-enable.png';
-import logout from '@/assets/images/icons/icon-logout-enable.png';
-import BalanceCard from '@/modules/balance/ModuleBalanceCard';
-import ModuleSettings from '@/modules/settings/ModuleSettings';
-// import ThemeSwitch from '@/components/theme-switch/ThemeSwitch';
-import { EventBus } from '@/core/plugins/eventBus';
 import { mapActions, mapGetters, mapState } from 'vuex';
+import send from '@/assets/images/icons/icon-send.svg';
+import portfolio from '@/assets/images/icons/icon-dashboard-enable.svg';
+// import bridge from '@/assets/images/icons/icon-bridge-enable.svg';
+import nft from '@/assets/images/icons/icon-nft.svg';
+import swap from '@/assets/images/icons/icon-swap-enable.svg';
+import receive from '@/assets/images/icons/icon-arrow-down-right.svg';
+import buy from '@/assets/images/icons/icon-credit-card.svg';
+import dapp from '@/assets/images/icons/icon-apps-enable.svg';
+import contract from '@/assets/images/icons/icon-contract-enable.svg';
+import message from '@/assets/images/icons/icon-message-enable.svg';
+import settings from '@/assets/images/icons/icon-setting-enable.svg';
+import logout from '@/assets/images/icons/icon-logout-enable.svg';
+import { EventBus } from '@/core/plugins/eventBus';
 import { ETH, BSC, MATIC } from '@/utils/networks/types';
 import { ROUTES_WALLET } from '@/core/configs/configRoutes';
 import handlerAnalytics from '@/modules/analytics-opt-in/handlers/handlerAnalytics.mixin';
 import dappsMeta from '@/dapps/metainfo-dapps';
+import { BUYSELL_EVENT } from '@/modules/buy-sell/helpers';
+import isNew from '@/core/helpers/isNew.js';
+
 export default {
   components: {
-    AppBtnMenu,
-    BalanceCard,
-    ModuleSettings,
-    ModuleNotifications
+    AppModal: () => import('@/core/components/AppModal'),
+    AppAddrQr: () => import('@/core/components/AppAddrQr'),
+    AppBtnMenu: () => import('@/core/components/AppBtnMenu'),
+    BalanceCard: () => import('@/modules/balance/ModuleBalanceCard'),
+    ModuleSettings: () => import('@/modules/settings/ModuleSettings'),
+    ModuleNotifications: () =>
+      import('@/modules/notifications/ModuleNotifications'),
+    NetworkSwitch: () =>
+      import('@/modules/network/components/NetworkSwitch.vue')
   },
   mixins: [handlerAnalytics],
   data() {
+    const locDarkMode = this.$vuetify.theme.dark;
     return {
+      isOpenNetworkOverlay: false,
       navOpen: null,
       version: VERSION,
-      background: background,
+      openQR: false,
       onSettings: false,
       showLogoutPopup: false,
-      sectionTwo: [
+      routeNetworks: {
+        [ROUTES_WALLET.SWAP.NAME]: [ETH, BSC, MATIC],
+        [ROUTES_WALLET.NFT_MANAGER.NAME]: [ETH, BSC, MATIC]
+      },
+      footer: {
+        text: 'Need help?',
+        linkTitle: 'Contact support',
+        link: 'mailto:support@myetherwallet.com'
+      },
+      locDarkMode: locDarkMode
+    };
+  },
+  computed: {
+    ...mapGetters('global', ['network', 'isEthNetwork', 'hasSwap', 'darkMode']),
+    ...mapState('wallet', ['instance', 'isOfflineApp']),
+    ...mapState('global', ['online', 'validNetwork']),
+    ...mapState('popups', ['consentToTrack']),
+    leftBtn() {
+      return {
+        title: '',
+        color: 'primary',
+        method: this.validNetwork ? this.closeNetworkOverlay : null
+      };
+    },
+    /**
+     * IMPORTANT TO DO:
+     * @returns {boolean}
+     */
+    filterNetworks() {
+      if (this.isHardware) {
+        return [];
+      }
+      return [];
+    },
+    /**
+     * Property returns whether or not you are on the swap page
+     * @returns {boolean}
+     */
+    isSwapPage() {
+      return this.$route.name === 'Swap';
+    },
+    sectionOne() {
+      if (this.online) {
+        const hasNew = Object.values(dappsMeta).filter(item => {
+          if (isNew(item.release)) {
+            return item;
+          }
+        });
+        return [
+          {
+            title: this.$t('interface.menu.portfolio'),
+            route: this.offlineModeRoute,
+            icon: portfolio
+          },
+          {
+            title: this.$t('interface.menu.apps'),
+            route: { name: ROUTES_WALLET.DAPPS.NAME },
+            icon: dapp,
+            hasNew: hasNew.length > 0
+          },
+          {
+            title: this.$t('interface.menu.nft'),
+            route: { name: ROUTES_WALLET.NFT_MANAGER.NAME },
+            icon: nft
+          }
+        ];
+      }
+      return [
         {
-          title: this.$t('common.settings'),
-          icon: settings,
-          fn: this.openSettings,
-          route: { name: ROUTES_WALLET.SETTINGS.NAME }
+          title: this.$t('sendTx.send-offline'),
+          route: { name: ROUTES_WALLET.SEND_TX_OFFLINE.NAME },
+          icon: send
         },
+        {
+          title: this.$t('interface.menu.sign-message'),
+          route: { name: ROUTES_WALLET.SIGN_MESSAGE.NAME },
+          icon: message
+        }
+      ];
+    },
+    sectionTwo() {
+      if (this.online) {
+        const sectionTwo = [
+          {
+            title: this.$t('interface.menu.swap'),
+            icon: swap,
+            route: { name: ROUTES_WALLET.SWAP.NAME },
+            fn: this.trackToSwap
+          },
+          // {
+          //   title: this.$t('interface.menu.bridge'),
+          //   icon: bridge,
+          //   route: { name: ROUTES_WALLET.BRIDGE.NAME }
+          // },
+          {
+            title: this.$t('interface.menu.send'),
+            icon: send,
+            route: { name: ROUTES_WALLET.SEND_TX.NAME }
+          },
+          {
+            title: this.$t('interface.menu.receive'),
+            icon: receive,
+            fn: () => {
+              this.openQR = true;
+            },
+            route: undefined
+          }
+        ];
+        if (
+          this.network.type.name === ETH.name ||
+          this.network.type.name === BSC.name ||
+          this.network.type.name === MATIC.name
+        ) {
+          sectionTwo.push({
+            title: this.$t('interface.menu.buy-sell'),
+            icon: buy,
+            fn: this.openBuySell,
+            route: undefined
+          });
+        }
+        return sectionTwo;
+      }
+      return [];
+    },
+    sectionThree() {
+      if (this.online) {
+        return [
+          {
+            title: this.$t('interface.menu.contract'),
+            icon: contract,
+            children: [
+              {
+                title: this.$t('interface.menu.deploy'),
+                route: { name: ROUTES_WALLET.DEPLOY_CONTRACT.NAME }
+              },
+              {
+                title: this.$t('interface.menu.interact-contract'),
+                route: { name: ROUTES_WALLET.INTERACT_WITH_CONTRACT.NAME }
+              }
+            ]
+          },
+          {
+            title: this.$t('interface.menu.message'),
+            icon: message,
+            children: [
+              {
+                title: this.$t('interface.menu.sign-message'),
+                route: { name: ROUTES_WALLET.SIGN_MESSAGE.NAME }
+              },
+              {
+                title: this.$t('interface.menu.verify-message'),
+                route: { name: ROUTES_WALLET.VERIFY_MESSAGE.NAME }
+              }
+            ]
+          }
+        ];
+      }
+      return [];
+    },
+    sectionFour() {
+      if (this.online) {
+        return [
+          {
+            title: this.$t('common.settings'),
+            icon: settings,
+            fn: this.openSettings,
+            route: { name: ROUTES_WALLET.SETTINGS.NAME }
+          },
+          {
+            title: this.$t('common.logout'),
+            icon: logout,
+            fn: this.toggleLogout
+          }
+        ];
+      }
+      return [
         {
           title: this.$t('common.logout'),
           icon: logout,
           fn: this.toggleLogout
         }
-      ],
-      routeNetworks: {
-        [ROUTES_WALLET.SWAP.NAME]: [ETH, BSC, MATIC],
-        [ROUTES_WALLET.NFT_MANAGER.NAME]: [ETH]
-      },
-      ROUTES_WALLET: ROUTES_WALLET
-    };
-  },
-  computed: {
-    ...mapGetters('global', ['network', 'swapLink']),
-    ...mapState('wallet', ['instance']),
-    sectionOne() {
-      const hasNew = Object.values(dappsMeta).filter(item => {
-        const dateToday = new Date();
-        const millisecondsInDay = 1000 * 60 * 60 * 24;
-        const releaseDate = new Date(item.release);
-        const daysFromRelease =
-          (dateToday.getTime() - releaseDate.getTime()) / millisecondsInDay;
-        if (Math.ceil(daysFromRelease) <= 21) {
-          return item;
-        }
-      });
-      return [
-        {
-          title: this.$t('interface.menu.dashboard'),
-          route: { name: ROUTES_WALLET.DASHBOARD.NAME },
-          icon: dashboard
-        },
-        {
-          title: this.$t('sendTx.send-tx'),
-          route: { name: ROUTES_WALLET.SEND_TX.NAME },
-          icon: send
-        },
-        {
-          title: this.$t('interface.menu.nft'),
-          route: { name: ROUTES_WALLET.NFT_MANAGER.NAME },
-          icon: nft
-        },
-        {
-          title: this.$t('common.swap'),
-          route: { name: ROUTES_WALLET.SWAP.NAME },
-          icon: swap
-        },
-        // {
-        //   title: this.$t('interface.menu.dapps'),
-        //   route: { name: ROUTES_WALLET.DAPPS.NAME },
-        //   icon: dapp,
-        //   hasNew: hasNew.length > 0
-        // },
-        {
-          title: this.$t('interface.menu.contract'),
-          icon: contract,
-          children: [
-            {
-              title: this.$t('interface.menu.deploy'),
-              route: { name: ROUTES_WALLET.DEPLOY_CONTRACT.NAME }
-            },
-            {
-              title: this.$t('interface.menu.interact-contract'),
-              route: { name: ROUTES_WALLET.INTERACT_WITH_CONTRACT.NAME }
-            }
-          ]
-        },
-        {
-          title: this.$t('interface.menu.message'),
-          icon: message,
-          children: [
-            {
-              title: this.$t('interface.menu.sign-message'),
-              route: { name: ROUTES_WALLET.SIGN_MESSAGE.NAME }
-            },
-            {
-              title: this.$t('interface.menu.verify-message'),
-              route: { name: ROUTES_WALLET.VERIFY_MESSAGE.NAME }
-            }
-          ]
-        }
       ];
+    },
+    offlineModeRoute() {
+      return this.isOfflineApp
+        ? { name: ROUTES_WALLET.WALLETS.NAME }
+        : { name: ROUTES_WALLET.DASHBOARD.NAME };
+    }
+  },
+  watch: {
+    '$vuetify.theme.dark': function (val) {
+      this.locDarkMode = val;
+    },
+    locDarkMode(val) {
+      this.setDarkMode(val);
+      this.$vuetify.theme.dark = val;
+    },
+    isOpenNetworkOverlay(newVal) {
+      if (newVal && this.$route.name == ROUTES_WALLET.SWAP.NAME) {
+        this.trackSwap('switchingNetworkOnSwap');
+      }
+    },
+    navOpen(newVal) {
+      if (this.isOpenNetworkOverlay && !newVal)
+        this.isOpenNetworkOverlay = false;
     }
   },
   mounted() {
+    // If no menu item is selected on load, redirect user to Dashboard
+    if (!this.isOfflineApp) {
+      this.redirectToDashboard();
+    } else {
+      this.footer = {
+        text: 'Need help? Email us at support@myetherwallet.com',
+        linkTitle: '',
+        link: ''
+      };
+    }
+
     if (this.$route.name == ROUTES_WALLET.SETTINGS.NAME) {
       this.openSettings();
     }
     EventBus.$on('openSettings', () => {
       this.openSettings();
     });
+    EventBus.$on('openNetwork', () => {
+      this.openNetwork();
+    });
+  },
+  beforeDestroy() {
+    EventBus.$off('openSettings');
+    EventBus.$off('openNetwork');
   },
   methods: {
     ...mapActions('wallet', ['removeWallet']),
+    ...mapActions('global', ['setDarkMode']),
+    trackToSwap() {
+      this.trackSwap('fromSideMenu');
+    },
+    trackBuySellFunc() {
+      this.trackBuySell('buySellHome');
+    },
+    closeNetworkOverlay() {
+      if (this.validNetwork) {
+        this.isOpenNetworkOverlay = false;
+      }
+    },
     shouldShow(route) {
-      if (this.routeNetworks[route.name]) {
+      if (this.routeNetworks[route?.name]) {
         for (const net of this.routeNetworks[route.name]) {
           if (net.name === this.network.type.name) return true;
         }
         return false;
       }
       return true;
+    },
+    openNetwork() {
+      this.isOpenNetworkOverlay = true;
+    },
+    openBuySell() {
+      EventBus.$emit(BUYSELL_EVENT);
+      this.trackBuySellFunc();
     },
     openNavigation() {
       this.navOpen = true;
@@ -363,25 +584,51 @@ export default {
       this.onSettings = true;
     },
     closeSettings() {
+      if (this.$router.currentRoute.name === ROUTES_WALLET.SETTINGS.NAME)
+        this.$router.go(-1);
       this.onSettings = false;
-      this.$router.go(-1);
     },
     onLogout() {
       this.showLogoutPopup = false;
+      this.$vuetify.theme.dark = false;
       this.removeWallet();
     },
     toggleLogout() {
       this.showLogoutPopup = !this.showLogoutPopup;
     },
-    openSimplex() {
-      // eslint-disable-next-line
-      window.open(`${this.swapLink}`, '_blank');
+    /* =================================================================== */
+    /* If no menu item is selected on load, redirect user to Dashboard     */
+    /* =================================================================== */
+    redirectToDashboard() {
+      if (this.$route.name === ROUTES_WALLET.WALLETS.NAME) {
+        this.$router.push(this.offlineModeRoute);
+      }
+    },
+    /* =================================================================== */
+    /* If sub-menu item is selected on load, expend the sub-menu slot      */
+    /* =================================================================== */
+    expendSubMenu(children) {
+      for (const c of children) {
+        if (this.$route.name == c.route.name) return true;
+      }
+    },
+    /**
+     * set openQR to false
+     * to close the modal
+     */
+    closeQR() {
+      this.openQR = false;
     }
   }
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+// Make selected top three button bold
+.v-list-item--active .btn-title {
+  font-weight: 500;
+}
+
 .new-dapp-label {
   border-radius: 2px;
   background: #ff445b;
@@ -412,17 +659,52 @@ export default {
     box-shadow: 0 0 0 0 rgba(204, 169, 44, 0);
   }
 }
-
-.v-system-bar .v-icon {
-  font-size: 36px !important;
-  color: white !important;
+.label-text {
+  color: rgba(255, 255, 255, 0.5);
 }
+</style>
 
+<style lang="scss">
+// =======================================================
+// Scoped styles for .wallet-sidemenu
+// =======================================================
 .wallet-sidemenu {
+  .v-system-bar .v-icon {
+    font-size: 36px !important;
+    color: white !important;
+  }
+
+  .v-list-item--dense .v-list-item__title {
+    line-height: 20px !important;
+  }
+  .v-list-item,
+  .v-input--switch {
+    opacity: 0.7 !important;
+
+    &:hover {
+      opacity: 1 !important;
+    }
+  }
+
+  a.v-item--active,
+  .v-input--is-label-active {
+    opacity: 1 !important;
+    filter: grayscale(0);
+  }
+
+  .v-list-item--active.v-list-item:not(
+      .v-list-group__header
+    ).remove-select-state {
+    background-color: transparent !important;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.2) !important;
+    }
+  }
+
   .v-list-item--link {
     border-top: none;
   }
-
   .v-list-item--active {
     .v-list-item__content {
       .v-list-item__title {
@@ -430,87 +712,77 @@ export default {
       }
     }
   }
-
   .v-list-group__header__append-icon {
     .v-icon {
       color: var(--v-white-base) !important;
     }
   }
-
   .v-divider {
     border-color: rgba(255, 255, 255, 0.22) !important;
   }
-
   .v-list-item--link:hover {
     background-color: rgba(255, 255, 255, 0.2) !important;
   }
-
   .v-list-item:after {
     min-height: 40px !important;
   }
-
   .mew-body.font-weight-bold {
     font-weight: 400 !important;
   }
-
   .v-list-item--active.v-list-item:not(.v-list-group__header) {
     background-color: rgba(255, 255, 255, 0.1) !important;
   }
-
+  .v-list-item--active.v-list-item:not(
+      .v-list-group__header
+    ).remove-active-class {
+    background-color: transparent !important;
+  }
   .v-list-item--active::before {
     opacity: 0 !important;
   }
-
   .v-navigation-drawer__content {
-    margin-right: 5px;
-    margin-bottom: 10px;
-
+    margin-right: 2px;
     &::-webkit-scrollbar {
       width: 4px;
       height: 4px;
     }
-
     &::-webkit-scrollbar-button {
       width: 0;
       height: 0;
     }
-
     &::-webkit-scrollbar-thumb {
       background: #7b91ac;
       border: 0 none #fff;
       border-radius: 50px;
     }
-
     &::-webkit-scrollbar-thumb:hover {
       background: #7b91ac;
     }
-
     &::-webkit-scrollbar-thumb:active {
       background: #4b4949;
     }
-
     &::-webkit-scrollbar-track {
       background: #e1dfdf;
       border: 0 none #fff;
       border-radius: 39px;
     }
-
     &::-webkit-scrollbar-track:hover {
       background: #ddd5d5;
     }
-
     &::-webkit-scrollbar-track:active {
       background: #dedede;
     }
-
     &::-webkit-scrollbar-corner {
       background: transparent;
     }
   }
-  .matomo-tracking-switch {
+  .tracking-switch {
     .v-label {
       color: var(--v-white-base);
     }
+  }
+  .opacity--30 {
+    opacity: 30% !important;
   }
 }
 </style>

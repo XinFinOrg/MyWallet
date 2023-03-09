@@ -19,55 +19,73 @@
       =====================================================================================
       -->
       <div style="max-width: 650px" class="mx-auto">
-        <div v-for="btn in buttons" :key="btn.title" class="position--relative">
+        <div
+          v-for="(btn, key) in buttons"
+          :key="key"
+          class="position--relative"
+        >
           <div
-            class="orangePrimary--text mew-label"
-            style="position: absolute; top: 15px; right: 25px"
+            v-if="btn.official"
+            class="chip-official d-flex align-center"
+            :class="isMobile ? 'note-position-mobile' : 'note-position'"
           >
+            <v-icon color="whiteAlways" size="15px" class="mr-1">
+              mdi-shield-check
+            </v-icon>
+            <div
+              class="font-weight-medium letter-spacing--initial line-height--initial"
+            >
+              Official
+            </div>
+          </div>
+          <div
+            v-if="!btn.recommended"
+            class="orangePrimary--text mew-label note-position d-flex align-center"
+          >
+            <v-icon color="orangePrimary" size="18px" class="mr-1">
+              mdi-shield-alert
+            </v-icon>
             NOT RECOMMENDED
           </div>
           <mew-button
             has-full-width
-            class="mb-5"
+            :class="[
+              btn.title === 'Software'
+                ? 'AccessWalletSoftwareButton'
+                : 'mb-5 py-6'
+            ]"
+            style="height: initial; min-height: 157px"
             :color-theme="btn.color"
             :btn-style="btn.style === 'outline' ? 'outline' : ''"
-            style="height: 160px"
             @click.native="btn.fn"
           >
-            <div
-              class="px-2 text-left d-flex align-center justify-space-between"
-              :class="
-                btn.style === 'outline' ? 'white--text' : 'textDark--text'
-              "
-              style="width: 100%"
-            >
-              <div>
-                <div class="mb-2 d-flex align-center">
-                  <div class="mew-heading-2">{{ btn.title }}</div>
-                  <v-icon dense :color="btn.titleIconClass" class="ml-1">
-                    {{ btn.titleIcon }}
-                  </v-icon>
+            <div class="width--full d-flex align-center text-left">
+              <img
+                v-if="btn.icon && !isMobile"
+                class="ml-5 mr-6"
+                :src="btn.icon"
+                :alt="btn.alt"
+                style="height: 70px"
+              />
+              <div class="px-3">
+                <div class="d-flex align-center">
+                  <img
+                    v-if="btn.icon && isMobile"
+                    class="mr-4"
+                    :src="btn.icon"
+                    :alt="btn.alt"
+                    style="height: 40px"
+                  />
+
+                  <div class="mew-heading-2 break-word letter-spacing--initial">
+                    {{ btn.title }}
+                  </div>
                 </div>
-                <div class="break-word">
+                <div
+                  class="mew-heading-4 reset-subtitle break-word letter-spacing--initial text-transform--none mt-4"
+                >
                   {{ btn.subtitle }}
                 </div>
-              </div>
-              <div class="d-none d-sm-flex align-center pl-5">
-                <img
-                  v-if="btn.rightIcon"
-                  class="mew-wallet-img"
-                  :src="btn.rightIcon"
-                  :alt="btn.rightIcon"
-                  style="height: 90px"
-                />
-                <img
-                  v-for="(icon, index) in btn.rightIcons"
-                  v-else
-                  :key="index"
-                  :src="icon"
-                  width="70"
-                  class="px-2"
-                />
               </div>
             </div>
           </mew-button>
@@ -87,14 +105,18 @@
         :close="close"
         :wallet-type="type"
       />
+      <enkrypt-missing-snackbar
+        :show="showInstallEnkrypt"
+        @closeEnkryptMissingSnackbar="showInstallEnkrypt = false"
+      />
     </v-container>
   </div>
 </template>
 
 <script>
-import ModuleAccessWalletHardware from '@/modules/access-wallet/ModuleAccessWalletHardware';
-import ModuleAccessWalletSoftware from '@/modules/access-wallet/ModuleAccessWalletSoftware';
-import ModuleAccessWalletMobile from '@/modules/access-wallet/ModuleAccessWalletMobile';
+import { mapActions, mapState, mapGetters } from 'vuex';
+import Web3 from 'web3';
+
 import {
   Toast,
   ERROR,
@@ -102,11 +124,7 @@ import {
   SENTRY
 } from '@/modules/toast/handler/handlerToast';
 import { ACCESS_VALID_OVERLAYS } from '@/core/router/helpers';
-import { Web3Wallet } from '@/modules/access-wallet/common';
-import { mapActions, mapState, mapGetters } from 'vuex';
-import Web3 from 'web3';
-import TheLayoutHeader from '../components-default/TheLayoutHeader';
-import { MewConnectWallet } from '@/modules/access-wallet/common';
+import { Web3Wallet, MewConnectWallet } from '@/modules/access-wallet/common';
 import { ROUTES_HOME, ROUTES_WALLET } from '@/core/configs/configRoutes';
 import handlerAnalytics from '@/modules/analytics-opt-in/handlers/handlerAnalytics.mixin';
 import WALLET_TYPES from '@/modules/access-wallet/common/walletTypes';
@@ -114,10 +132,15 @@ import WALLET_TYPES from '@/modules/access-wallet/common/walletTypes';
 export default {
   name: 'TheAccessWalletLayout',
   components: {
-    ModuleAccessWalletHardware,
-    ModuleAccessWalletSoftware,
-    ModuleAccessWalletMobile,
-    TheLayoutHeader
+    ModuleAccessWalletHardware: () =>
+      import('@/modules/access-wallet/ModuleAccessWalletHardware'),
+    ModuleAccessWalletSoftware: () =>
+      import('@/modules/access-wallet/ModuleAccessWalletSoftware'),
+    ModuleAccessWalletMobile: () =>
+      import('@/modules/access-wallet/ModuleAccessWalletMobile'),
+    EnkryptMissingSnackbar: () =>
+      import('@/views/components-default/EnkryptMissingSnackbar.vue'),
+    TheLayoutHeader: () => import('../components-default/TheLayoutHeader')
   },
   mixins: [handlerAnalytics],
   props: {
@@ -136,87 +159,13 @@ export default {
         text: 'Create Wallet',
         routeName: 'CreateWallet'
       },
-      buttons: [
-        /* MEW wallet Button */
-        /*{
-          color: 'white',
-          title: 'XOW wallet',
-          subtitle: 'Connect XOW wallet app to MEW web',
-          note: '',
-          rightIcon: require('@/assets/images/icons/icon-mew-wallet.png'),
-          titleIcon: 'mdi-shield-check',
-          titleIconType: 'mdi',
-          titleIconClass: 'greenPrimary',
-          fn: () => {
-            this.openMEWconnect();
-          }
-        },*/
-        /* Browser Extension */
-        {
-          color: 'white',
-          title: 'Browser Extension',
-          subtitle: 'Use your web3 wallet with XOW.',
-          note: '',
-          rightIcon: require('@/assets/images/icons/logo-mew-small.png'),
-          titleIcon: 'mdi-shield-check',
-          titleIconType: 'mdi',
-          titleIconClass: 'greenPrimary',
-          fn: () => {
-            this.openWeb3Wallet();
-          }
-        },
-        /* Hardware Wallet */
-        {
-          color: 'white',
-          title: 'Hardware Wallets',
-          subtitle: 'Ledger, Trezor, KeepKey',
-          note: '',
-          rightIcon: require('@/assets/images/icons/icon-hardware-wallet.png'),
-          titleIcon: 'mdi-shield-check',
-          titleIconType: 'mdi',
-          titleIconClass: 'greenPrimary',
-          fn: () => {
-            this.openOverlay(ACCESS_VALID_OVERLAYS.HARDWARE);
-          }
-        },
-        /* Mobile Apps */
-        /*{
-          color: 'white',
-          title: 'Mobile Apps',
-          subtitle: 'WalletConnect, WalletLink',
-          note: '',
-          rightIcons: [
-            require('@/assets/images/icons/icon-wallet-connect.svg'),
-            require('@/assets/images/icons/icon-wallet-link.png')
-          ],
-          titleIcon: 'mdi-shield-check',
-          titleIconType: 'mdi',
-          titleIconClass: 'greenPrimary',
-          fn: () => {
-            this.openOverlay(ACCESS_VALID_OVERLAYS.MOBILE);
-          }
-        },*/
-        /* Software */
-        {
-          color: 'white',
-          style: 'outline',
-          title: 'Software',
-          subtitle: 'Keystore files, Mnemonic phrase, Private key',
-          note: 'NOT RECOMMENDED',
-          rightIcon: '',
-          titleIcon: 'mdi-alert',
-          titleIconType: 'mdi',
-          titleIconClass: 'orangePrimary',
-          fn: () => {
-            this.openOverlay(ACCESS_VALID_OVERLAYS.SOFTWARE);
-          }
-        }
-      ],
-      showBrowser: false
+      showInstallEnkrypt: false
     };
   },
   computed: {
     ...mapState('external', ['path']),
+    ...mapState('wallet', ['isOfflineApp']),
+
     /**
      * Used in the creation of a MEWconnect instance
      **/
@@ -241,6 +190,109 @@ export default {
      */
     showMobile() {
       return this.overlay === ACCESS_VALID_OVERLAYS.MOBILE;
+    },
+    /**
+     * Opens up software module overlay. Returns true if overlay prop from route is ACCESS_VALID_OVERLAYS.SOFTWARE
+     * @return - boolean
+     */
+    showOffline() {
+      return this.overlay === ACCESS_VALID_OVERLAYS.SOFTWARE;
+    },
+    buttons() {
+      if (!this.isOfflineApp) {
+        return [
+          /* Enkrypt */
+          {
+            color: 'white',
+            title: 'XOW wallet',
+            subtitle: 'Connect with Enkrypt browser extension',
+            official: true,
+            recommended: true,
+            icon: require('@/assets/images/icons/icon-enkrypt-block.svg'),
+            alt: 'Enkrypt',
+            fn: () => {
+              this.checkEnkrypt();
+            }
+          },
+          /* XOW wallet Button */
+          {
+            color: 'white',
+            title: 'XOW wallet app',
+            subtitle: 'Connect XOW wallet app to XOW web',
+            official: true,
+            recommended: true,
+            icon: require('@/assets/images/icons/icon-mew-wallet.png'),
+            alt: 'XOW wallet',
+            fn: () => {
+              this.openMEWconnect();
+            }
+          },
+          /* Browser extension */
+          {
+            color: 'white',
+            title: 'Browser extension',
+            subtitle: 'Use your Web3 wallet with XOW',
+            official: false,
+            recommended: true,
+            icon: require('@/assets/images/icons/icon-extensions.png'),
+            alt: 'Hardware Wallets',
+            fn: () => {
+              this.openWeb3Wallet();
+            }
+          },
+          /* Mobile Apps */
+          {
+            color: 'white',
+            title: 'Mobile Apps',
+            subtitle: 'WalletConnect, WalletLink',
+            official: false,
+            recommended: true,
+            icon: require('@/assets/images/icons/icon-mobile-apps.png'),
+            alt: 'Hardware Wallets',
+            fn: () => {
+              this.openOverlay(ACCESS_VALID_OVERLAYS.MOBILE);
+            }
+          },
+          /* Hardware wallets */
+          {
+            color: 'white',
+            title: 'Hardware wallets',
+            subtitle: 'Ledger, Trezor, KeepKey, Cool Wallet, Bitbox02',
+            official: false,
+            recommended: true,
+            icon: require('@/assets/images/icons/icon-hardware-wallet.png'),
+            alt: 'Hardware Wallets',
+            fn: () => {
+              this.openOverlay(ACCESS_VALID_OVERLAYS.HARDWARE);
+            }
+          },
+          /* Software */
+          {
+            color: 'white',
+            style: 'outline',
+            title: 'Software',
+            subtitle: 'Keystore File, Mnemonic Phrase, and Private Key',
+            official: false,
+            recommended: false,
+            fn: () => {
+              this.openOverlay(ACCESS_VALID_OVERLAYS.SOFTWARE);
+            }
+          }
+        ];
+      }
+      return [
+        {
+          color: 'white',
+          title: 'Software',
+          subtitle: 'Keystore files, Mnemonic phrase, Private key',
+          fn: () => {
+            this.openOverlay(ACCESS_VALID_OVERLAYS.SOFTWARE);
+          }
+        }
+      ];
+    },
+    isMobile() {
+      return this.$vuetify.breakpoint.smAndDown;
     }
   },
   methods: {
@@ -281,6 +333,20 @@ export default {
       this[type] = true;
     },
     /**
+     * Checks if Enkrypt is available
+     */
+    checkEnkrypt() {
+      if (
+        window.ethereum &&
+        window.ethereum.isMetaMask &&
+        window.ethereum.isEnkrypt
+      ) {
+        this.openWeb3Wallet();
+      } else {
+        this.showInstallEnkrypt = true;
+      }
+    },
+    /**
      * Checks and open web3 wallet
      */
     async openWeb3Wallet() {
@@ -288,17 +354,25 @@ export default {
         const web3 = new Web3(window.ethereum);
         try {
           await window.ethereum.enable();
-          const acc = await web3.eth.getAccounts();
+          const acc = await web3.eth.requestAccounts();
           const wallet = new Web3Wallet(acc[0]);
           this.setWallet([wallet, window.ethereum]);
           this.trackAccessWallet(WALLET_TYPES.WEB3_WALLET);
           if (this.path !== '') {
             this.$router.push({ path: this.path });
           } else {
-            this.$router.push({ name: ROUTES_WALLET.WALLETS.NAME });
+            this.$router.push({ name: ROUTES_WALLET.DASHBOARD.NAME });
           }
         } catch (e) {
-          Toast(e.message, {}, WARNING);
+          if (
+            e.message === 'Already processing eth_requestAccounts. Please wait.'
+          )
+            Toast(
+              'Please open the MetaMask extension and unlock your wallet.',
+              {},
+              WARNING
+            );
+          else Toast(e, {}, WARNING);
         }
       } else {
         Toast('No web3 wallet found!', {}, WARNING);
@@ -322,3 +396,31 @@ export default {
   }
 };
 </script>
+
+<style lang="scss" scoped>
+.reset-subtitle {
+  line-height: 24px;
+}
+
+.chip-official {
+  background-color: var(--v-greenPrimary-base);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 30px;
+  z-index: 1;
+}
+
+.note-position {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+}
+
+.note-position-mobile {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  padding: 4px 8px;
+  border-radius: 0px 10px 0 7px;
+}
+</style>

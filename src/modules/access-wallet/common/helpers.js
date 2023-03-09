@@ -13,7 +13,6 @@ const fromMyEtherWalletV2 = json => {
   return new Wallet(privKey);
 };
 const getWalletFromPrivKeyFile = (jsonfile, password) => {
-  2;
   if (jsonfile.encseed != null) return Wallet.fromEthSale(jsonfile, password);
   else if (jsonfile.Crypto != null || jsonfile.crypto != null)
     return Wallet.fromV3(jsonfile, password, true);
@@ -95,7 +94,7 @@ const getSignTransactionObject = tx => {
         ? bufferToHex(tx.maxPriorityFeePerGas)
         : null,
       gas: tx.gasLimit ? bufferToHex(tx.gasLimit) : bufferToHex(tx.gas),
-      to: bufferToHex(tx.to),
+      to: tx.to ? bufferToHex(tx.to) : '',
       value: bufferToHex(tx.value),
       input: bufferToHex(tx.data),
       v: bufferToHex(tx.v),

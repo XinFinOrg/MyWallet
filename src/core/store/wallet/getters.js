@@ -13,7 +13,7 @@ const totalOwnedDomains = function (state) {
   return state.ensDomains ? state.ensDomains.length : 0;
 };
 
-const tokensList = function (state) {
+const tokensList = function (state, getters, rootState, rootGetters) {
   const tokens = state.tokens;
   return tokens.length > 0
     ? tokens.map(item => {
@@ -22,6 +22,16 @@ const tokensList = function (state) {
         } else {
           item.balance = toBN(item.balance);
         }
+        // Check if token is in hiddenTokens
+        let isHidden = false;
+        const hiddenTokens = rootGetters['custom/hiddenTokens'];
+        if (hiddenTokens.length > 0) {
+          isHidden =
+            hiddenTokens.find(token => {
+              return item.contract == token.address;
+            }) !== undefined;
+        }
+        item.isHidden = isHidden;
         return item;
       })
     : [];
@@ -30,11 +40,15 @@ const tokensList = function (state) {
 const initialLoad = function (state) {
   return state.loadingWalletInfo;
 };
+const getLedgerApp = function (state) {
+  return state.ledgerApp;
+};
 
 export default {
   balanceInETH,
   balanceInWei,
   totalOwnedDomains,
   tokensList,
-  initialLoad
+  initialLoad,
+  getLedgerApp
 };

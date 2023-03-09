@@ -14,11 +14,11 @@
       </div>
     </v-img>
 
-    <div style="background-color: white" class="py-6">
+    <div class="py-6 bgWalletBlock">
       <div class="px-6">
         <div>
-          Something went wrong, would you like to inform to #XinFinTeam about this
-          error?
+          Something went wrong, would you like to inform to #XinFinTeam about
+          this error?
         </div>
         <v-row class="mt-4 mb-2">
           <v-col>
@@ -43,7 +43,7 @@
 
       <v-divider class="mx-6"></v-divider>
       <v-expansion-panels flat>
-        <v-expansion-panel>
+        <v-expansion-panel class="bgWalletBlock">
           <v-expansion-panel-header class="font-weight-bold">
             Error messages
           </v-expansion-panel-header>
@@ -51,7 +51,7 @@
             <textarea
               v-model="errorDetails"
               readonly
-              class="error-detail"
+              class="error-detail px-8 pb-6 textDark--text"
             ></textarea>
           </v-expansion-panel-content>
         </v-expansion-panel>

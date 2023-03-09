@@ -1,6 +1,6 @@
 <template>
   <v-footer
-    color="white"
+    color="bgWalletBlock"
     app
     inset
     absolute
@@ -15,12 +15,14 @@
           <div class="mb-0 text-center text-md-left">
             ©2022 XDCWallet. All rights reserved. Pricing taken from
             <a
+              v-if="!isOfflineApp"
               class="textDark--text text-decoration--none"
               href="https://www.coingecko.com/en"
               target="_blank"
             >
-              CoinGecko
+              {{ $t('footer.coingecko') }}
             </a>
+            <span v-else>{{ $t('footer.coingecko') }}</span>
           </div>
         </v-col>
         <v-col
@@ -34,12 +36,13 @@
           <div
             class="d-flex align-center justify-center justify-md-end textDark--text"
           >
-<!--            <a-->
-<!--              class="black&#45;&#45;text"-->
-<!--              href="https://help.myetherwallet.com/en/"-->
-<!--              target="_blank"-->
-<!--              >Help Center</a-->
-<!--            >-->
+            <!--<a
+              v-if="!isOfflineApp"
+              class="textDark&#45;&#45;text"
+              href="https://help.myetherwallet.com/en/"
+              target="_blank"
+              >Help Center</a
+            >-->
             <!-- hide language select till translations are done-->
             <!-- <span class="mx-5">|</span>
             <div style="max-width=200px">
@@ -64,6 +67,12 @@
 export default {
   name: 'TheWalletFooter',
   components: {},
+  props: {
+    isOfflineApp: {
+      type: Boolean,
+      default: false
+    }
+  },
   data: () => ({
     onLanguage: null,
     languages: [

@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="textMedium--text mb-5">
-      This fee is charged by the XinFin - XDC network and fluctuates depending on
-      network traffic. XOW does not profit from this fee.
+      This fee is charged by the XinFin - XDC network and fluctuates depending
+      on network traffic. XOW does not profit from this fee.
     </div>
 
     <!--
@@ -33,25 +33,28 @@
             </v-icon>
             <img
               v-if="b.title === gasPriceTypes.REGULAR"
+              :class="isDark ? 'dark-icon' : ''"
               src="@/assets/images/icons/icon-arrow-up.svg"
               alt="arrow up"
               height="15"
             />
             <img
               v-if="b.title === gasPriceTypes.FAST"
+              :class="isDark ? 'dark-icon' : ''"
               src="@/assets/images/icons/icon-arrow-up.svg"
               alt="arrow up"
               height="15"
             />
             <img
               v-if="b.title === gasPriceTypes.FAST"
+              :class="isDark ? 'dark-icon' : ''"
               src="@/assets/images/icons/icon-arrow-up.svg"
               alt="arrow up"
               height="15"
             />
           </div>
           <div>
-            <div class="mew-heading-3 font-weight-regular">
+            <div class="mew-heading-3 font-weight-regular textDark--text">
               {{ b.priority }}
             </div>
             <div v-if="!fromSettings" class="prices d-flex">
@@ -77,19 +80,19 @@
                 v-if="b.title === gasPriceTypes.ECONOMY"
                 class="textLight--text"
               >
-                ${{ economyInUsd }}
+                {{ economyInUsd }}
               </div>
               <div
                 v-if="b.title === gasPriceTypes.REGULAR"
                 class="textLight--text"
               >
-                ${{ regularInUsd }}
+                {{ regularInUsd }}
               </div>
               <div
                 v-if="b.title === gasPriceTypes.FAST"
                 class="textLight--text"
               >
-                ${{ fastInUsd }}
+                {{ fastInUsd }}
               </div>
             </div>
           </div>
@@ -107,7 +110,9 @@
     <div class="mt-4 d-flex flex-column align-center">
       <div v-if="!fromSettings && showGetMoreEth" class="mt-3">
         <span class="secondary--text">Can't increase priority? </span>
-        <a target="_blank" :href="swapLink"> Buy more ETH </a>
+        <a v-if="network.type.canBuy" @click="openBuySell">
+          Buy more {{ network.type.currencyName }}
+        </a>
       </div>
     </div>
   </div>
@@ -115,17 +120,20 @@
 
 <script>
 import { fromWei } from 'web3-utils';
-import { gasPriceTypes } from '@/core/helpers/gasPriceHelper';
 import { mapState, mapGetters } from 'vuex';
+import BigNumber from 'bignumber.js';
+
+import { gasPriceTypes } from '@/core/helpers/gasPriceHelper';
 import {
   formatFiatValue,
   formatFloatingPointValue,
   toBNSafe
 } from '@/core/helpers/numberFormatHelper';
-import BigNumber from 'bignumber.js';
+import buyMore from '@/core/mixins/buyMore.mixin.js';
 
 export default {
   name: 'SettingsGasPrice',
+  mixins: [buyMore],
   props: {
     setSelected: {
       type: Function,
@@ -163,8 +171,8 @@ export default {
   },
   computed: {
     ...mapGetters('external', ['fiatValue']),
-    ...mapGetters('global', ['swapLink', 'gasPriceByType', 'network']),
-    ...mapState('global', ['gasPriceType', 'gasPrice']),
+    ...mapGetters('global', ['gasPriceByType', 'network']),
+    ...mapState('global', ['gasPriceType', 'gasPrice', 'preferredCurrency']),
     ...mapGetters('wallet', ['balanceInETH']),
     currencyName() {
       return this.network.type.currencyName;
@@ -202,30 +210,20 @@ export default {
       });
 
       return counter < 3;
+    },
+    isDark() {
+      return this.$vuetify.theme.dark;
     }
   },
   watch: {
     /**
      * If not enough balance to cover new priority, go back to previous priority
      */
+    fromSettings() {
+      this.setGasType();
+    },
     gasPriceType() {
-      if (this.notEnoughEth) {
-        if (this.gasPriceType == 'regular') {
-          this.regularDisabled = true;
-          this.fastDisabled = true;
-        } else if (this.gasPriceType == 'fast') {
-          this.fastDisabled = true;
-        } else {
-          this.economyDisabled = true;
-          this.regularDisabled = true;
-          this.fastDisabled = true;
-        }
-        this.setSelected(this.previousSelected);
-      }
-
-      if (!this.notEnoughEth) {
-        this.previousSelected = this.gasPriceType;
-      }
+      this.setGasType();
     },
     gasPrice() {
       this.recalculate();
@@ -242,6 +240,24 @@ export default {
     this.previousSelected = this.gasPriceType;
   },
   methods: {
+    setGasType() {
+      if (this.notEnoughEth && !this.fromSettings) {
+        if (this.gasPriceType == 'regular') {
+          this.regularDisabled = true;
+          this.fastDisabled = true;
+        } else if (this.gasPriceType == 'fast') {
+          this.fastDisabled = true;
+        } else {
+          this.economyDisabled = true;
+          this.regularDisabled = true;
+          this.fastDisabled = true;
+        }
+        this.setSelected(this.previousSelected);
+        if (!this.notEnoughEth) {
+          this.previousSelected = this.gasPriceType;
+        }
+      }
+    },
     calcTxFee(priority) {
       return fromWei(
         toBNSafe(this.totalGasLimit)
@@ -253,8 +269,10 @@ export default {
       return formatFloatingPointValue(fee).value;
     },
     formatInUsd(fee) {
-      return formatFiatValue(BigNumber(fee).times(this.fiatValue).toFixed(2))
-        .value;
+      const number = BigNumber(fee).times(this.fiatValue).toFixed(2);
+      return formatFiatValue(number, {
+        currency: this.preferredCurrency
+      }).value;
     },
     recalculate() {
       const amount = BigNumber(this.costInEth).minus(
@@ -277,24 +295,21 @@ export default {
   cursor: pointer;
   user-select: none;
   width: 100%;
-  border: 1px solid var(--v-greyLight-base);
-  &#disabled {
-    filter: grayscale(1);
-    opacity: 0.25 !important;
-    pointer-events: none;
-    border: 1px solid #eaedf7;
-  }
-  &:hover {
-    background-color: #e9eff4;
-  }
+  border: 1px solid var(--v-buttonBorder-base);
+  background-color: var(--v-buttonGrayLight-base);
   &.active {
     border: 2px solid #05c0a5;
-    opacity: 1;
-    &:hover {
-      opacity: 1;
-      background-color: #d5edef;
-    }
+    opacity: 1 !important;
   }
+  &:hover {
+    opacity: 1 !important;
+    background-color: var(--v-buttonGrayLight-base);
+  }
+}
+
+#disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 .buy-eth:hover {
   cursor: pointer;
@@ -302,5 +317,8 @@ export default {
 .prices {
   white-space: nowrap;
   font-size: 14px;
+}
+.dark-icon {
+  filter: invert(1);
 }
 </style>

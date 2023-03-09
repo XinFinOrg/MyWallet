@@ -88,7 +88,7 @@
     </v-row>
     <div
       v-if="!isExpanded"
-      class="cursor-pointer font-weight-medium close-container"
+      class="cursor-pointer font-weight-medium close-container HideWalletBanner"
       @click="setHideBanner()"
     >
       <p>{{ $t('home.mew-wallet-modal.hide') }}</p>
@@ -97,8 +97,8 @@
 </template>
 
 <script>
-import appStore from '@/assets/images/icons/button-app-store.png';
-import googlePlay from '@/assets/images/icons/button-play-store.png';
+import appStore from '@/assets/images/icons/button-app-store.svg';
+import googlePlay from '@/assets/images/icons/button-play-store.svg';
 import { mapMutations, mapState } from 'vuex';
 const platform = require('platform');
 export default {

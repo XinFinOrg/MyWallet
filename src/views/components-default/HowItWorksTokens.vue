@@ -9,7 +9,7 @@
       <v-row>
         <v-col cols="12" lg="7">
           <v-img
-            src="@/assets/images/snippets/my-tokens-table.svg"
+            src="@/assets/images/snippets/my-tokens-table.png"
             class="mb-n7"
           />
         </v-col>
@@ -73,16 +73,16 @@
 </template>
 
 <script>
-import AppBlockTitle from '@/core/components/AppBlockTitle';
-
 export default {
-  components: { AppBlockTitle },
-  data: () => ({
+  components: {
+    AppBlockTitle: () => import('@/core/components/AppBlockTitle')
+  },
+  data: vm => ({
     titleData: {
       textProps: 'white--text',
       toptitle: '',
-      title: 'Tokens',
-      description: 'If it is on Ethereum, you can manage it with MEW.',
+      title: vm.$t('howItWorks.tokens.title'),
+      description: vm.$t('howItWorks.tokens.description'),
       centered: false
     }
   })

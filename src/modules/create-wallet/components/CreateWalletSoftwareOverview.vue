@@ -8,8 +8,9 @@
       -->
       <div class="mb-5">
         <mew-button
+          class="CreateWalletSoftwareOverviewKeystore"
           has-full-width
-          color-theme="greyLight"
+          color-theme="greyMedium"
           btn-style="outline"
           style="height: 160px"
           @click.native="selectWalletType(walletTypes.KEYSTORE)"
@@ -40,7 +41,7 @@
         Mnemonic Phrase Button
       =====================================================================================
       -->
-      <div class="mb-5">
+      <div class="CreateWalletSoftwareOverviewMnemonic mb-5">
         <mew-button
           has-full-width
           color-theme="greyMedium"
@@ -87,17 +88,26 @@
 </template>
 
 <script>
+import { mapGetters, mapState } from 'vuex';
 import WALLET_TYPES from '@/modules/access-wallet/common/walletTypes';
 export default {
   name: 'CreateWalletSoftwareOverview',
   data: () => ({
     walletTypes: WALLET_TYPES,
     linkToLearnMore: {
-      url: 'https://help.myetherwallet.com/en/articles/5377921-mew-says-not-recommended-when-i-access-my-wallet-why',
+      url: '',
       title: 'Learn more'
     }
   }),
-
+  computed: {
+    ...mapGetters('article', ['getArticle']),
+    ...mapState('wallet', ['isOfflineApp'])
+  },
+  mounted() {
+    if (this.isOfflineApp) this.linkToLearnMore = {};
+    else
+      this.linkToLearnMore.url = this.getArticle('not-rec-when-access-wallet');
+  },
   methods: {
     /**
      * Emit wallet type creation.
@@ -111,7 +121,7 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .mew-overview {
   max-width: 650px;
 }

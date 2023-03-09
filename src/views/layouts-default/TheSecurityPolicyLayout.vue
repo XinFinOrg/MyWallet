@@ -107,41 +107,19 @@
                 >
                   https://github.com/MyEtherWallet/MEWconnect-iOS
                 </a>
-                <br />
-                iOS store:
-                <a
-                  href="https://apps.apple.com/us/app/mewconnect/id1391097156"
-                  target="_blank"
-                >
-                  https://apps.apple.com/us/app/mewconnect/id1391097156
-                </a>
-                <br />
-                Android:
-                <a
-                  href="https://play.google.com/store/apps/details?id=com.myetherwallet.mewconnect"
-                  target="_blank"
-                >
-                  https://play.google.com/store/apps/details?id=com.myetherwallet.mewconnect
-                </a>
               </div>
             </div>
             <div class="mt-3">
-              <strong>MEW CX</strong>
+              <strong>Enkrypt</strong>
               <div class="pl-5">
                 Code base can be found:
-                <a
-                  href="https://github.com/MyEtherWallet/MyEtherWallet"
-                  target="_blank"
-                >
-                  https://github.com/MyEtherWallet/MyEtherWallet
+                <a href="https://github.com/enkryptcom/enKrypt" target="_blank">
+                  https://github.com/enkryptcom/enKrypt
                 </a>
                 <br />
-                Chrome Web Store:
-                <a
-                  href="https://chrome.google.com/webstore/detail/mew-cx/nlbmnnijcnlegkjjpcfjclmcfggfefdm?hl=en"
-                  target="_blank"
-                >
-                  https://chrome.google.com/webstore/detail/mew-cx/nlbmnnijcnlegkjjpcfjclmcfggfefdm?hl=en
+                Website:
+                <a href="https://www.enkrypt.com" target="_blank">
+                  Enkrypt.com
                 </a>
               </div>
             </div>

@@ -16,73 +16,6 @@ html {
   max-width: 1185px !important;
 }
 
-/* Remove default background color */
-.theme--light.v-application {
-  background: white !important;
-}
-
-/* Remove default v-sheet border-radius */
-.theme--light.v-sheet,
-.theme--dark.v-sheet {
-  border-radius: 8px;
-}
-
-/* Set default text color */
-#app .v-sheet,
-#app .v-application {
-  color: var(--v-textDark-base);
-}
-
-/* (Force) (light theme) default text color */
-#app.theme--light .theme--light-text--dark-space {
-  color: var(--v-textDark-base) !important;
-}
-
-/* (Force) (dark theme) default text color */
-#app.theme--dark .theme--dark-text--blue {
-  color: var(--v-textDark-base) !important;
-}
-
-/* (Force) white text color */
-#app.theme--dark .theme--dark-text--white,
-#app.theme--light .theme--light-text--white {
-  color: white !important;
-}
-
-.v-application ol,
-.v-application ul {
-  list-style-type: none;
-  padding-left: 0 !important;
-}
-
-/* ========== Adjust vuetify ========== */
-.expansion-panels--remove-paddings {
-  .v-expansion-panel-header,
-  .v-expansion-panel-content__wrap {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
-}
-
-.v-dialog {
-  border-radius: 8px !important;
-}
-
-/* ========== Fix MEW components ========== */
-.theme--dark.v-expansion-panels .v-expansion-panel {
-  background-color: transparent !important;
-}
-
-.v-application .v-btn.mew-button .v-btn__content span {
-  text-transform: initial;
-  font-size: 0.88rem !important;
-}
-
-.v-application .v-btn.xlarge-btn {
-  height: 3.875rem !important;
-  min-height: 3.875rem !important;
-}
-
 /* ========== CSS Style Reset ========== */
 .monospace {
   font-family: monospace !important;
@@ -95,8 +28,7 @@ i {
 div {
   padding: 0;
   margin: 0;
-  font-size: 1rem;
-  // line-height: 1.357rem;
+  font-size: 14px;
   font-weight: 400;
 }
 
@@ -145,6 +77,10 @@ h6 {
   text-transform: initial !important;
 }
 
+.text-transform--none {
+  text-transform: none !important;
+}
+
 .text-decoration--none {
   text-decoration: none !important;
 }
@@ -155,10 +91,28 @@ h6 {
 
 .word-break--break-all {
   word-break: break-all;
+  white-space: initial;
+}
+
+.break-word {
+  word-break: break-word;
+  white-space: initial;
 }
 
 .white-space--nowrap {
   white-space: nowrap !important;
+}
+
+.letter-spacing--none {
+  letter-spacing: 0 !important;
+}
+
+.letter-spacing--initial {
+  letter-spacing: initial !important;
+}
+
+.line-height--initial {
+  line-height: initial !important;
 }
 
 /* ========== Cursor ========== */
@@ -175,12 +129,28 @@ h6 {
 }
 
 /* ========== Border ========== */
+.border-radius--12px {
+  border-radius: 12px !important;
+}
+
 .border-radius--10px {
   border-radius: 10px !important;
 }
 
+.border-radius--8px {
+  border-radius: 8px !important;
+}
+
 .border-radius--5px {
   border-radius: 5px !important;
+}
+
+/* ========== Box shadow ========== */
+.bs-wallet-block {
+  box-shadow: 0 12px 17px #151d3f08 !important;
+}
+.bs-small {
+  box-shadow: 0px 1.6px 6px #00000045 !important;
 }
 
 /* ========== Other ========== */
@@ -198,10 +168,6 @@ h6 {
 
 .height--full {
   height: 100% !important;
-}
-
-.vertical-align--middle {
-  vertical-align: middle;
 }
 
 .display--block {
@@ -226,61 +192,47 @@ h6 {
   }
 }
 
-.btn-circle {
-  cursor: pointer;
-  transition: filter 0.2s linear;
-  height: 30px;
-
-  &:hover {
-    filter: brightness(90%);
-  }
-}
-
-.custom-scroll-bar {
-  &::-webkit-scrollbar {
-    width: 2px;
-    height: 2px;
-  }
-
-  &::-webkit-scrollbar-button {
-    width: 0;
-    height: 0;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #4f4f4f;
-    border: 0 none #fff;
-    border-radius: 50px;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: #3b3b3b;
-  }
-
-  &::-webkit-scrollbar-thumb:active {
-    background: #4b4949;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #e1dfdf;
-    border: 0 none #fff;
-    border-radius: 39px;
-  }
-
-  &::-webkit-scrollbar-track:hover {
-    background: #ddd5d5;
-  }
-
-  &::-webkit-scrollbar-track:active {
-    background: #dedede;
-  }
-
-  &::-webkit-scrollbar-corner {
-    background: transparent;
-  }
-}
-
 /* ========= Convert SVG to white ========= */
 .make-white-svg {
   filter: brightness(10);
+}
+
+/* ========= Remove up down button for input[type=number] ========= */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  /* display: none; <- Crashes Chrome on hover */
+  -webkit-appearance: none;
+  margin: 0;
+  /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+  /* Firefox */
+}
+
+/* ===== Custom Scrollbar ===== */
+/* Firefox */
+* {
+  scrollbar-width: auto;
+  scrollbar-color: #c8c8c8 #f4f4f4;
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #f4f4f4;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #c8c8c8;
+  border-radius: 10px;
+  border: 2px solid #f4f4f4;
+}
+
+.v-dialog {
+  border-radius: 12px !important;
 }

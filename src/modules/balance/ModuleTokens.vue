@@ -4,49 +4,61 @@
   Module Tokens
   =============================================================
   -->
-  <div class="mew-components--module-tokens">
+  <div class="module-tokens">
     <v-skeleton-loader
-      v-if="loading && tokensData"
+      v-if="loading && (tokensData || hiddenTokens)"
       class="mx-auto"
       type="table"
     />
     <mew-module
-      v-if="!loading && tokensData.length > 0 && !dense"
+      v-if="hasTokens && !dense"
+      has-elevation
       subtitle="My Tokens Value"
       :has-body-padding="false"
-      :title="`$ ${totalTokensValue}`"
-      :icon="require('@/assets/images/icons/icon-token-grey.png')"
-      icon-align="left"
-      :has-elevation="true"
+      :title="totalTokensValue"
+      class="bgWalletBlock"
     >
       <template #rightHeaderContainer>
         <div>
-          <span
-            v-if="!hasCustom"
-            class="greenPrimary--text cursor-pointer pl-3"
-            @click="toggleAddCustomToken"
-            >+ Custom Token</span
+          <v-menu
+            bottom
+            offset-y
+            rounded="lg"
+            content-class="module-tokens-edit-menu"
           >
-          <mew-menu
-            v-else
-            activator-text-color="greenPrimary--text"
-            :list-obj="menuObj"
-            @goToPage="customTokenAction"
-          />
+            <template #activator="{ on, attrs }">
+              <v-btn
+                class="ma-2"
+                v-bind="attrs"
+                rounded
+                color="basic"
+                icon
+                v-on="on"
+              >
+                <v-icon medium color="textDark">mdi-dots-vertical</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item
+                v-for="(item, i) in items"
+                :key="i"
+                @click="item.action"
+              >
+                <div class="pl-2 pr-4 d-flex align-center">
+                  <v-icon dense color="basic" left>{{ item.icon }}</v-icon>
+                  <v-list-item-title>{{ item.title }}</v-list-item-title>
+                </div>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </div>
       </template>
       <template #moduleBody>
-        <div class="my-8">
-          <mew-table
-            :has-color="false"
-            :table-headers="tableHeaders"
-            :table-data="tokensData"
-          />
-        </div>
+        <balance-table class="mb-4" :table-data="tokensData" />
       </template>
     </mew-module>
     <mew-table
-      v-if="!loading && tokensData.length > 0 && dense"
+      v-if="hasTokens && dense"
       :has-color="false"
       :table-headers="tableHeaders"
       :table-data="tokensData"
@@ -56,11 +68,7 @@
       display if the user has no tokens
     =====================================================================================
     -->
-    <balance-empty-block
-      v-if="!loading && tokensData.length === 0"
-      is-tokens
-      :is-eth="isEthNetwork"
-    />
+    <balance-empty-block v-if="emptyWallet" is-tokens :is-eth="isEthNetwork" />
     <!--
     =====================================================================================
       add Custom Token form
@@ -72,29 +80,46 @@
     />
     <!--
     =====================================================================================
-      delete Custom Token form
+      Remove Custom Token form
     =====================================================================================
     -->
-    <token-delete-custom
-      :close="toggleDeleteCustomToken"
-      :open="openDeleteCustomToken"
+    <token-remove-custom
+      :close="toggleRemoveCustomToken"
+      :open="openRemoveCustomToken"
+      :selected-token="selectedToken"
+    />
+    <!--
+    =====================================================================================
+      Edit Custom Token form
+    =====================================================================================
+    -->
+    <token-edit-custom
+      :close="toggleEditCustomToken"
+      :open="openEditCustomToken"
+      @addToken="toggleAddCustomToken"
+      @removeToken="openRemoveToken"
     />
   </div>
 </template>
 <script>
 import { mapGetters, mapState } from 'vuex';
-import BalanceEmptyBlock from './components/BalanceEmptyBlock';
-import TokenAddCustom from './components/TokenAddCustom';
-import TokenDeleteCustom from './components/TokenDeleteCustom';
-import { formatFiatValue } from '@/core/helpers/numberFormatHelper';
-import { ROUTES_WALLET } from '@/core/configs/configRoutes';
 import { uniqWith, isEqual } from 'lodash';
+import BigNumber from 'bignumber.js';
+
+import BalanceTable from './components/BalanceTable';
+import { ROUTES_WALLET } from '@/core/configs/configRoutes';
+import { currencyToNumber } from '@/core/helpers/localization';
+import handlerAnalytics from '@/modules/analytics-opt-in/handlers/handlerAnalytics.mixin';
+
 export default {
   components: {
-    BalanceEmptyBlock,
-    TokenDeleteCustom,
-    TokenAddCustom
+    BalanceTable,
+    BalanceEmptyBlock: () => import('./components/BalanceEmptyBlock'),
+    TokenAddCustom: () => import('./components/TokenAddCustom'),
+    TokenEditCustom: () => import('./components/TokenEditCustom'),
+    TokenRemoveCustom: () => import('./components/TokenRemoveCustom')
   },
+  mixins: [handlerAnalytics],
   props: {
     dense: {
       type: Boolean,
@@ -104,7 +129,8 @@ export default {
   data() {
     return {
       openAddCustomToken: false,
-      openDeleteCustomToken: false,
+      openEditCustomToken: false,
+      openRemoveCustomToken: false,
       tableHeaders: [
         {
           text: 'Token',
@@ -116,7 +142,7 @@ export default {
           text: 'Price',
           value: 'price',
           sortable: false,
-          width: '20%'
+          width: '15%'
         },
         {
           text: 'Market Cap',
@@ -140,38 +166,55 @@ export default {
           text: '',
           value: 'callToAction',
           sortable: false,
-          width: '15%'
+          width: '10%'
         }
       ],
-      menuObj: {
-        name: 'Custom Tokens',
-        items: [
-          {
-            items: [
-              {
-                title: 'Add Token',
-                to: 'add',
-                iconName: 'mdi-plus'
-              },
-              {
-                title: 'Remove Token',
-                to: 'remove',
-                iconName: 'mdi-minus'
-              }
-            ]
-          }
-        ]
-      }
+      items: [
+        {
+          icon: 'mdi-plus',
+          title: 'Add Token',
+          action: this.toggleAddCustomToken
+        },
+        {
+          icon: 'mdi-pencil-outline',
+          title: 'Edit Token',
+          action: this.toggleEditCustomToken
+        }
+      ],
+      selectedToken: {}
     };
   },
   computed: {
     ...mapGetters('wallet', ['tokensList', 'web3']),
     ...mapState('wallet', ['web3', 'loadingWalletInfo']),
-    ...mapGetters('custom', ['customTokens', 'hasCustom']),
-    ...mapGetters('global', ['isEthNetwork', 'network', 'hasSwap']),
+    ...mapGetters('custom', [
+      'customTokens',
+      'hasCustom',
+      'hiddenTokens',
+      'hasHidden'
+    ]),
+    ...mapGetters('global', [
+      'isEthNetwork',
+      'network',
+      'hasSwap',
+      'getFiatValue'
+    ]),
     ...mapGetters('external', ['totalTokenFiatValue']),
     loading() {
       return this.loadingWalletInfo;
+    },
+    hasTokens() {
+      return (
+        !this.loading &&
+        (this.tokensData.length > 0 || this.hiddenTokens.length > 0)
+      );
+    },
+    emptyWallet() {
+      return (
+        !this.loading &&
+        this.tokensData.length === 0 &&
+        this.hiddenTokens.length === 0
+      );
     },
     /**
      * @returns formatted custom token values and token list values
@@ -179,20 +222,35 @@ export default {
      * will be sorted by usd balance for both
      */
     tokensData() {
-      if (!this.tokensList && !this.customTokens) return [];
-      const customTokens = this.customTokens.map(item => {
-        return this.formatValues(item);
-      });
-      const uniqueTokens = uniqWith(this.tokensList, isEqual);
-      const tokenList = uniqueTokens.map(item => {
-        return this.formatValues(item);
-      });
+      if (!this.tokensList && !this.customTokens && !this.hiddenTokens)
+        return [];
+      const customTokens = this.customTokens.reduce((arr, item) => {
+        // Check if token is in hiddenTokens
+        const isHidden = this.hiddenTokens.find(token => {
+          return item.contract == token.address;
+        });
+        if (!isHidden) arr.push(this.formatValues(item));
+        return arr;
+      }, []);
+      const uniqueTokens = uniqWith(
+        this.tokensList.filter(t => {
+          return !t.isHidden;
+        }),
+        isEqual
+      );
+      const tokenList = uniqueTokens
+        .filter(item => {
+          if (item && item.balance && BigNumber(item.balance).gt(0))
+            return item;
+        })
+        .map(item => {
+          return this.formatValues(item);
+        });
       tokenList.sort((a, b) => b.usdBalance - a.usdBalance);
-      const tokens = customTokens.concat(tokenList);
-      return tokens;
+      return customTokens.concat(tokenList);
     },
     totalTokensValue() {
-      return formatFiatValue(this.totalTokenFiatValue).value;
+      return this.getFiatValue(this.totalTokenFiatValue);
     }
   },
   methods: {
@@ -205,7 +263,7 @@ export default {
         item.balancef
           ? item.balancef + ' ' + item.symbol
           : '0' + ' ' + item.symbol,
-        '$' + item.usdBalancef ? item.usdBalancef : '0'
+        item.usdBalancef ? this.getFiatValue(item.usdBalancef) : '0'
       ];
       newObj.usdBalance = item.usdBalance ? item.usdBalance : '0';
       newObj.token = item.symbol;
@@ -216,18 +274,29 @@ export default {
           ? item.price_change_percentage_24hf.replaceAll('%', '')
           : '';
       newObj.status = item.price_change_percentage_24h > 0 ? '+' : '-';
+      const priceUF = currencyToNumber(item.pricef);
       newObj.price =
-        item.pricef && item.pricef !== '0' ? '$' + item.pricef : '';
-      newObj.tokenImg = item.img ? item.img : this.network.type.icon;
+        item.pricef && priceUF.toString() !== '0'
+          ? this.getFiatValue(item.pricef)
+          : '';
+
+      // Use eth.svg icon for ETH
+      if (item.symbol == 'ETH') {
+        newObj.tokenImg = require('@/assets/images/networks/eth.svg');
+      } else {
+        newObj.tokenImg = item.img ? item.img : this.network.type.icon;
+      }
+
       if (this.hasSwap) {
         newObj.callToAction = [
           {
-            title: 'Trade',
+            title: 'Swap',
             method: () => {
               const obj = {
                 fromToken: item.contract,
                 amount: item.balancef
               };
+              this.trackSwap('fromDashboardTokensTable');
               this.$router
                 .push({
                   name: ROUTES_WALLET.SWAP.NAME,
@@ -247,22 +316,28 @@ export default {
     toggleAddCustomToken() {
       this.openAddCustomToken = !this.openAddCustomToken;
     },
-    toggleDeleteCustomToken() {
-      this.openDeleteCustomToken = !this.openDeleteCustomToken;
+    toggleRemoveCustomToken() {
+      this.openRemoveCustomToken = !this.openRemoveCustomToken;
     },
-    customTokenAction(param) {
-      if (param === 'add') {
-        this.toggleAddCustomToken();
-      } else if (param === 'remove') {
-        this.toggleDeleteCustomToken();
-      }
+    openRemoveToken(token) {
+      this.selectedToken = token;
+      this.toggleRemoveCustomToken();
+    },
+    toggleEditCustomToken() {
+      this.openEditCustomToken = !this.openEditCustomToken;
     }
   }
 };
 </script>
+
 <style lang="scss">
-.mew-table td.text-start:nth-last-of-type(2) div span:first-child {
-  text-overflow: ellipsis;
-  overflow: hidden;
+.module-tokens {
+  .mew-table td.text-start:nth-last-of-type(2) div span:first-child {
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}
+.module-tokens-edit-menu {
+  border: none !important;
 }
 </style>

@@ -6,7 +6,8 @@ const GET_QUOTE = '/swap/quote';
 const GET_TRADE = '/swap/trade';
 const REQUEST_CACHER = 'https://requestcache.mewapi.io/?url=';
 import { isAddress } from 'web3-utils';
-import Configs from '../configs';
+import Configs from '../configs/providersConfigs';
+import { ETH } from '@/utils/networks/types';
 import { Toast, ERROR } from '@/modules/toast/handler/handlerToast';
 class MEWPClass {
   constructor(providerName, web3, supportednetworks, chain) {
@@ -24,15 +25,19 @@ class MEWPClass {
       .then(response => {
         const data = response.data;
         return data.map(d => {
-          return {
+          const token = {
             contract: d.contract_address.toLowerCase(),
             isEth: true,
             decimals: parseInt(d.decimals),
-            img: `https://img.mewapi.io/?image=${d.icon}`,
+            img:
+              d.image && d.image !== ''
+                ? `https://img.mewapi.io/?image=${d.image}`
+                : ETH.icon,
             name: d.name ? d.name : d.symbol,
             symbol: d.symbol,
             type: 'ERC20'
           };
+          return token;
         });
       })
       .catch(err => {
@@ -48,7 +53,7 @@ class MEWPClass {
         .dividedBy(new BigNumber(10).pow(fromT.decimals))
         .toFixed(),
       maxFrom: new BigNumber(1)
-        .multipliedBy(new BigNumber(10).pow(fromT.decimals))
+        .multipliedBy(new BigNumber(10).pow(18))
         .toFixed()
     });
   }
@@ -83,13 +88,13 @@ class MEWPClass {
               exchange: q.exchange,
               provider: this.provider,
               amount: new BigNumber(q.amount).toFixed(),
-              minFrom: minmax.minFrom,
-              maxFrom: minmax.maxFrom
+              minFrom: minmax?.minFrom ? minmax.minFrom : 0,
+              maxFrom: minmax?.maxFrom ? minmax.maxFrom : 0
             };
           });
         })
         .catch(e => {
-          if (e.response?.data.msg === 'No matching swap pairs found')
+          if (e.response?.data?.msg === 'No matching swap pairs found')
             return [];
           return e;
         });
@@ -123,6 +128,9 @@ class MEWPClass {
         };
       })
       .catch(err => {
+        if (err.message === 'Request failed with status code 404') {
+          return err;
+        }
         Toast(err, {}, ERROR);
       });
   }
@@ -147,7 +155,7 @@ class MEWPClass {
               hashes: [hash]
             });
           })
-          .catch(reject);
+          .catch(e => reject(e));
       });
     }
     const txs = [];
@@ -166,28 +174,48 @@ class MEWPClass {
       this.web3.mew
         .sendBatchTransactions(txs)
         .then(promises => {
+          // reject promise for web3 wallets
+          if (promises instanceof Error) {
+            reject(promises);
+          }
           promises.forEach(p => {
-            p.on('transactionHash', hash => {
-              hashes.push(hash);
+            /**
+             * changes to how enkrypt handles transaction necessitates
+             * receiving an array of object resolve
+             */
+            if (typeof p === 'object' && p instanceof Promise) {
+              p.on('transactionHash', hash => {
+                hashes.push(hash);
+                counter++;
+                if (counter === promises.length)
+                  resolve({
+                    provider: this.provider,
+                    hashes,
+                    statusObj: { hashes }
+                  });
+              });
+
+              p.on('error', err => {
+                hashes.push(err);
+                counter++;
+                if (counter === promises.length)
+                  reject({
+                    provider: this.provider,
+                    hashes,
+                    statusObj: { hashes }
+                  });
+              });
+            } else {
+              hashes.push(p.transactionHash);
               counter++;
-              if (counter === promises.length)
+              if (counter === promises.length) {
                 resolve({
                   provider: this.provider,
                   hashes,
                   statusObj: { hashes }
                 });
-            });
-
-            p.on('error', err => {
-              hashes.push(err);
-              counter++;
-              if (counter === promises.length)
-                reject({
-                  provider: this.provider,
-                  hashes,
-                  statusObj: { hashes }
-                });
-            });
+              }
+            }
           });
         })
         .catch(reject);
