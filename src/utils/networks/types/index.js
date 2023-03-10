@@ -20,7 +20,7 @@ export {
   GO,
   MINTME,
   XDC,
-  tXDC
+  tXDC,
   MOONBEAM,
   MOONRIVER,
   ROOTSTOCK
