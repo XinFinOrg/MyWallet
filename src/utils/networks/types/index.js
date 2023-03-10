@@ -5,10 +5,11 @@ import BSC from './BSC.js';
 import MATIC from './MATIC.js';
 import GO from './GO.js';
 import MINTME from './MINTME';
+import XDC from './XDC';
+import tXDC from './tXDC.js';
 import MOONBEAM from './MOONBEAM';
 import MOONRIVER from './MOONRIVER';
-import XDC from './XDC.js';
-import tXDC from './tXDC.js';
+import ROOTSTOCK from './ROOTSTOCK';
 
 export {
   ETH,
@@ -18,8 +19,9 @@ export {
   MATIC,
   GO,
   MINTME,
-  MOONBEAM,
-  MOONRIVER,
   XDC,
   tXDC
+  MOONBEAM,
+  MOONRIVER,
+  ROOTSTOCK
 };

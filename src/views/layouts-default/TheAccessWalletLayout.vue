@@ -218,7 +218,7 @@ export default {
           {
             color: 'white',
             title: 'XOW wallet app',
-            subtitle: 'Connect XOW wallet app to XOW web',
+            subtitle: 'Connect XOW Wallet app to XOW web',
             official: true,
             recommended: true,
             icon: require('@/assets/images/icons/icon-mew-wallet.png'),
@@ -365,6 +365,7 @@ export default {
           }
         } catch (e) {
           if (
+            e instanceof Error &&
             e.message === 'Already processing eth_requestAccounts. Please wait.'
           )
             Toast(

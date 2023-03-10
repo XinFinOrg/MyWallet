@@ -76,7 +76,7 @@ export default {
     EventBus.$on(BUYSELL_EVENT, () => {
       this.openBuy();
     });
-    // this.footerHideIntercom();
+    this.footerHideIntercom();
     this.logMessage();
     this.setOnlineStatus(window.navigator.onLine);
     if (window.navigator.onLine) {

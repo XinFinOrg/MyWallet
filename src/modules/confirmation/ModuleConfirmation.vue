@@ -324,8 +324,8 @@ export default {
       },
       error: '',
       panel: [],
-      termRoute: `/${ROUTES_HOME.TERMS_OF_SERVICE.PATH}`,
-      getXDCAddress
+      getXDCAddress,
+      termRoute: `/${ROUTES_HOME.TERMS_OF_SERVICE.PATH}`
     };
   },
   computed: {

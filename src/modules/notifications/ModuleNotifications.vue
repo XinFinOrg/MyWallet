@@ -58,7 +58,12 @@
         </v-sheet>
         <div v-if="hasNotification" class="d-flex align-center justify-end">
           <v-sheet color="transparent" max-width="150px">
-            <mew-select :items="items" normal-dropdown @input="setSelected" />
+            <mew-select
+              :items="items"
+              :has-filter="false"
+              normal-dropdown
+              @input="setSelected"
+            />
           </v-sheet>
         </div>
         <div
@@ -91,11 +96,10 @@ import Notification, {
 import formatNotification from './helpers/formatNotification';
 import formatNonChainNotification from './helpers/formatNonChainNotification';
 import { EventBus } from '@/core/plugins/eventBus.js';
-
+import { getXDCAddress } from '@/core/helpers/addressUtils';
 import handlerNotification from './handlers/handlerNotification.mixin';
 import handlerSwap from '@/modules/swap/handlers/handlerSwap';
 import NonChainNotification from './handlers/nonChainNotification';
-import { getXDCAddress } from '@/core/helpers/addressUtils';
 
 export default {
   name: 'ModuleNotifications',

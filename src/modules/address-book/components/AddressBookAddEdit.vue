@@ -195,10 +195,8 @@ export default {
     },
     isMyAddress() {
       return (
-        this.address?.toLowerCase() ===
-          get0xAddress(this.addressToAdd)?.toLowerCase() ||
-        this.address?.toLowerCase() ===
-          get0xAddress(this.resolvedAddr)?.toLowerCase()
+        this.address?.toLowerCase() === get0xAddress(this.addressToAdd)?.toLowerCase() ||
+        this.address?.toLowerCase() === get0xAddress(this.resolvedAddr)?.toLowerCase()
       );
     },
     alreadyExists() {
@@ -216,9 +214,9 @@ export default {
         return (
           this.resolvedAddr !== '' &&
           (storedAddr.address.toLowerCase() ===
-            addressToAdd(this.resolvedAddr)?.toLowerCase() ||
+            this.resolvedAddr?.toLowerCase() ||
             storedAddr.resolvedAddr.toLowerCase() ===
-              addressToAdd(this.resolvedAddr)?.toLowerCase())
+              this.resolvedAddr?.toLowerCase())
         );
       });
     },
@@ -228,17 +226,13 @@ export default {
         return (
           (storedAddr.resolvedAddr !== '' &&
             storedAddr.resolvedAddr?.toLowerCase() ===
-              addressToAdd(this.addressToAdd)?.toLowerCase()) ||
-          storedAddr.address.toLowerCase() ===
-            addressToAdd(this.addressToAdd)?.toLowerCase()
+              this.addressToAdd?.toLowerCase()) ||
+          storedAddr.address.toLowerCase() === this.addressToAdd?.toLowerCase()
         );
       });
     },
     checksumAddressToAdd() {
-      if (
-        this.addressToAdd !== '' &&
-        isXDCAddress(this.lowercaseAddressToAdd)
-      ) {
+      if (this.addressToAdd !== '' && isXDCAddress(this.lowercaseAddressToAdd)) {
         return toChecksumAddress(get0xAddress(this.lowercaseAddressToAdd));
       }
       return get0xAddress(this.addressToAdd);

@@ -10,7 +10,7 @@
             :class="$vuetify.breakpoint.smAndDown ? 'mx-auto' : ''"
             class="cursor--pointer mr-md-14 xdc-header-image"
             src="@/assets/images/icons/logo-mew.svg"
-            max-height="44"
+            max-height="36"
             max-width="130"
             @click="$router.push({ name: ROUTES_HOME.HOME.NAME })"
           />
@@ -18,15 +18,9 @@
           <div class="justify-space-between d-none d-md-flex" cols="4">
             <router-link
               class="white--text text-decoration--none menu-item"
-              :to="{ name: ROUTES_HOME.CREATE_WALLET.NAME }"
+              :to="{ name: ROUTES_HOME.HOW_IT_WORKS.NAME }"
             >
-              {{ $t('home.get-started.button-text-one') }}
-            </router-link>
-            <router-link
-              class="white--text text-decoration--none"
-              :to="{ name: ROUTES_HOME.ACCESS_WALLET.NAME }"
-            >
-              {{ $t('home.get-started.button-text-two') }}
+              {{ $t('header.what-is-mew') }}
             </router-link>
             <div class="mx-8">
               <mew-menu

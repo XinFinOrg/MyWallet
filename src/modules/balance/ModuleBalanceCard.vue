@@ -254,12 +254,11 @@ import { isEmpty } from 'lodash';
 import { Toast, SUCCESS, ERROR } from '@/modules/toast/handler/handlerToast';
 import { toChecksumAddress } from '@/core/helpers/addressUtils';
 import { formatFloatingPointValue } from '@/core/helpers/numberFormatHelper';
-
+import { getXDCAddress } from '@/core/helpers/addressUtils';
 import wallets from './handlers/config';
 import WALLET_TYPES from '../access-wallet/common/walletTypes';
 import NameResolver from '@/modules/name-resolver/index';
 import { EventBus } from '@/core/plugins/eventBus';
-import { getXDCAddress } from '@/core/helpers/addressUtils';
 
 export default {
   components: {

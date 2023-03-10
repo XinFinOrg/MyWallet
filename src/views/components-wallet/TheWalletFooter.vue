@@ -13,7 +13,7 @@
       <v-row class="align-center justify-space-between">
         <v-col cols="12" md="7">
           <div class="mb-0 text-center text-md-left">
-            ©2022 XDCWallet. All rights reserved. Pricing taken from
+            {{ $t('footer.copyright', { year: new Date().getFullYear() }) }}
             <a
               v-if="!isOfflineApp"
               class="textDark--text text-decoration--none"
@@ -38,7 +38,7 @@
           >
             <!--<a
               v-if="!isOfflineApp"
-              class="textDark&#45;&#45;text"
+              class="textDark--text"
               href="https://help.myetherwallet.com/en/"
               target="_blank"
               >Help Center</a
