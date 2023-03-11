@@ -136,9 +136,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.xdc-header-image .v-image__image--cover {
-  background-size: contain;
-}
 .menu-item:hover {
   font-weight: 500;
 }

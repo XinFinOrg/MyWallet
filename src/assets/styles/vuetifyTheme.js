@@ -20,6 +20,9 @@ export default {
   icons: {
     iconfont: 'mdi'
   },
+  font: {
+    family: "Fira Sans,sans-serif"
+  },
   theme: {
     options: {
       customProperties: true

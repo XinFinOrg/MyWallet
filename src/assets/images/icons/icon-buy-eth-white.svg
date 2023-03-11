@@ -10,7 +10,7 @@
                     <g id="Group-33" transform="translate(911.000000, 0.000000)">
                         <g id="Group-25">
                             <rect id="Rectangle-Copy" stroke="#FFFFFF" fill-rule="nonzero" x="0.5" y="0.5" width="123" height="47" rx="6"></rect>
-                            <text id="Buy-ETH" font-family="SFProDisplay-Medium, SF Pro Display" font-size="14" font-weight="400" fill="#FFFFFF">
+                            <text id="Buy-ETH" font-family="Fira Sans,sans-serif" font-size="14" font-weight="400" fill="#FFFFFF">
                                 <tspan x="46.4003906" y="28.0384615">Buy ETH</tspan>
                             </text>
                         </g>

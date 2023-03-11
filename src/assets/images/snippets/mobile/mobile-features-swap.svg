@@ -30,13 +30,13 @@
         <g id="landing-page-swap" transform="translate(8.000000, -1260.000000)">
             <g id="Group-8" filter="url(#filter-1)" transform="translate(15.000000, 1283.000000)">
                 <rect id="Rectangle" fill="#FFFFFF" x="0" y="0" width="385" height="516" rx="12"></rect>
-                <text id="MEW-has-partnered-wi" font-family="SFProText-Regular, SF Pro Text" font-size="14" font-weight="normal" line-spacing="20" fill="#334758">
+                <text id="MEW-has-partnered-wi" font-family="Fira Sans,sans-serif" font-size="14" font-weight="normal" line-spacing="20" fill="#334758">
                     <tspan x="39" y="73">MEW has partnered with Bity, Kyber Network, </tspan>
                     <tspan x="39" y="93">Changelly, and Simplex to allow users to swap </tspan>
                     <tspan x="39" y="113">fiat to crypto, ETH and BTC, ETH,  ERC-20, </tspan>
                     <tspan x="39" y="133">ERC-721. </tspan>
                 </text>
-                <text id="Swap-with-MEW" font-family="SFProDisplay-Bold, SF Pro Display" font-size="22" font-weight="bold" fill="#0B1A40">
+                <text id="Swap-with-MEW" font-family="Fira Sans,sans-serif" font-size="22" font-weight="bold" fill="#0B1A40">
                     <tspan x="39" y="49">Swap with MEW</tspan>
                 </text>
                 <g id="Group-18-Copy" transform="translate(24.000000, 353.000000)">
@@ -75,7 +75,7 @@
                             </g>
                         </g>
                     </g>
-                    <text id="312-BAT-/-ETH" font-family="SFProText-Regular, SF Pro Text" font-size="14" font-weight="normal" fill="#0B2840">
+                    <text id="312-BAT-/-ETH" font-family="Fira Sans,sans-serif" font-size="14" font-weight="normal" fill="#0B2840">
                         <tspan x="20" y="33">312 BAT / ETH</tspan>
                     </text>
                 </g>
@@ -116,13 +116,13 @@
                             </g>
                         </g>
                     </g>
-                    <text id="177.58-EUR-/-ETH" font-family="SFProText-Regular, SF Pro Text" font-size="14" font-weight="normal" fill="#0B2840">
+                    <text id="177.58-EUR-/-ETH" font-family="Fira Sans,sans-serif" font-size="14" font-weight="normal" fill="#0B2840">
                         <tspan x="19" y="33">177.58 EUR / ETH</tspan>
                     </text>
                 </g>
                 <g id="Send-Transaction" transform="translate(23.000000, 429.000000)">
                     <path d="M6,0 L334,0 C337.313708,-6.08718376e-16 340,2.6862915 340,6 L340,56 C340,59.3137085 337.313708,62 334,62 L6,62 C2.6862915,62 4.05812251e-16,59.3137085 0,56 L0,6 C-4.05812251e-16,2.6862915 2.6862915,6.08718376e-16 6,0 Z" id="Unlock-wallet" fill="#05C0A5"></path>
-                    <text id="Start-to-Swap" font-family="SFProText-Medium, SF Pro Text" font-size="14" font-weight="400" fill="#FFFFFF">
+                    <text id="Start-to-Swap" font-family="Fira Sans,sans-serif" font-size="14" font-weight="400" fill="#FFFFFF">
                         <tspan x="124.165039" y="36.12">Start to Swap</tspan>
                     </text>
                 </g>
@@ -157,7 +157,7 @@
                             <path d="M6.90936126,13.8947368 L11.9343513,16.5585769 L16.9593413,13.8947368 L11.9343513,20.8421053 L6.90936126,13.8947368 Z" id="Combined-Shape" fill="#FFFFFF"></path>
                         </g>
                     </g>
-                    <text id="0.026-BTC-/-ETH" font-family="SFProText-Regular, SF Pro Text" font-size="14" font-weight="normal" fill="#0B2840">
+                    <text id="0.026-BTC-/-ETH" font-family="Fira Sans,sans-serif" font-size="14" font-weight="normal" fill="#0B2840">
                         <tspan x="19" y="33">0.026 BTC / ETH</tspan>
                     </text>
                 </g>
@@ -198,7 +198,7 @@
                             </g>
                         </g>
                     </g>
-                    <text id="351.24-USD-/-ETH" font-family="SFProText-Regular, SF Pro Text" font-size="14" font-weight="normal" fill="#0B2840">
+                    <text id="351.24-USD-/-ETH" font-family="Fira Sans,sans-serif" font-size="14" font-weight="normal" fill="#0B2840">
                         <tspan x="20" y="34">351.24 USD / ETH</tspan>
                     </text>
                 </g>

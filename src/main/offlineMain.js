@@ -1,6 +1,6 @@
 import app from './offlineApp';
 import '@/assets/fonts/MaterialDesignIcons/css/materialdesignicons.min.css';
-import '@/assets/fonts/Roboto/css/Roboto.css';
+
 
 import './components';
 
