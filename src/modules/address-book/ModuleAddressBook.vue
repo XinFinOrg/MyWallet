@@ -45,7 +45,8 @@ import {
   toChecksumAddress,
   isXDCAddress,
   getXDCAddress,
-  get0xAddress
+  get0xAddress,
+  isAddress
 } from '@/core/helpers/addressUtils';
 import NameResolver from '@/modules/name-resolver/index';
 import { ERROR, Toast } from '../toast/handler/handlerToast';
@@ -337,7 +338,7 @@ export default {
      * only happens on home page
      */
     setDonationAddress() {
-      this.$refs.addressSelect.selectAddress(this.addressBookWithMyAddress[0]);
+      if(this.$refs.addressSelect) this.$refs.addressSelect.selectAddress(this.addressBookWithMyAddress[0]);
     },
     toggleOverlay() {
       this.addMode = !this.addMode;
