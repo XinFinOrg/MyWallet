@@ -1,7 +1,7 @@
 import ENS from './resolvers/ens';
 import UNS from './resolvers/uns';
 import normalise from '@/core/helpers/normalise';
-import { isAddress, toChecksumAddress } from '@/core/helpers/addressUtils.js';
+import { isXDCAddress, toChecksumAddress } from '@/core/helpers/addressUtils.js';
 import { ROOTSTOCK } from '@/utils/networks/types';
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 export default class NameResolver {
@@ -29,14 +29,14 @@ export default class NameResolver {
     if (this.network.type.chainID === ROOTSTOCK.chainID) {
       address = toChecksumAddress(address);
     }
-    if (isAddress(address) && address !== ZERO_ADDRESS) {
+    if (isXDCAddress(address) && address !== ZERO_ADDRESS) {
       return address;
     }
     throw new Error('Invalid Address!');
   }
 
   async resolveAddress(address) {
-    if (isAddress(address) && address !== ZERO_ADDRESS) {
+    if (isXDCAddress(address) && address !== ZERO_ADDRESS) {
       const resolvedName = await this.ens.resolveAddress(address);
       if (!resolvedName.name) {
         resolvedName.name = await this.uns.resolveAddress(address);

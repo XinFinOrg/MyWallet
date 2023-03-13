@@ -24,6 +24,9 @@ const exportObj = {
       .use('graphql-tag/loader')
       .loader('graphql-tag/loader')
       .end();
+  },
+  devServer: {
+    https: true,
   }
 };
 

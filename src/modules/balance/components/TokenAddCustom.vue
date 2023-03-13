@@ -65,7 +65,7 @@
               <mew-transform-hash
                 v-if="isContractAddress(tkn.name)"
                 justify-start
-                :hash="tkn.value"
+                :hash="getXDCAddress(tkn.value)"
               />
 
               <!-- ============================================================================= -->
@@ -137,7 +137,7 @@ import BigNumber from 'bignumber.js';
 
 import abiERC20 from '../handlers/abiERC20';
 import { ERROR, SUCCESS, Toast } from '@/modules/toast/handler/handlerToast';
-import { isAddress } from '@/core/helpers/addressUtils';
+import { get0xAddress, isXDCAddress, getXDCAddress } from '@/core/helpers/addressUtils';
 import { formatFloatingPointValue } from '@/core/helpers/numberFormatHelper';
 
 export default {
@@ -153,6 +153,7 @@ export default {
   },
   data() {
     return {
+      getXDCAddress,
       contractAddress: '',
       customName: '',
       customSymbol: '',
@@ -188,7 +189,7 @@ export default {
       return (
         this.loading ||
         (this.step === 1 && !this.contractAddress) ||
-        (this.step === 1 && !isAddress(this.contractAddress)) ||
+        (this.step === 1 && !isXDCAddress(this.contractAddress)) ||
         (this.step === 2 &&
           (this.symbolLengthTooLong.length > 0 ||
             this.nameLengthTooLong.length > 0 ||
@@ -306,7 +307,7 @@ export default {
       }
       this.token.name = !this.token.name ? this.customName : this.token.name;
       this.token.symbol = this.customSymbol || this.token.symbol;
-      this.token.contract = this.contractAddress;
+      this.token.contract = get0xAddress(this.contractAddress);
       this.setCustomToken(this.token);
       Toast(
         'The token ' + this.token.name + ' was added to your token list!',
@@ -328,10 +329,10 @@ export default {
      * otherwise it will throw toast error
      */
     async checkIfValidAddress() {
-      const codeHash = await this.web3.eth.getCode(this.contractAddress);
+      const codeHash = await this.web3.eth.getCode(get0xAddress(this.contractAddress));
       if (
         this.contractAddress &&
-        isAddress(this.contractAddress) &&
+        isXDCAddress(this.contractAddress) &&
         codeHash !== '0x'
       ) {
         this.checkIfTokenExistsAlready();
@@ -374,9 +375,9 @@ export default {
     async findTokenInfo() {
       const contract = new this.web3.eth.Contract(
         abiERC20,
-        this.contractAddress
+        get0xAddress(this.contractAddress)
       );
-      this.token = this.contractToToken(this.contractAddress) || {};
+      this.token = this.contractToToken(get0xAddress(this.contractAddress)) || {};
       try {
         const balance = await contract.methods.balanceOf(this.address).call(),
           decimals = await contract.methods.decimals().call();
@@ -393,15 +394,16 @@ export default {
           this.token.name = await contract.methods.name().call();
           this.token.symbol = await contract.methods.symbol().call();
           this.token.usdBalancef = '0.00';
-          this.token.contract = this.contractAddress;
+          this.token.contract = get0xAddress(this.contractAddress);
         }
         this.token.decimals = parseInt(decimals);
         this.token.balance = balance;
         this.token.balancef = this.getTokenBalance(balance, decimals).value;
         this.loading = false;
         this.step = 2;
+        console.log('==============>>>', this.token)
       } catch {
-        this.token.contract = this.contractAddress;
+        this.token.contract = get0xAddress(this.contractAddress);
         this.token.balancef = '0';
         this.token.usdBalancef = '0.00';
         this.loading = false;

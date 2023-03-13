@@ -259,7 +259,7 @@ export default {
     },
     addressToAdd(newVal) {
       this.nametag = '';
-      if (isAddress(newVal.toLowerCase())) {
+      if (isXDCAddress(newVal.toLowerCase())) {
         this.resolveAddress();
       } else {
         this.resolveName();

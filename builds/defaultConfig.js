@@ -79,5 +79,7 @@ const webpackConfig = {
     filename: '[name].[hash].js'
   }
 };
-
-module.exports = { webpackConfig, sourceMapsConfig, env_vars };
+const devServer = {
+  https: true,
+}
+module.exports = { webpackConfig, sourceMapsConfig, env_vars, devServer };

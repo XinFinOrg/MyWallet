@@ -1,5 +1,5 @@
 import { toBN, toHex, toChecksumAddress, isHexStrict } from 'web3-utils';
-import { isAddress } from '@/core/helpers/addressUtils';
+import { isXDCAddress } from '@/core/helpers/addressUtils';
 import SanitizeHex from '@/core/helpers/sanitizeHex';
 import { Transaction } from '@ethereumjs/tx';
 import { mapState, mapGetters } from 'vuex';
@@ -32,7 +32,7 @@ class SendTransaction {
     };
   }
   setTo(_to, _type) {
-    if (isAddress(_to)) {
+    if (isXDCAddress(_to)) {
       this.TX.destination = _to;
       this.TX.toDetails = _type;
     } else throw ErrorList.INVALID_TO_ADDRESS;
@@ -43,7 +43,7 @@ class SendTransaction {
       : toChecksumAddress(this.TX.destination);
   }
   setFrom(_from) {
-    if (isAddress(_from)) this.TX.from = _from;
+    if (isXDCAddress(_from)) this.TX.from = _from;
     else throw ErrorList.INVALID_FROM_ADDRESS;
   }
   _setGasPrice() {

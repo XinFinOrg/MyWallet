@@ -45,8 +45,7 @@ import {
   toChecksumAddress,
   isXDCAddress,
   getXDCAddress,
-  get0xAddress,
-  isAddress
+  get0xAddress
 } from '@/core/helpers/addressUtils';
 import NameResolver from '@/modules/name-resolver/index';
 import { ERROR, Toast } from '../toast/handler/handlerToast';
@@ -176,12 +175,12 @@ export default {
       return this.label === '' ? this.$t('sendTx.to-addr') : this.label;
     },
     addressOnly() {
-      return isAddress(this.resolvedAddr) && this.isValidAddress
+      return isXDCAddress(this.resolvedAddr) && this.isValidAddress
         ? this.resolvedAddr
         : '';
     },
     nameOnly() {
-      return !isAddress(this.resolvedAddr) && this.isValidAddress
+      return !isXDCAddress(this.resolvedAddr) && this.isValidAddress
         ? this.resolvedAddr || this.nametag
         : '';
     }
@@ -196,7 +195,7 @@ export default {
     },
     inputAddr(newVal) {
       this.nametag = '';
-      if (isAddress(newVal.toLowerCase())) {
+      if (isXDCAddress(newVal.toLowerCase())) {
         this.resolveAddress();
       } else {
         this.resolveName();
