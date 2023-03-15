@@ -22,7 +22,7 @@
 <script>
 export default {
   components: {
-    AppCarousel: () => import('@/core/components/AppCarousel'),
+    // AppCarousel: () => import('@/core/components/AppCarousel'),
     ModuleBalance: () => import('@/modules/balance/ModuleBalance'),
     ModuleTokens: () => import('@/modules/balance/ModuleTokens'),
     ModuleSwapRates: () => import('@/modules/swap/ModuleSwapRates'),
