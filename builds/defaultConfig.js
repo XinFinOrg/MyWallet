@@ -17,9 +17,9 @@ const webpackConfig = {
     process: true
   },
   devServer: {
-    https: false,
+    https: true,
     disableHostCheck: true,
-    host: '0.0.0.0',
+    host: 'localhost',
     // allowedHosts: "all",
     hotOnly: true,
     port: 8080,
