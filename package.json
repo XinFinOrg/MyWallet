@@ -3,7 +3,7 @@
   "version": "6.6.16",
   "description": "Client side ethereum wallet",
   "scripts": {
-    "build": "npm run update && vue-cli-service build",
+    "build": "vue-cli-service build --fix",
     "test:unit": "vue-cli-service test:unit --logHeapUsage",
     "test:e2e": "vue-cli-service test:e2e --skiptags offline",
     "test:e2e-offline": "BUILD=offline vue-cli-service test:e2e --tag offline",
@@ -17,7 +17,7 @@
     "build:history:sourcemaps": "ROUTER_MODE=history FULL_SOURCEMAPS=true npm run build",
     "build:offline": "WEBPACK_INTEGRITY=false BUILD=offline npm run build:hash",
     "codecov": "npm run test && codecov",
-    "dev": "npm run update && npm run juststart",
+    "dev": "npm run juststart",
     "juststart": "vue-cli-service serve --watch",
     "juststart:offline": "ROUTER_MODE=hash BUILD=offline vue-cli-service serve --watch",
     "lint:code": "vue-cli-service lint --fix",
