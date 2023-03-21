@@ -1,6 +1,5 @@
 import app from './mainApp';
 import '@/assets/fonts/MaterialDesignIcons/css/materialdesignicons.min.css';
-// import '@/assets/fonts/FiraSans/css/FiraSans.css';
 
 import './sentry';
 import './components';
