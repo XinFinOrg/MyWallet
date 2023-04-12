@@ -202,31 +202,31 @@ export default {
       if (!this.isOfflineApp) {
         return [
           /* Enkrypt */
-          {
-            color: 'white',
-            title: 'XOW wallet',
-            subtitle: 'Connect with Enkrypt browser extension',
-            official: true,
-            recommended: true,
-            icon: require('@/assets/images/icons/icon-enkrypt-block.svg'),
-            alt: 'Enkrypt',
-            fn: () => {
-              this.checkEnkrypt();
-            }
-          },
+          // {
+          //   color: 'white',
+          //   title: 'XOW wallet',
+          //   subtitle: 'Connect with Enkrypt browser extension',
+          //   official: true,
+          //   recommended: true,
+          //   icon: require('@/assets/images/icons/icon-enkrypt-block.svg'),
+          //   alt: 'Enkrypt',
+          //   fn: () => {
+          //     this.checkEnkrypt();
+          //   }
+          // },
           /* XOW wallet Button */
-          {
-            color: 'white',
-            title: 'XOW wallet app',
-            subtitle: 'Connect XOW Wallet app to XOW web',
-            official: true,
-            recommended: true,
-            icon: require('@/assets/images/icons/icon-mew-wallet.png'),
-            alt: 'XOW wallet',
-            fn: () => {
-              this.openMEWconnect();
-            }
-          },
+          // {
+          //   color: 'white',
+          //   title: 'XOW wallet app',
+          //   subtitle: 'Connect XOW Wallet app to XOW web',
+          //   official: true,
+          //   recommended: true,
+          //   icon: require('@/assets/images/icons/icon-mew-wallet.png'),
+          //   alt: 'XOW wallet',
+          //   fn: () => {
+          //     this.openMEWconnect();
+          //   }
+          // },
           /* Browser extension */
           {
             color: 'white',

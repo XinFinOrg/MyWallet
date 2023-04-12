@@ -43,7 +43,7 @@
               "
             />
           </div>
-          <div class="d-flex">
+          <!-- <div class="d-flex">
             <mew-button
               class="extension-btns chrome-extension text-transform--none mt-5 mr-2"
               :has-full-width="false"
@@ -72,7 +72,7 @@
               />
               Get the app
             </mew-button>
-          </div>
+          </div> -->
         </v-card>
         <!--        <img-->
         <!--          src="@/assets/images/backgrounds/bg-home-spaceman-and-dog.svg"-->
@@ -124,7 +124,7 @@
                 })
               "
             />
-            <mew-button
+            <!-- <mew-button
               class="extension-btns chrome-extension text-transform--none mt-5 mb-2"
               :has-full-width="true"
               btn-style="transparent"
@@ -136,8 +136,8 @@
             >
               <img class="mr-3 browser-icons" :src="browserLogo" />
               Get the Enkrypt Extension
-            </mew-button>
-            <mew-button
+            </mew-button> -->
+            <!-- <mew-button
               class="extension-btns app-extension"
               :has-full-width="true"
               btn-style="transparent"
@@ -151,7 +151,7 @@
                 src="@/assets/images/icons/icon-apple-google.svg"
               />
               Get the app
-            </mew-button>
+            </mew-button> -->
           </div>
         </v-card>
       </v-container>

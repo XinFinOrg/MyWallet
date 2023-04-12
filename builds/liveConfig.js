@@ -6,7 +6,7 @@ const exportObj = {
   publicPath: process.env.ROUTER_MODE === 'history' ? '/' : './',
   configureWebpack: config.webpackConfig,
   lintOnSave: process.env.NODE_ENV === 'production' ? 'error' : true,
-  integrity: process.env.WEBPACK_INTEGRITY === 'false' ? false : true,
+  // integrity: process.env.WEBPACK_INTEGRITY === 'false' ? false : true,
   pwa: {
     name: 'MyEtherWallet',
     workboxOptions: {

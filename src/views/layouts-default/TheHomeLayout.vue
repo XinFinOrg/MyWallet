@@ -1,14 +1,14 @@
 <template>
   <div>
     <home-landing />
-    <home-features />
-    <home-enkrypt />
-    <home-eth-blocks />
+    <!-- <home-features /> -->
+    <!-- <home-enkrypt /> -->
+    <!-- <home-eth-blocks /> -->
     <home-socials />
-    <home-why-mew />
-    <app-mewtopia-block />
-    <app-partners-block />
-    <app-get-started />
+    <!-- <home-why-mew /> -->
+    <!-- <app-mewtopia-block /> -->
+    <!-- <app-partners-block /> -->
+    <!-- <app-get-started /> -->
   </div>
 </template>
 
@@ -16,7 +16,7 @@
 export default {
   name: 'TheHomeLayout',
   components: {
-    HomeEnkrypt: () => import('../components-default/HomeEnkrypt'),
+    // HomeEnkrypt: () => import('../components-default/HomeEnkrypt'),
     HomeLanding: () => import('../components-default/HomeLanding'),
     HomeFeatures: () => import('../components-default/HomeFeatures'),
     HomeEthBlocks: () => import('../components-default/HomeEthBlocks'),
