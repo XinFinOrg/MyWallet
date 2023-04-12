@@ -148,33 +148,33 @@ export default {
       return !this.isOfflineApp
         ? [
             /* Enkrypt */
-            {
-              color: 'white',
-              title: 'Install Enkrypt browser extension',
-              subtitle:
-                'MEW’s official browser extension. Connect to web3 on Ethereum and Polkadot, manage your NFTs, buy, send and swap',
-              official: true,
-              recommended: true,
-              icon: require('@/assets/images/icons/icon-enkrypt-block.svg'),
-              alt: 'Enkrypt',
-              fn: () => {
-                this.openEnkrypt();
-              }
-            },
+            // {
+            //   color: 'white',
+            //   title: 'Install Enkrypt browser extension',
+            //   subtitle:
+            //     'MEW’s official browser extension. Connect to web3 on Ethereum and Polkadot, manage your NFTs, buy, send and swap',
+            //   official: true,
+            //   recommended: true,
+            //   icon: require('@/assets/images/icons/icon-enkrypt-block.svg'),
+            //   alt: 'Enkrypt',
+            //   fn: () => {
+            //     this.openEnkrypt();
+            //   }
+            // },
             /* MEW wallet Button */
-            {
-              color: 'white',
-              title: 'Download MEW wallet app',
-              subtitle:
-                'Our official mobile app to create your wallet, and connect to MEW Web using your mobile phone',
-              official: true,
-              recommended: true,
-              icon: require('@/assets/images/icons/icon-mew-wallet.png'),
-              alt: 'MEW wallet',
-              fn: () => {
-                this.openMewWallet();
-              }
-            },
+            // {
+            //   color: 'white',
+            //   title: 'Download MEW wallet app',
+            //   subtitle:
+            //     'Our official mobile app to create your wallet, and connect to MEW Web using your mobile phone',
+            //   official: true,
+            //   recommended: true,
+            //   icon: require('@/assets/images/icons/icon-mew-wallet.png'),
+            //   alt: 'MEW wallet',
+            //   fn: () => {
+            //     this.openMewWallet();
+            //   }
+            // },
             /* Hardware wallets */
             {
               color: 'white',

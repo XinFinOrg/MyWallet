@@ -30,14 +30,14 @@
                 @goToPage="routeTo"
               />
             </div>
-            <div @click="trackBuySellLanding">
+            <!-- <div @click="trackBuySellLanding">
               <a
                 class="white--text text-decoration--none menu-item"
                 @click="openBuySell"
               >
                 {{ $t('header.buy-eth') }}
               </a>
-            </div>
+            </div> -->
           </div>
         </v-col>
         <!--<v-col cols="2" md="4" class="d-flex justify-end">
