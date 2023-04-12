@@ -329,7 +329,7 @@
 </template>
 
 <script>
-import { ROUTES_HOME } from '@/core/configs/configRoutes';
+// import { ROUTES_HOME } from '@/core/configs/configRoutes';
 import { loadLanguageAsync } from '@/main/i18n';
 import handlerAnalytics from '@/modules/analytics-opt-in/handlers/handlerAnalytics.mixin';
 
@@ -342,103 +342,103 @@ export default {
     // eslint-disable-next-line
     btcDonationAddress: BTC_DONATION_ADDRESS,
     version: VERSION,
-    footers: [
-      {
-        title: 'Affiliate Hardware Wallets',
-        data: [
-          { label: 'Ledger', link: 'https://www.ledger.com/?r=fa4b' },
-          { label: 'BitBox02', link: 'https://shiftcrypto.ch/?ref=mew' },
-          {
-            label: 'Ether Cards',
-            link: 'https://ether.cards/?utm_source=mew&utm_medium=cpm&utm_campaign=site'
-          },
-          { label: 'Trezor', link: 'https://trezor.io/' },
-          { label: 'KeepKey', link: 'http://lddy.no/a4im' },
-          {
-            label: 'Finney',
-            link: 'http://shop.sirinlabs.com/?rfsn=2397639.54fdf&utm_source=refersion&utm_medium=affiliate&utm_campaign=2397639.54fdf'
-          },
-          {
-            label: 'CoolWallet',
-            link: 'https://www.coolwallet.io/mew/?ref=myetherwallet1'
-          },
-          {
-            label: 'Billfodl',
-            link: 'https://billfodl.com/?afmc=2j&utm_campaign=2j&utm_source=leaddyno&utm_medium=affiliate'
-          }
-        ]
-      },
-      {
-        title: 'MEW',
-        data: [
-          { label: 'About us', routerLink: 'AboutPage' },
-          { label: 'Careers', routerLink: 'Careers' },
-          { label: 'How it works', routerLink: 'HowItWorks' },
-          { label: 'Team', routerLink: 'TeamPage' },
-          { label: 'Help center', link: 'https://help.myetherwallet.com/en/' },
-          {
-            label: 'Customer support',
-            link: 'mailto:support@xinfin.org'
-          },
-          { label: 'MEWtopia', link: 'https://www.mewtopia.com/' },
-          { label: 'Press Kit', routerLink: 'PressKit' },
-          { label: 'Security Policy', routerLink: 'SecurityPolicy' },
-          { label: 'Submit DApp', routerLink: 'DappSubmission' }
-        ]
-      },
-      {
-        title: 'Tools',
-        data: [
-          {
-            label: 'MEW wallet',
-            class: 'FooterMEWTool',
-            link: 'https://www.mewwallet.com/'
-          },
-          {
-            label: 'Enkrypt',
-            class: 'FooterCXTool',
-            link: 'https://www.enkrypt.com'
-          },
-          {
-            label: 'Verify message',
-            class: 'FooterVerifyTool',
-            routerLink: 'Tools',
-            query: { tool: 'verify' }
-          }
-          /*
-          {
-            label: 'Convert units',
-            class: 'FooterConvertTool',
-            routerLink: 'Tools',
-            query: { tool: 'convert' }
-          },
-          {
-            label: 'Generate keystore file',
-            class: 'FooterKeystoreTool',
-            routerLink: 'Tools',
-            query: { tool: 'keystore' }
-          },
-          {
-            label: 'Send Offline Helper',
-            class: 'FooterOfflineTool',
-            routerLink: 'Tools',
-            query: { tool: 'offline' }
-          }
-          /*
-          ,{
-            label: 'Transaction status',
-            routerLink: 'SendTX'
-          },
-          {
-            label: 'Watch only address',
-            routerLink: 'Tools',
-            query: { tool: 'watch' }
-          },
-          { label: 'Submit Dapp', routerLink: 'Home' },
-          */
-        ]
-      }
-    ],
+    // footers: [
+    //   {
+    //     title: 'Affiliate Hardware Wallets',
+    //     data: [
+    //       { label: 'Ledger', link: 'https://www.ledger.com/?r=fa4b' },
+    //       { label: 'BitBox02', link: 'https://shiftcrypto.ch/?ref=mew' },
+    //       {
+    //         label: 'Ether Cards',
+    //         link: 'https://ether.cards/?utm_source=mew&utm_medium=cpm&utm_campaign=site'
+    //       },
+    //       { label: 'Trezor', link: 'https://trezor.io/' },
+    //       { label: 'KeepKey', link: 'http://lddy.no/a4im' },
+    //       {
+    //         label: 'Finney',
+    //         link: 'http://shop.sirinlabs.com/?rfsn=2397639.54fdf&utm_source=refersion&utm_medium=affiliate&utm_campaign=2397639.54fdf'
+    //       },
+    //       {
+    //         label: 'CoolWallet',
+    //         link: 'https://www.coolwallet.io/mew/?ref=myetherwallet1'
+    //       },
+    //       {
+    //         label: 'Billfodl',
+    //         link: 'https://billfodl.com/?afmc=2j&utm_campaign=2j&utm_source=leaddyno&utm_medium=affiliate'
+    //       }
+    //     ]
+    //   },
+    //   {
+    //     title: 'MEW',
+    //     data: [
+    //       { label: 'About us', routerLink: 'AboutPage' },
+    //       { label: 'Careers', routerLink: 'Careers' },
+    //       { label: 'How it works', routerLink: 'HowItWorks' },
+    //       { label: 'Team', routerLink: 'TeamPage' },
+    //       { label: 'Help center', link: 'https://help.myetherwallet.com/en/' },
+    //       {
+    //         label: 'Customer support',
+    //         link: 'mailto:support@xinfin.org'
+    //       },
+    //       { label: 'MEWtopia', link: 'https://www.mewtopia.com/' },
+    //       { label: 'Press Kit', routerLink: 'PressKit' },
+    //       { label: 'Security Policy', routerLink: 'SecurityPolicy' },
+    //       { label: 'Submit DApp', routerLink: 'DappSubmission' }
+    //     ]
+    //   },
+    //   {
+    //     title: 'Tools',
+    //     data: [
+    //       {
+    //         label: 'MEW wallet',
+    //         class: 'FooterMEWTool',
+    //         link: 'https://www.mewwallet.com/'
+    //       },
+    //       {
+    //         label: 'Enkrypt',
+    //         class: 'FooterCXTool',
+    //         link: 'https://www.enkrypt.com'
+    //       },
+    //       {
+    //         label: 'Verify message',
+    //         class: 'FooterVerifyTool',
+    //         routerLink: 'Tools',
+    //         query: { tool: 'verify' }
+    //       }
+    //       /*
+    //       {
+    //         label: 'Convert units',
+    //         class: 'FooterConvertTool',
+    //         routerLink: 'Tools',
+    //         query: { tool: 'convert' }
+    //       },
+    //       {
+    //         label: 'Generate keystore file',
+    //         class: 'FooterKeystoreTool',
+    //         routerLink: 'Tools',
+    //         query: { tool: 'keystore' }
+    //       },
+    //       {
+    //         label: 'Send Offline Helper',
+    //         class: 'FooterOfflineTool',
+    //         routerLink: 'Tools',
+    //         query: { tool: 'offline' }
+    //       }
+    //       /*
+    //       ,{
+    //         label: 'Transaction status',
+    //         routerLink: 'SendTX'
+    //       },
+    //       {
+    //         label: 'Watch only address',
+    //         routerLink: 'Tools',
+    //         query: { tool: 'watch' }
+    //       },
+    //       { label: 'Submit Dapp', routerLink: 'Home' },
+    //       */
+    //     ]
+    //   }
+    // ],
     select: 'en_US',
     languages: [
       {
@@ -471,46 +471,46 @@ export default {
       //     value: 'jp',
       //     flag: require('@/assets/images/flags/japan.png')
       //   }
-    ],
-    socialIcons: [
-      {
-        link: 'https://www.facebook.com/XinFinHybridBlockchain',
-        icon: 'facebook'
-      },
-      {
-        link: 'https://twitter.com/XinFin_Official',
-        icon: 'twitter'
-      },
-      {
-        link: 'https://instagram.com/xinfin_xdc_network',
-        icon: 'instagram'
-      },
-      {
-        link: 'https://www.linkedin.com/company/myetherwallet',
-        icon: 'linkedin'
-      },
-      {
-        link: 'https://github.com/XinFinorg',
-        icon: 'github'
-      },
-      {
-        link: 'https://www.reddit.com/r/xinfin/',
-        icon: 'reddit'
-      },
-      {
-        link: 'https://www.youtube.com/channel/UCQU5QbObwmaHNEMsuX3uQKA',
-        icon: 'youtube'
-      },
-      {
-        link: 'https://medium.com/xinfin',
-        icon: 'medium'
-      },
-      {
-        link: 'https://t.me/xinfin',
-        iconImage: require('@/assets/images/icons/icon-telegram.svg')
-      }
-    ],
-    ROUTES_HOME: ROUTES_HOME
+    ]
+    // socialIcons: [
+    //   {
+    //     link: 'https://www.facebook.com/XinFinHybridBlockchain',
+    //     icon: 'facebook'
+    //   },
+    //   {
+    //     link: 'https://twitter.com/XinFin_Official',
+    //     icon: 'twitter'
+    //   },
+    //   {
+    //     link: 'https://instagram.com/xinfin_xdc_network',
+    //     icon: 'instagram'
+    //   },
+    //   {
+    //     link: 'https://www.linkedin.com/company/myetherwallet',
+    //     icon: 'linkedin'
+    //   },
+    //   {
+    //     link: 'https://github.com/XinFinorg',
+    //     icon: 'github'
+    //   },
+    //   {
+    //     link: 'https://www.reddit.com/r/xinfin/',
+    //     icon: 'reddit'
+    //   },
+    //   {
+    //     link: 'https://www.youtube.com/channel/UCQU5QbObwmaHNEMsuX3uQKA',
+    //     icon: 'youtube'
+    //   },
+    //   {
+    //     link: 'https://medium.com/xinfin',
+    //     icon: 'medium'
+    //   },
+    //   {
+    //     link: 'https://t.me/xinfin',
+    //     iconImage: require('@/assets/images/icons/icon-telegram.svg')
+    //   }
+    // ],
+    // ROUTES_HOME: ROUTES_HOME
   }),
   watch: {
     select({ value }) {
