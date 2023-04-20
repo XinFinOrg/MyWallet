@@ -5,7 +5,7 @@
       <router-view />
     </v-main>
     <the-default-footer />
-    <the-enkrypt-popup v-if="!isOfflineApp" :show="enkryptLandingPopup" />
+    <!--<the-enkrypt-popup v-if="!isOfflineApp" :show="enkryptLandingPopup" />-->
   </div>
 </template>
 

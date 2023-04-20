@@ -48,7 +48,7 @@ const setTokenAndEthBalance = function ({
 }) {
   commit('wallet/SET_LOADING_WALLET_INFO', true, { root: true });
   const network = rootGetters['global/network'];
-  const isTokenBalanceApiSupported = network.type.balanceApi !== '';
+  const isTokenBalanceApiSupported = network.type.balanceApi && network.type.balanceApi !== '';
   const address = rootState.wallet.address;
 
   const _getTokenBalance = (balance, decimals) => {

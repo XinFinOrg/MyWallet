@@ -115,7 +115,13 @@ export default {
   },
   mounted() {
     if (!this.network) return;
-    this.network.type.tokens.then(res => {
+    if(this.network.type.tokens?.length >=0) {
+      const tokenMap = new Map();
+      this.network.type.tokens.forEach(item => {
+        tokenMap.set(item.address.toLowerCase(), item);
+      });
+      this.setNetworkTokens(tokenMap);
+    } else this.network.type.tokens.then(res => {
       const tokenMap = new Map();
       res.forEach(item => {
         tokenMap.set(item.address.toLowerCase(), item);

@@ -5,7 +5,7 @@
       <v-container class="pa-2 pa-md-3 mb-14" fluid>
         <the-wallet-header />
         <module-confirmation v-if="address" />
-        <the-enkrypt-popup v-if="!isOfflineApp" :show="walletEnkryptPopup" />
+        <!--<the-enkrypt-popup v-if="!isOfflineApp" :show="walletEnkryptPopup" />-->
         <router-view />
       </v-container>
     </v-main>
@@ -185,7 +185,13 @@ export default {
       this.setValidNetwork(matched);
     },
     processNetworkTokens() {
-      this.network.type.tokens.then(res => {
+      if(this.network.type.tokens?.length >=0) {
+        const tokenMap = new Map();
+        this.network.type.tokens.forEach(item => {
+          tokenMap.set(item.address.toLowerCase(), item);
+        });
+        this.setNetworkTokens(tokenMap);
+      } else this.network.type.tokens.then(res => {
         const tokenMap = new Map();
         res.forEach(item => {
           tokenMap.set(item.address.toLowerCase(), item);
