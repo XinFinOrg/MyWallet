@@ -146,11 +146,12 @@ export default {
               nickname: 'My Address',
               resolverAddr: ''
             }
-          ].concat(this.addressBookStore.map(e => {
-            e.address = getXDCAddress(e.address);
-            return e;
-          })
-        )
+          ].concat(
+            this.addressBookStore.map(e => {
+              e.address = getXDCAddress(e.address);
+              return e;
+            })
+          )
         : // If address is undefined set to MEW Donations
           [
             {
@@ -337,7 +338,10 @@ export default {
      * only happens on home page
      */
     setDonationAddress() {
-      if(this.$refs.addressSelect) this.$refs.addressSelect.selectAddress(this.addressBookWithMyAddress[0]);
+      if (this.$refs.addressSelect)
+        this.$refs.addressSelect.selectAddress(
+          this.addressBookWithMyAddress[0]
+        );
     },
     toggleOverlay() {
       this.addMode = !this.addMode;

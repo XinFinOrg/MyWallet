@@ -100,8 +100,7 @@ import NameResolver from '@/modules/name-resolver/index';
 import {
   toChecksumAddress,
   isXDCAddress,
-  get0xAddress,
-  getXDCAddress
+  get0xAddress
 } from '@/core/helpers/addressUtils';
 import { isValidCoinAddress } from '../handlers/handlerMulticoins.js';
 
@@ -195,8 +194,10 @@ export default {
     },
     isMyAddress() {
       return (
-        this.address?.toLowerCase() === get0xAddress(this.addressToAdd)?.toLowerCase() ||
-        this.address?.toLowerCase() === get0xAddress(this.resolvedAddr)?.toLowerCase()
+        this.address?.toLowerCase() ===
+          get0xAddress(this.addressToAdd)?.toLowerCase() ||
+        this.address?.toLowerCase() ===
+          get0xAddress(this.resolvedAddr)?.toLowerCase()
       );
     },
     alreadyExists() {
@@ -232,7 +233,10 @@ export default {
       });
     },
     checksumAddressToAdd() {
-      if (this.addressToAdd !== '' && isXDCAddress(this.lowercaseAddressToAdd)) {
+      if (
+        this.addressToAdd !== '' &&
+        isXDCAddress(this.lowercaseAddressToAdd)
+      ) {
         return toChecksumAddress(get0xAddress(this.lowercaseAddressToAdd));
       }
       return get0xAddress(this.addressToAdd);

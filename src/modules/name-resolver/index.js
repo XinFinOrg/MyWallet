@@ -1,7 +1,10 @@
 import ENS from './resolvers/ens';
 import UNS from './resolvers/uns';
 import normalise from '@/core/helpers/normalise';
-import { isXDCAddress, toChecksumAddress } from '@/core/helpers/addressUtils.js';
+import {
+  isXDCAddress,
+  toChecksumAddress
+} from '@/core/helpers/addressUtils.js';
 import { ROOTSTOCK } from '@/utils/networks/types';
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 export default class NameResolver {

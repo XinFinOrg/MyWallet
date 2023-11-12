@@ -112,7 +112,7 @@ const fetchMasterFile = async () => {
     if (!fs.existsSync(configs.MASTER_FILE_PATH)) {
       fs.mkdirSync(configs.MASTER_FILE_PATH);
     }
-    const oneInchTokens = await fetchOneInchLists();
+    // const oneInchTokens = await fetchOneInchLists();
     const CGTokens = await fetchCGtokenList();
     const response = await fetch(
       'https://raw.githubusercontent.com/MyEtherWallet/ethereum-lists/master/dist/master-file.json'
@@ -134,20 +134,20 @@ const fetchMasterFile = async () => {
           if (!networkTokens[token.network]) networkTokens[token.network] = {};
           networkTokens[token.network][token.address] = token;
         });
-        const oneInchNetworks = Object.keys(oneInchTokens);
-        for (const network of oneInchNetworks) {
-          if (!networkTokens[network]) networkTokens[network] = {};
-          oneInchTokens[network].forEach(t => {
-            t.address = t.address.toLowerCase();
-            if (!networkTokens[network][t.address]) {
-              networkTokens[network][t.address] = t;
-              tokens.push(t);
-            } else if (!networkTokens[network][t.address].icon) {
-              networkTokens[network][t.address].icon = t.icon;
-              networkTokens[network][t.address].icon_png = t.icon_png;
-            }
-          });
-        }
+        // const oneInchNetworks = Object.keys(oneInchTokens);
+        // for (const network of oneInchNetworks) {
+        //   if (!networkTokens[network]) networkTokens[network] = {};
+        //   oneInchTokens[network].forEach(t => {
+        //     t.address = t.address.toLowerCase();
+        //     if (!networkTokens[network][t.address]) {
+        //       networkTokens[network][t.address] = t;
+        //       tokens.push(t);
+        //     } else if (!networkTokens[network][t.address].icon) {
+        //       networkTokens[network][t.address].icon = t.icon;
+        //       networkTokens[network][t.address].icon_png = t.icon_png;
+        //     }
+        //   });
+        // }
         const CGNetworks = Object.keys(CGTokens);
         for (const network of CGNetworks) {
           if (!networkTokens[network]) networkTokens[network] = {};

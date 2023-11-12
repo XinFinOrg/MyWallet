@@ -75,6 +75,12 @@ import {
 } from '@/core/helpers/addressUtils';
 import { isObject } from 'lodash';
 export default {
+  data() {
+    return {
+      getXDCAddress: getXDCAddress,
+      get0xAddress: get0xAddress
+    };
+  },
   computed: {
     ...mapState('wallet', ['address']),
     ...mapGetters('global', ['network']),
@@ -82,12 +88,6 @@ export default {
       if (!this.address) return '';
       return toChecksumAddress(this.address);
     }
-  },
-  data() {
-    return {
-      getXDCAddress: getXDCAddress,
-      get0xAddress: get0xAddress
-    };
   },
   methods: {
     copyAddress() {

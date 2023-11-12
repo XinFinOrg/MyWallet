@@ -251,7 +251,7 @@
 </template>
 
 <script>
-import { toChecksumAddress, getXDCAddress } from '@/core/helpers/addressUtils';
+import { getXDCAddress } from '@/core/helpers/addressUtils';
 import {
   fromWei,
   hexToNumberString,
@@ -324,7 +324,6 @@ export default {
       },
       error: '',
       panel: [],
-      getXDCAddress,
       termRoute: `/${ROUTES_HOME.TERMS_OF_SERVICE.PATH}`
     };
   },

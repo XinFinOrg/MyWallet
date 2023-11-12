@@ -2,13 +2,13 @@
   <div class="mt-10">
     <div class="text-center">
       <div>
-<!--        <mew-icon-->
-<!--          v-if="instance.meta.img.type === 'mew-icon'"-->
-<!--          class="border-radius&#45;&#45;5px custom-icon-style"-->
-<!--          :icon-name="instance.meta.img.value"-->
-<!--          :img-height="100"-->
-<!--        />-->
-<!--        <img v-else :src="instance.meta.img.value" height="50px" />-->
+        <!--        <mew-icon-->
+        <!--          v-if="instance.meta.img.type === 'mew-icon'"-->
+        <!--          class="border-radius&#45;&#45;5px custom-icon-style"-->
+        <!--          :icon-name="instance.meta.img.value"-->
+        <!--          :img-height="100"-->
+        <!--        />-->
+        <!--        <img v-else :src="instance.meta.img.value" height="50px" />-->
       </div>
     </div>
     <div :class="[error !== '' ? 'redPrimary--text' : '', 'text-center mb-5']">

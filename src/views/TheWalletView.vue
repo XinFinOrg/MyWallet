@@ -24,7 +24,6 @@
 import { mapActions, mapState, mapGetters } from 'vuex';
 import { toBN } from 'web3-utils';
 import Web3 from 'web3';
-import moment from 'moment';
 import { debounce, isEqual } from 'lodash';
 import handlerWallet from '@/core/mixins/handlerWallet.mixin';
 import nodeList from '@/utils/networks';
@@ -87,15 +86,7 @@ export default {
       'gasPrice',
       'isEIP1559SupportedNetwork'
     ]),
-    ...mapGetters('wallet', ['balanceInWei']),
-    walletEnkryptPopup() {
-      return (
-        !this.enkryptLandingPopup &&
-        moment(new Date()).diff(this.enkryptLandingPopupClosed, 'hours') >=
-          24 &&
-        this.enkryptWalletPopup
-      );
-    }
+    ...mapGetters('wallet', ['balanceInWei'])
   },
   watch: {
     address(newVal) {
@@ -185,19 +176,20 @@ export default {
       this.setValidNetwork(matched);
     },
     processNetworkTokens() {
-      if(this.network.type.tokens?.length >=0) {
+      if (this.network.type.tokens?.length >= 0) {
         const tokenMap = new Map();
         this.network.type.tokens.forEach(item => {
           tokenMap.set(item.address.toLowerCase(), item);
         });
         this.setNetworkTokens(tokenMap);
-      } else this.network.type.tokens.then(res => {
-        const tokenMap = new Map();
-        res.forEach(item => {
-          tokenMap.set(item.address.toLowerCase(), item);
+      } else
+        this.network.type.tokens.then(res => {
+          const tokenMap = new Map();
+          res.forEach(item => {
+            tokenMap.set(item.address.toLowerCase(), item);
+          });
+          this.setNetworkTokens(tokenMap);
         });
-        this.setNetworkTokens(tokenMap);
-      });
     },
     setTokensAndBalance() {
       if (this.coinGeckoTokens?.get) {

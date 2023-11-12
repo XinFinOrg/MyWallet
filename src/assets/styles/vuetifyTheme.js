@@ -21,7 +21,7 @@ export default {
     iconfont: 'mdi'
   },
   font: {
-    family: "Fira Sans,sans-serif"
+    family: 'Fira Sans,sans-serif'
   },
   theme: {
     options: {

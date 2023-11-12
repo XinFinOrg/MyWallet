@@ -58,7 +58,7 @@ import handlerAnalytics from '@/modules/analytics-opt-in/handlers/handlerAnalyti
 
 export default {
   name: 'TheDefaultHeader',
-  components: {  TheDefaultMobileNavigation },
+  components: { TheDefaultMobileNavigation },
   mixins: [buyMore, handlerAnalytics],
   data: () => ({
     menuObj: {
@@ -115,28 +115,29 @@ export default {
   },
   mounted() {
     if (!this.network) return;
-    if(this.network.type.tokens?.length >=0) {
+    if (this.network.type.tokens?.length >= 0) {
       const tokenMap = new Map();
       this.network.type.tokens.forEach(item => {
         tokenMap.set(item.address.toLowerCase(), item);
       });
       this.setNetworkTokens(tokenMap);
-    } else this.network.type.tokens.then(res => {
-      const tokenMap = new Map();
-      res.forEach(item => {
-        tokenMap.set(item.address.toLowerCase(), item);
+    } else
+      this.network.type.tokens.then(res => {
+        const tokenMap = new Map();
+        res.forEach(item => {
+          tokenMap.set(item.address.toLowerCase(), item);
+        });
+        this.setNetworkTokens(tokenMap);
       });
-      this.setNetworkTokens(tokenMap);
-    });
   },
   methods: {
     ...mapActions('external', ['setNetworkTokens']),
     routeTo(route) {
       this.$router.push(route);
-    },
-    trackBuySellLanding() {
-      this.trackBuySell('buySellLanding');
     }
+    // trackBuySellLanding() {
+    //   this.trackBuySell('buySellLanding');
+    // }
   }
 };
 </script>

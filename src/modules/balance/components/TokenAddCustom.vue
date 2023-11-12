@@ -137,7 +137,11 @@ import BigNumber from 'bignumber.js';
 
 import abiERC20 from '../handlers/abiERC20';
 import { ERROR, SUCCESS, Toast } from '@/modules/toast/handler/handlerToast';
-import { get0xAddress, isXDCAddress, getXDCAddress } from '@/core/helpers/addressUtils';
+import {
+  get0xAddress,
+  isXDCAddress,
+  getXDCAddress
+} from '@/core/helpers/addressUtils';
 import { formatFloatingPointValue } from '@/core/helpers/numberFormatHelper';
 
 export default {
@@ -329,7 +333,9 @@ export default {
      * otherwise it will throw toast error
      */
     async checkIfValidAddress() {
-      const codeHash = await this.web3.eth.getCode(get0xAddress(this.contractAddress));
+      const codeHash = await this.web3.eth.getCode(
+        get0xAddress(this.contractAddress)
+      );
       if (
         this.contractAddress &&
         isXDCAddress(this.contractAddress) &&
@@ -377,7 +383,8 @@ export default {
         abiERC20,
         get0xAddress(this.contractAddress)
       );
-      this.token = this.contractToToken(get0xAddress(this.contractAddress)) || {};
+      this.token =
+        this.contractToToken(get0xAddress(this.contractAddress)) || {};
       try {
         const balance = await contract.methods.balanceOf(this.address).call(),
           decimals = await contract.methods.decimals().call();
@@ -401,7 +408,7 @@ export default {
         this.token.balancef = this.getTokenBalance(balance, decimals).value;
         this.loading = false;
         this.step = 2;
-        console.log('==============>>>', this.token)
+        console.log('==============>>>', this.token);
       } catch {
         this.token.contract = get0xAddress(this.contractAddress);
         this.token.balancef = '0';

@@ -95,7 +95,12 @@
           </div>
         </v-col>
         <v-col cols="3" class="ml-auto">
-          <qr-code :data="getXDCAddress(key)" :height="140" :width="140" :type-number="10" />
+          <qr-code
+            :data="getXDCAddress(key)"
+            :height="140"
+            :width="140"
+            :type-number="10"
+          />
         </v-col>
       </v-row>
     </v-container>
